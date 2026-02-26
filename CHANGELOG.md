@@ -26,3 +26,31 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Known Issues
 - Netelip SMS account has insufficient balance (HTTP 402). SMS sending will work correctly once the account is topped up. The token has been verified as valid. The correct token must be set as `NETELIP_API_TOKEN` in the production environment variables.
+
+---
+
+## [2026-02-26b] — Panel Admin Refactorizado
+
+### Modified
+- **`src/app/dashboard/admin/AdminDashboardContent.tsx`** — Reescritura completa del panel de administración:
+  - Búsqueda funcional de clientes por nombre, email o teléfono
+  - Paginación de 10 clientes por página con navegación
+  - Edición inline de campos clave (nombre negocio, teléfono bot, teléfono desvío, nombre agente, tono, calendario)
+  - Modal de detalle con 3 pestañas: **Configuración** / **Actividad** / **Citas**
+  - Botón "Actualizar Agente" para regenerar el prompt de Retell desde admin sin tocar código
+  - Pestaña global de **Citas** con filtros (todas / confirmadas / canceladas)
+  - Indicadores visuales de estado SMS por cita (confirmación + recordatorio)
+  - Cancelación de citas directamente desde el panel admin
+  - Toast notifications para todas las acciones
+  - Métricas globales: total clientes, llamadas, agentes Retell, arquitectura BD
+  - Badges de infraestructura (Dedicated DB / Shared DB / Agent Linked)
+
+### Added
+- **`src/app/api/admin/appointments/route.ts`** (nuevo endpoint):
+  - `GET /api/admin/appointments` — listar citas (todas o por `?clientId=`), incluye datos del negocio
+  - `PATCH /api/admin/appointments` — actualizar estado/notas de una cita
+  - `DELETE /api/admin/appointments` — eliminar cita permanentemente
+- **`src/app/api/admin/update-agent/route.ts`** (nuevo endpoint):
+  - `POST /api/admin/update-agent` — regenerar prompt del agente Retell para cualquier cliente
+  - Carga automáticamente servicios y horarios actuales del cliente antes de regenerar
+
