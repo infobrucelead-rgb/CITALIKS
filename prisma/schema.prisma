@@ -13,6 +13,7 @@ datasource db {
 enum UserRole {
   BUSINESS
   PLATFORM_ADMIN
+  ADMIN
 }
 
 model Client {
@@ -185,6 +186,24 @@ model BotLog {
 
   @@index([clientId])
   @@map("bot_logs")
+}
+
+model Prospect {
+  id                  String    @id @default(cuid())
+  email               String    @unique
+  name                String
+  plan                String    @default("biannual") // "monthly", "biannual", "annual"
+  notes               String?   @db.Text
+  status              String    @default("pending") // "pending", "paid", "onboarded"
+  paymentLinkSentAt   DateTime?
+  paymentLinkSentBy   String?   // admin user id
+  paidAt              DateTime?
+  stripeSessionId     String?   @unique
+  onboardingLinkSentAt DateTime?
+  createdAt           DateTime  @default(now())
+  updatedAt           DateTime  @updatedAt
+
+  @@map("prospects")
 }
 
 model Invitation {

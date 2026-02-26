@@ -40,8 +40,11 @@ export async function POST(req: NextRequest) {
                 if (session.mode === "subscription" && session.subscription) {
                     const clientId = session.metadata?.citaliks_client_id;
                     const plan = session.metadata?.plan || "monthly";
+                    const prospectEmail = session.metadata?.prospect_email || session.customer_email;
+                    const prospectName = session.metadata?.prospect_name;
+
                     if (clientId) {
-                        // Fetch full subscription details
+                        // Existing client renewing or upgrading
                         const { getStripe } = await import("@/lib/stripe");
                         const subscription = await getStripe().subscriptions.retrieve(session.subscription as string);
                         const subData = extractSubscriptionData(subscription);
@@ -64,13 +67,45 @@ export async function POST(req: NextRequest) {
                             }
                         });
 
-                        // Send welcome/confirmation email
                         const client = await prisma.client.findUnique({ where: { id: clientId } });
-                        if (client) {
-                            await sendSubscriptionEmail(client, "activated", plan);
-                        }
+                        if (client) await sendSubscriptionEmail(client, "activated", plan);
+                        console.log(`[Stripe/Webhook] Subscription activated for existing client ${clientId}`);
 
-                        console.log(`[Stripe/Webhook] Subscription activated for client ${clientId}`);
+                    } else if (prospectEmail) {
+                        // NEW prospect — send onboarding email
+                        const appUrl = process.env.NEXT_PUBLIC_APP_URL || "https://app.citaliks.com";
+
+                        // Update prospect status in DB
+                        await prisma.prospect.upsert({
+                            where: { email: prospectEmail },
+                            update: {
+                                status: "paid",
+                                paidAt: new Date(),
+                                stripeSessionId: session.id,
+                                onboardingLinkSentAt: new Date(),
+                            },
+                            create: {
+                                email: prospectEmail,
+                                name: prospectName || prospectEmail,
+                                plan,
+                                status: "paid",
+                                paidAt: new Date(),
+                                stripeSessionId: session.id,
+                                onboardingLinkSentAt: new Date(),
+                            },
+                        });
+
+                        // Send onboarding email with sign-up link
+                        const signUpUrl = `${appUrl}/sign-up?email=${encodeURIComponent(prospectEmail)}`;
+                        await sendOnboardingEmail({
+                            email: prospectEmail,
+                            name: prospectName || "Hola",
+                            plan,
+                            signUpUrl,
+                            appUrl,
+                        });
+
+                        console.log(`[Stripe/Webhook] Onboarding email sent to new prospect ${prospectEmail}`);
                     }
                 }
                 break;
@@ -273,3 +308,96 @@ function emailTemplate({ title, body, cta, color }: { title: string; body: strin
 
 // Export for use in cron
 export { sendSubscriptionEmail };
+
+// ── Onboarding email for new prospects ───────────────────────────────────────
+
+async function sendOnboardingEmail({ email, name, plan, signUpUrl, appUrl }: {
+    email: string;
+    name: string;
+    plan: string;
+    signUpUrl: string;
+    appUrl: string;
+}) {
+    const planLabels: Record<string, string> = {
+        monthly: "Mensual",
+        biannual: "Semestral",
+        annual: "Anual",
+    };
+
+    await sendEmail({
+        to: email,
+        subject: `${name}, ¡tu pago ha sido confirmado! Aquí tienes tu acceso a CitaLiks`,
+        html: `
+<!DOCTYPE html>
+<html lang="es">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head>
+<body style="margin:0;padding:0;background:#0a0a0f;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;">
+  <div style="max-width:600px;margin:0 auto;padding:40px 20px;">
+    
+    <!-- Logo -->
+    <div style="text-align:center;margin-bottom:32px;">
+      <div style="display:inline-flex;align-items:center;gap:8px;">
+        <div style="width:36px;height:36px;background:#7c3aed;border-radius:8px;display:inline-flex;align-items:center;justify-content:center;color:white;font-weight:bold;font-size:18px;">C</div>
+        <span style="font-size:22px;font-weight:800;color:white;">Cita<span style="color:#a78bfa;">Liks</span></span>
+      </div>
+    </div>
+
+    <!-- Card -->
+    <div style="background:#111118;border:1px solid rgba(255,255,255,0.08);border-radius:24px;padding:40px;">
+      
+      <!-- Success badge -->
+      <div style="text-align:center;margin-bottom:28px;">
+        <div style="display:inline-flex;align-items:center;gap:8px;background:rgba(16,185,129,0.1);border:1px solid rgba(16,185,129,0.3);border-radius:100px;padding:8px 20px;">
+          <span style="color:#10b981;font-size:16px;">✓</span>
+          <span style="color:#10b981;font-size:13px;font-weight:700;">Pago confirmado</span>
+        </div>
+      </div>
+
+      <h1 style="color:white;font-size:26px;font-weight:800;margin:0 0 12px;text-align:center;">¡Bienvenido a CitaLiks, ${name}!</h1>
+      <p style="color:rgba(255,255,255,0.5);font-size:15px;line-height:1.6;margin:0 0 28px;text-align:center;">
+        Tu suscripción <strong style="color:white;">${planLabels[plan] || plan}</strong> está activa.
+        Ahora solo tienes que crear tu cuenta y configurar tu asistente.
+      </p>
+
+      <!-- Steps -->
+      <div style="background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.06);border-radius:16px;padding:24px;margin-bottom:28px;">
+        <p style="color:rgba(255,255,255,0.3);font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1px;margin:0 0 16px;">Qué pasa ahora</p>
+        <div style="display:flex;flex-direction:column;gap:12px;">
+          <div style="display:flex;align-items:flex-start;gap:12px;">
+            <div style="width:24px;height:24px;background:#7c3aed;border-radius:50%;display:flex;align-items:center;justify-content:center;color:white;font-size:12px;font-weight:700;flex-shrink:0;">1</div>
+            <p style="color:rgba(255,255,255,0.6);font-size:13px;margin:0;line-height:1.5;">Haz clic en el botón de abajo para crear tu cuenta</p>
+          </div>
+          <div style="display:flex;align-items:flex-start;gap:12px;">
+            <div style="width:24px;height:24px;background:#7c3aed;border-radius:50%;display:flex;align-items:center;justify-content:center;color:white;font-size:12px;font-weight:700;flex-shrink:0;">2</div>
+            <p style="color:rgba(255,255,255,0.6);font-size:13px;margin:0;line-height:1.5;">Completa el onboarding: nombre del negocio, servicios y horarios (5 minutos)</p>
+          </div>
+          <div style="display:flex;align-items:flex-start;gap:12px;">
+            <div style="width:24px;height:24px;background:#7c3aed;border-radius:50%;display:flex;align-items:center;justify-content:center;color:white;font-size:12px;font-weight:700;flex-shrink:0;">3</div>
+            <p style="color:rgba(255,255,255,0.6);font-size:13px;margin:0;line-height:1.5;">Tu asistente de voz estará activo y listo para atender llamadas</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- CTA -->
+      <div style="text-align:center;">
+        <a href="${signUpUrl}" 
+           style="display:inline-block;background:#7c3aed;color:white;text-decoration:none;padding:18px 48px;border-radius:16px;font-weight:700;font-size:16px;">
+          Crear mi cuenta →
+        </a>
+      </div>
+
+      <p style="color:rgba(255,255,255,0.2);font-size:12px;text-align:center;margin-top:20px;">
+        Este enlace es personal. No lo compartas.
+      </p>
+    </div>
+
+    <!-- Footer -->
+    <p style="color:rgba(255,255,255,0.2);font-size:12px;text-align:center;margin-top:24px;">
+      CitaLiks · Si tienes alguna duda, responde a este email<br>
+      <a href="${appUrl}/demo" style="color:rgba(124,58,237,0.7);">Ver la demo de nuevo</a>
+    </p>
+  </div>
+</body>
+</html>`,
+    });
+}
