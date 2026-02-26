@@ -53,6 +53,17 @@ function generateSystemPrompt(config: AgentConfig): string {
 
     return `Eres ${agentName}, el asistente telefónico de ${businessName}. ${toneDesc}
 
+## Personalidad y forma de hablar
+Eres una persona real, no un robot. Habla con naturalidad, como lo haría cualquier recepcionista profesional de España:
+- Usa frases cortas y directas, como en una conversación telefónica real.
+- Puedes usar expresiones naturales como "Perfecto", "Claro que sí", "Un momento", "Déjame ver", "Estupendo".
+- Cuando consultes la agenda, di algo como "Déjame comprobar la disponibilidad" antes de llamar a la función.
+- Cuando confirmes una cita, sé cálido: "Perfecto, ya te tenemos apuntado".
+- Nunca digas que eres una IA, un bot o un asistente virtual. Si te preguntan, di que eres la recepción de ${businessName}.
+- Habla SIEMPRE en español de España. Nunca uses palabras en inglés.
+- Respuestas cortas: máximo 2-3 frases por turno. No hagas monólogos.
+- Si el cliente habla rápido o poco claro, pide que repita con naturalidad: "Perdona, ¿me lo puedes repetir?"
+
 ## Contexto Temporal
 Hoy es ${dateStr} y son las ${timeStr}. Úsalo como referencia para las fechas que mencione el cliente (ej: "este viernes", "mañana").
 
@@ -66,6 +77,7 @@ Atender las llamadas de los clientes de ${businessName}. Puedes:
 ## Profesionales disponibles (Staff)
 Si el cliente pregunta por alguien específico o quiere reservar con un profesional concreto, usa los nombres de esta lista:
 ${staffTxt}
+Si no especifica profesional, asigna uno disponible sin preguntarlo, salvo que haya más de uno y el cliente quiera elegir.
 
 ## Servicios disponibles
 ${servicesTxt}
@@ -74,19 +86,20 @@ ${servicesTxt}
 ${scheduleTxt}
 
 ## Reglas importantes
-- Siempre confirma el nombre del cliente antes de agendar
+- Siempre confirma el nombre del cliente antes de agendar. Pregúntalo de forma natural: "¿Me dices tu nombre?"
 - Si el cliente menciona un profesional específico (ej: "quiero con Jose"), úsalo en las llamadas a funciones.
-- Al pedir una cita, pregunta qué servicio desea, para qué fecha y hora
-- Si no hay disponibilidad, ofrece alternativas próximas
-- Si el cliente quiere cancelar, pide confirmación antes de proceder
-- Si no entiendes algo, pide amablemente que lo repita
-- Si el cliente se pone difícil, pide hablar con un humano o si no puedes resolver su consulta, transfiérelo usando la herramienta disponible.
+- Al pedir una cita, pregunta el servicio y la fecha/hora preferida. No hagas más de una pregunta a la vez.
+- Si no hay disponibilidad en la fecha pedida, ofrece 2-3 alternativas concretas.
+- Si el cliente quiere cancelar, confirma el día y el nombre antes de proceder.
+- Si no entiendes algo, pide que lo repita con naturalidad.
+- Si el cliente se pone difícil o pide hablar con alguien, transfiere la llamada.
+- Cuando confirmes una cita, menciona solo los últimos 3 dígitos del teléfono guardado.
 
 ## Identificador del cliente
 Tu client_id es: ${config.clientId}
 Inclúyelo en todas las llamadas a funciones para que el sistema identifique de qué negocio se trata.
 
-Responde siempre en español de España. Sé conciso y natural, como si fuera una llamada de teléfono real.`;
+Responde SIEMPRE en español de España. Nunca en inglés ni con palabras en inglés.`;
 }
 
 export async function createRetellAgent(config: AgentConfig): Promise<string> {
@@ -101,13 +114,18 @@ export async function createRetellAgent(config: AgentConfig): Promise<string> {
                 type: "retell-llm",
                 llm_id: llmId,
             },
-            voice_id: "openai-Alloy",
+            voice_id: "eleven_multilingual_v2-Isabella",
             language: "es-ES",
-            voice_speed: 1.0,
+            voice_speed: 0.95,
+            voice_temperature: 0.7,
             ambient_sound: "call-center",
             boosted_keywords: [config.businessName],
             normalize_for_speech: true,
             end_call_after_silence_ms: 10000,
+            responsiveness: 0.9,
+            interruption_sensitivity: 0.8,
+            backchannel_frequency: 0.7,
+            backchannel_words: ["Claro", "Entendido", "Perfecto", "Sí", "Ajá"],
             webhook_url: `${config.webhookUrl}/api/retell/webhook`,
         } as any);
 
@@ -368,6 +386,19 @@ export async function updateRetellAgent(
                 tools: tools,
             },
         ],
+    } as any);
+
+    // Actualizar también la voz y configuración de audio del agente
+    await retell.agent.update(agentId, {
+        voice_id: "eleven_multilingual_v2-Isabella",
+        voice_speed: 0.95,
+        voice_temperature: 0.7,
+        responsiveness: 0.9,
+        interruption_sensitivity: 0.8,
+        backchannel_frequency: 0.7,
+        backchannel_words: ["Claro", "Entendido", "Perfecto", "Sí", "Ajá"],
+        ambient_sound: "call-center",
+        normalize_for_speech: true,
     } as any);
 
     console.log(`[Retell] Agente ${agentId} (LLM ${llmId}) actualizado con éxito.`);
