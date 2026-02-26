@@ -158,7 +158,21 @@ export async function POST(req: NextRequest) {
                 );
                 const durationMin = service?.durationMin ?? 30;
 
-                const staff = await resolveStaff(staff_name);
+                // FIX: Assign a real staff member always.
+                // If the caller specified a name, try to match it.
+                // If no match or no name given, pick a random staff member from the client's list.
+                // This ensures every appointment is always linked to a real professional.
+                const staffList: any[] = (safeContext as any).staff || [];
+                let staff = await resolveStaff(staff_name);
+                if (!staff && staffList.length > 0) {
+                    staff = staffList[Math.floor(Math.random() * staffList.length)];
+                    console.log(`[retell/function-call] No staff specified — auto-assigned: ${staff?.name}`);
+                }
+
+                // Build staff list message for the bot to offer choices if multiple staff exist
+                const staffNamesMsg = staffList.length > 1
+                    ? ` Los profesionales disponibles son: ${staffList.map((s: any) => s.name).join(', ')}.`
+                    : '';
 
                 console.log(`[retell/function-call] check_availability: date=${date} service=${service_name}(${durationMin}min) staff=${staff?.name || 'none'}`);
 
@@ -186,13 +200,14 @@ export async function POST(req: NextRequest) {
 
                 const slotStrings = slots.slice(0, 10).map((s) => `${s.start} - ${s.end}`);
                 const slotsMessage = slots.length > 0
-                    ? `Hay ${slots.length} huecos disponibles el ${formatDateES(date)}${staff ? ` con ${staff.name}` : ""}: ${slotStrings.join(", ")}.`
+                    ? `Hay ${slots.length} huecos disponibles el ${formatDateES(date)} con ${staff?.name || 'el equipo'}.${staffNamesMsg} Los primeros huecos son: ${slotStrings.join(", ")}.`
                     : `No hay disponibilidad el ${formatDateES(date)}${staff ? ` con ${staff.name}` : ""}. El horario del negocio ese día es: ${scheduleUsed}.`;
 
                 console.log(`[retell/function-call] Slots found: ${slots.length}`);
 
                 result = {
                     available_slots: slotStrings,
+                    staff_name: staff?.name || null,
                     message: slotsMessage,
                 };
 
@@ -223,9 +238,18 @@ export async function POST(req: NextRequest) {
                 const service = (safeContext.services || []).find(
                     (s: any) => !service_name || s.name.toLowerCase().includes(service_name.toLowerCase())
                 );
-                const staff = await resolveStaff(staff_name);
 
-                console.log(`[retell/function-call] book_appointment: ${caller_name} | ${service_name} | ${date} | ${time}`);
+                // FIX: Always assign a real staff member.
+                // Use the name passed by the bot (from check_availability result),
+                // or fall back to a random staff member if none specified.
+                const bookStaffList: any[] = (safeContext as any).staff || [];
+                let bookStaff = await resolveStaff(staff_name);
+                if (!bookStaff && bookStaffList.length > 0) {
+                    bookStaff = bookStaffList[Math.floor(Math.random() * bookStaffList.length)];
+                    console.log(`[retell/function-call] book_appointment: auto-assigned staff: ${bookStaff?.name}`);
+                }
+
+                console.log(`[retell/function-call] book_appointment: ${caller_name} | ${service_name} | ${date} | ${time} | staff=${bookStaff?.name || 'none'}`);
 
                 const { eventId, confirmed, error: bookingError } = await bookAppointment({
                     clientId,
@@ -237,8 +261,8 @@ export async function POST(req: NextRequest) {
                     notes,
                     durationMin: service?.durationMin ?? 30,
                     prismaOverride: activePrisma,
-                    staffCalendarId: staff?.googleCalendarId,
-                    staffName: staff?.name
+                    staffCalendarId: bookStaff?.googleCalendarId,
+                    staffName: bookStaff?.name
                 });
 
                 if (confirmed) {
@@ -249,7 +273,7 @@ export async function POST(req: NextRequest) {
                                 callerNumber: args.caller_number ?? "desconocido",
                                 actionTaken: "booked",
                                 appointmentId: eventId,
-                                summary: `Cita ${service_name} para ${caller_name} el ${date} a las ${time}${staff ? ` con ${staff.name}` : ""}`,
+                                summary: `Cita ${service_name} para ${caller_name} el ${date} a las ${time}${bookStaff ? ` con ${bookStaff.name}` : ""}`,
                             },
                         });
                     } catch (logErr) {
@@ -264,7 +288,7 @@ export async function POST(req: NextRequest) {
                 result = {
                     confirmed,
                     message: confirmed
-                        ? `Perfecto, ${caller_name}. Tu cita de ${service_name}${staff ? ` con ${staff.name}` : ""} queda confirmada para el ${formatDateES(date)} a las ${time}. ¡Hasta pronto!`
+                        ? `Perfecto, ${caller_name}. Tu cita de ${service_name}${bookStaff ? ` con ${bookStaff.name}` : ""} queda confirmada para el ${formatDateES(date)} a las ${time}. ¡Hasta pronto!`
                         : `Lo siento, no he podido confirmar la cita. ${bookingError || "Por favor, intenta con otro horario."}`,
                 };
 

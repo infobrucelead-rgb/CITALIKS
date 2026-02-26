@@ -202,6 +202,21 @@ export async function checkAvailability(
     let currentMin = openH * 60 + openM;
     const endMin = closeH * 60 + closeM;
 
+    // FIX: If the requested date is TODAY, skip slots that are already in the past.
+    // Use local time (not UTC) to determine the current time.
+    // Add a 15-minute buffer so the bot never offers a slot that starts in less than 15 min.
+    const todayLocal = new Date().toLocaleDateString('sv-SE'); // YYYY-MM-DD in local time
+    if (date === todayLocal) {
+        const now = new Date();
+        const nowMinutes = now.getHours() * 60 + now.getMinutes() + 15; // +15 min buffer
+        if (nowMinutes > currentMin) {
+            // Round up to the next slot boundary
+            const slotsToSkip = Math.ceil((nowMinutes - currentMin) / durationMin);
+            currentMin += slotsToSkip * durationMin;
+            console.log(`[calendar/checkAvailability] Today: skipping past slots, starting from ${String(Math.floor(currentMin/60)).padStart(2,'0')}:${String(currentMin%60).padStart(2,'0')} (now+15min buffer)`);
+        }
+    }
+
     while (currentMin + durationMin <= endMin) {
         const slotEndMin = currentMin + durationMin;
 
