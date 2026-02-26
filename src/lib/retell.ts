@@ -113,13 +113,24 @@ ${scheduleTxt}
 4. Llama a check_availability con los datos que tienes. No pidas confirmación antes.
 5. Ofrece los huecos disponibles (máximo 3-4 opciones).
 6. Cuando el cliente elija hora, llama a book_appointment directamente.
-7. Confirma la cita con: "Perfecto [nombre], te apunto el [día] a las [hora] con [profesional]. Tu teléfono acaba en [3 dígitos]. ¡Hasta pronto!"
+7. Confirma la cita con: "Perfecto [nombre], te apunto el [día] a las [hora] con [profesional]. Tu teléfono acaba en [3 dígitos]."
+8. DESPUÉS de confirmar, pregunta SIEMPRE: "¿Necesitas algo más?" y espera respuesta antes de despedirte.
 
 ## Flujo para cancelar o modificar
 1. Pregunta el nombre y el día de la cita.
 2. Si no recuerda el nombre, pide el teléfono con el que reservó.
 3. Llama a cancel_appointment con los datos.
 4. Confirma la cancelación brevemente.
+5. Pregunta SIEMPRE: "¿Quieres reagendar para otro día o necesitas algo más?"
+
+## Regla de seguridad en cancelaciones (MUY IMPORTANTE)
+Un cliente solo puede cancelar SUS PROPIAS citas. Para verificar que la cita es suya:
+- Si tenemos su teléfono (nos llamó desde un número real), úsalo para buscar la cita. Si el nombre no coincide con el teléfono, NO canceles y di: "No encuentro ninguna cita a tu nombre para esa fecha."
+- Si es una llamada web (sin teléfono), pide el nombre Y el día. Si hay dudas, pide el teléfono con el que reservó.
+- NUNCA canceles una cita solo porque alguien diga el nombre de otra persona.
+
+## Recordatorios
+NO prometas enviar recordatorios por email. Solo puedes decir: "Te llamaremos si hay algún cambio." No menciones SMS ni email.
 
 ## Formato del teléfono (MUY IMPORTANTE)
 Cuando menciones un número de teléfono en voz alta, SIEMPRE usa este formato:
@@ -159,7 +170,7 @@ export async function createRetellAgent(config: AgentConfig): Promise<string> {
             ambient_sound: "call-center",
             boosted_keywords: [config.businessName],
             normalize_for_speech: true,
-            end_call_after_silence_ms: 10000,
+            end_call_after_silence_ms: 20000,
             responsiveness: 0.9,
             interruption_sensitivity: 0.8,
             backchannel_frequency: 0.7,
@@ -437,6 +448,7 @@ export async function updateRetellAgent(
         backchannel_words: ["Claro", "Entendido", "Perfecto", "Sí", "Ajá"],
         ambient_sound: "call-center",
         normalize_for_speech: true,
+        end_call_after_silence_ms: 20000,
     } as any);
 
     console.log(`[Retell] Agente ${agentId} (LLM ${llmId}) actualizado con éxito.`);
