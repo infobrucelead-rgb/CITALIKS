@@ -336,7 +336,20 @@ export async function bookAppointment(params: {
         );
         const calendar = google.calendar({ version: "v3", auth: oAuth2Client });
 
-        const start = new Date(`${params.date}T${normalizedTime}:00`);
+        // FIX: Build datetime with explicit Madrid timezone offset to avoid UTC shift.
+        // Without a timezone suffix, new Date() interprets the string as LOCAL time on the
+        // server (which may be UTC), causing a +1h shift when displayed in Europe/Madrid.
+        // We use the Intl API to get the current UTC offset for Europe/Madrid and apply it.
+        const tzOffset = (() => {
+            const testDate = new Date(`${params.date}T${normalizedTime}:00Z`);
+            const madridStr = testDate.toLocaleString('en-US', { timeZone: 'Europe/Madrid', hour12: false, hour: '2-digit', minute: '2-digit' });
+            const utcStr = testDate.toLocaleString('en-US', { timeZone: 'UTC', hour12: false, hour: '2-digit', minute: '2-digit' });
+            const madridH = parseInt(madridStr.split(':')[0]) + (madridStr.startsWith('24') ? 24 : 0);
+            const utcH = parseInt(utcStr.split(':')[0]) + (utcStr.startsWith('24') ? 24 : 0);
+            return madridH - utcH; // e.g. +1 in winter, +2 in summer
+        })();
+        const start = new Date(`${params.date}T${normalizedTime}:00Z`);
+        start.setUTCHours(start.getUTCHours() - tzOffset); // Shift back to get correct UTC
         const end = new Date(start.getTime() + durationMin * 60_000);
 
         const event = await calendar.events.insert({
@@ -549,12 +562,21 @@ export async function listEvents(clientId: string, params?: { staffCalendarId?: 
         });
 
         allEvents.push(...localApts.map((a: any) => {
-            // FIX: Build ISO string with explicit +00:00 offset so the browser
-            // interprets the time as-is (local wall-clock time stored in DB)
-            // instead of shifting it to UTC, which caused events to appear on
-            // the wrong day or hour in the calendar UI.
-            const startISO = `${a.date}T${a.time}:00+00:00`;
-            const endISO = new Date(new Date(startISO).getTime() + 30 * 60_000).toISOString();
+            // FIX: Build ISO string with explicit Europe/Madrid offset (+01:00 winter / +02:00 summer)
+            // Using +00:00 was treating the stored local time as UTC, causing events to appear
+            // 1 hour later in the calendar UI (e.g. 09:00 stored → shown as 10:00).
+            // We compute the actual Madrid offset dynamically to handle DST correctly.
+            const madridOffset = (() => {
+                const d = new Date(`${a.date}T${a.time}:00Z`);
+                const madridStr = d.toLocaleString('en-US', { timeZone: 'Europe/Madrid', hour12: false, hour: '2-digit' });
+                const utcStr = d.toLocaleString('en-US', { timeZone: 'UTC', hour12: false, hour: '2-digit' });
+                const diff = parseInt(madridStr) - parseInt(utcStr);
+                const absDiff = Math.abs(diff);
+                const sign = diff >= 0 ? '+' : '-';
+                return `${sign}${String(absDiff).padStart(2, '0')}:00`;
+            })();
+            const startISO = `${a.date}T${a.time}:00${madridOffset}`;
+            const endISO = new Date(new Date(startISO).getTime() + (a.durationMin || 30) * 60_000).toISOString();
             return {
                 id: `local-${a.id}`,
                 summary: a.serviceName,
