@@ -29,6 +29,36 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [2026-02-26d] — Flujo Comercial Completo (Demo + Pago + Onboarding)
+
+### Added
+- **`src/app/demo/`** — Página pública `/demo` sin login:
+  - Llamada web en tiempo real con Sofía (agente demo de CitaLiks)
+  - Integración con `retell-client-js-sdk` (web calls desde el navegador)
+  - Timer de duración, sugerencias de frases, CTA hacia `/sign-up`
+- **`src/app/api/demo/start-call/route.ts`** — `POST`: crea web call con `RETELL_DEMO_AGENT_ID`
+- **`src/app/api/admin/send-payment-link/route.ts`** — Envío de enlace de pago a prospectos:
+  - `POST`: crea sesión Stripe Checkout + guarda prospecto en BD + envía email
+  - `GET`: lista todos los prospectos con su estado
+- **`scripts/create-demo-agent.ts`** — Script para crear el agente demo en Retell (ejecutar 1 vez)
+- **`prisma/migrations/20260226_add_prospects/migration.sql`** — Tabla `prospects`
+
+### Modified
+- **`prisma/schema.prisma`** — Nuevo modelo `Prospect` + valor `ADMIN` en enum `UserRole`
+- **`src/app/api/stripe/webhook/route.ts`** — Nuevo flujo para prospectos nuevos:
+  - Si el pago viene de un prospecto (sin `citaliks_client_id`) → actualiza estado a `paid` + envía email de onboarding con enlace `/sign-up?email=...`
+
+### Flujo completo
+1. Admin introduce email + nombre + plan en el panel → `POST /api/admin/send-payment-link`
+2. Prospecto recibe email con enlace de Stripe Checkout
+3. Prospecto paga → Stripe lanza webhook → se envía email de onboarding automáticamente
+4. Prospecto hace clic en "Crear mi cuenta" → `/sign-up?email=...` → onboarding
+
+### Variables de entorno nuevas
+- `RETELL_DEMO_AGENT_ID` — obtener ejecutando `npx ts-node scripts/create-demo-agent.ts`
+
+---
+
 ## [2026-02-26c] — Sistema de Suscripciones Stripe
 
 ### Added
