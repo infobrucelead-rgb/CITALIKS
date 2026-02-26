@@ -18,5 +18,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Retell agent prompt updated to inform users about SMS confirmations and reminders.
   - New `CRON_SECRET` environment variable to protect the reminders endpoint.
 
+### Fixed
+- Retell agent prompt no longer mentions "CITALIKS" when informing the customer about SMS confirmation. The bot now says "Te llegará un SMS de confirmación" without revealing the platform brand. This is important for white-label deployments.
+
 ### Changed
 - `COLLABORATION.md` updated to include `CHANGELOG.md` as the official protocol for asynchronous communication between AIs.
+
+### Known Issues
+- Netelip SMS account has insufficient balance (HTTP 402). SMS sending will work correctly once the account is topped up. The token has been verified as valid. The correct token must be set as `NETELIP_API_TOKEN` in the production environment variables.
