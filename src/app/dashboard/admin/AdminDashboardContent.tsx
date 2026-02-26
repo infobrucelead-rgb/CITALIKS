@@ -10,7 +10,7 @@ import {
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 type TabType = "clients" | "invitations" | "appointments";
-type ClientDetailTab = "info" | "activity" | "appointments";
+type ClientDetailTab = "info" | "activity" | "appointments" | "subscription";
 
 // ─── Main Component ───────────────────────────────────────────────────────────
 export default function AdminDashboardContent({ clients: initialClients }: { clients: any[] }) {
@@ -32,6 +32,8 @@ export default function AdminDashboardContent({ clients: initialClients }: { cli
     const [appointments, setAppointments] = React.useState<any[]>([]);
     const [loadingAppointments, setLoadingAppointments] = React.useState(false);
     const [appointmentFilter, setAppointmentFilter] = React.useState("all");
+    const [creatingCheckout, setCreatingCheckout] = React.useState(false);
+    const [openingPortal, setOpeningPortal] = React.useState(false);
 
     const PAGE_SIZE = 10;
 
@@ -221,6 +223,49 @@ export default function AdminDashboardContent({ clients: initialClients }: { cli
             showToast("Error de conexión", "err");
         } finally {
             setUpdatingAgent(false);
+        }
+    };
+
+    const handleCreateCheckout = async (clientId: string, plan: string) => {
+        setCreatingCheckout(true);
+        try {
+            const res = await fetch("/api/stripe/checkout", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ targetClientId: clientId, plan })
+            });
+            const data = await res.json();
+            if (res.ok && data.url) {
+                window.open(data.url, "_blank");
+                showToast("Sesión de pago creada. Abriendo en nueva pestaña...");
+            } else {
+                showToast(data.error || "Error al crear sesión de pago", "err");
+            }
+        } catch (err) {
+            showToast("Error de conexión", "err");
+        } finally {
+            setCreatingCheckout(false);
+        }
+    };
+
+    const handleOpenPortal = async (clientId: string) => {
+        setOpeningPortal(true);
+        try {
+            const res = await fetch("/api/stripe/portal", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ targetClientId: clientId })
+            });
+            const data = await res.json();
+            if (res.ok && data.url) {
+                window.open(data.url, "_blank");
+            } else {
+                showToast(data.error || "Error al abrir portal de facturación", "err");
+            }
+        } catch (err) {
+            showToast("Error de conexión", "err");
+        } finally {
+            setOpeningPortal(false);
         }
     };
 
@@ -548,10 +593,10 @@ export default function AdminDashboardContent({ clients: initialClients }: { cli
 
                         {/* Modal Tabs */}
                         <div className="flex gap-1 px-6 pt-4 shrink-0 border-b border-white/5">
-                            {(["info", "activity", "appointments"] as ClientDetailTab[]).map(t => (
+                            {(["info", "activity", "appointments", "subscription"] as ClientDetailTab[]).map(t => (
                                 <button key={t} onClick={() => setClientDetailTab(t)}
                                     className={`pb-3 px-4 text-sm font-bold transition-all border-b-2 ${clientDetailTab === t ? "text-blue-400 border-blue-500" : "text-white/30 border-transparent hover:text-white"}`}>
-                                    {t === "info" ? "Configuración" : t === "activity" ? "Actividad" : "Citas"}
+                                    {t === "info" ? "Configuración" : t === "activity" ? "Actividad" : t === "appointments" ? "Citas" : "Suscripción"}
                                 </button>
                             ))}
                         </div>
@@ -667,6 +712,17 @@ export default function AdminDashboardContent({ clients: initialClients }: { cli
                                         <div className="h-40 flex items-center justify-center text-white/20 italic text-sm">No hay datos para este período</div>
                                     )}
                                 </>
+                            )}
+
+                            {/* ── Subscription Tab ────────────────────────── */}
+                            {clientDetailTab === "subscription" && (
+                                <SubscriptionTab
+                                    client={selectedClient}
+                                    onCreateCheckout={(plan) => handleCreateCheckout(selectedClient.id, plan)}
+                                    onOpenPortal={() => handleOpenPortal(selectedClient.id)}
+                                    creatingCheckout={creatingCheckout}
+                                    openingPortal={openingPortal}
+                                />
                             )}
 
                             {/* ── Appointments Tab ─────────────────────────── */}
@@ -877,6 +933,143 @@ function AppointmentsTable({ appointments, loading, onCancel, showClient }: { ap
                     ))}
                 </tbody>
             </table>
+        </div>
+    );
+}
+
+// ─── SubscriptionTab Component ────────────────────────────────────────────────
+function SubscriptionTab({ client, onCreateCheckout, onOpenPortal, creatingCheckout, openingPortal }: {
+    client: any;
+    onCreateCheckout: (plan: string) => void;
+    onOpenPortal: () => void;
+    creatingCheckout: boolean;
+    openingPortal: boolean;
+}) {
+    const [selectedPlan, setSelectedPlan] = React.useState("biannual");
+
+    const statusColors: Record<string, string> = {
+        active: "bg-emerald-500/10 text-emerald-400 border-emerald-500/20",
+        past_due: "bg-amber-500/10 text-amber-400 border-amber-500/20",
+        canceled: "bg-red-500/10 text-red-400 border-red-500/20",
+        inactive: "bg-white/5 text-white/30 border-white/10",
+    };
+
+    const statusLabels: Record<string, string> = {
+        active: "Activa",
+        past_due: "Pago pendiente",
+        canceled: "Cancelada",
+        inactive: "Sin suscripción",
+    };
+
+    const planLabels: Record<string, string> = {
+        monthly: "Mensual",
+        biannual: "Semestral",
+        annual: "Anual",
+    };
+
+    const status = client.subscriptionStatus || "inactive";
+    const hasSubscription = !!client.stripeSubscriptionId;
+
+    return (
+        <div className="space-y-6">
+            {/* Status card */}
+            <div className="rounded-2xl bg-white/[0.03] border border-white/5 p-5">
+                <div className="flex items-center justify-between mb-4">
+                    <h3 className="font-black text-sm">Estado de Suscripción</h3>
+                    <span className={`text-xs font-bold px-3 py-1 rounded-full border ${statusColors[status] || statusColors.inactive}`}>
+                        {statusLabels[status] || status}
+                    </span>
+                </div>
+                <div className="grid grid-cols-2 gap-4 text-xs">
+                    <div>
+                        <p className="text-white/30 mb-1">Plan</p>
+                        <p className="font-bold">{planLabels[client.subscriptionPlan || ""] || "—"}</p>
+                    </div>
+                    <div>
+                        <p className="text-white/30 mb-1">Inicio</p>
+                        <p className="font-mono">{client.subscriptionStart ? new Date(client.subscriptionStart).toLocaleDateString("es-ES") : "—"}</p>
+                    </div>
+                    <div>
+                        <p className="text-white/30 mb-1">Vencimiento</p>
+                        <p className={`font-mono font-bold ${status === "active" && client.subscriptionEnd && new Date(client.subscriptionEnd) < new Date(Date.now() + 7 * 86400000) ? "text-amber-400" : ""}`}>
+                            {client.subscriptionEnd ? new Date(client.subscriptionEnd).toLocaleDateString("es-ES") : "—"}
+                        </p>
+                    </div>
+                    <div>
+                        <p className="text-white/30 mb-1">Último pago</p>
+                        <p className="font-mono">{client.lastPaymentAt ? new Date(client.lastPaymentAt).toLocaleDateString("es-ES") : "—"}</p>
+                    </div>
+                    <div className="col-span-2">
+                        <p className="text-white/30 mb-1">Stripe Customer ID</p>
+                        <p className="font-mono text-white/50 truncate">{client.stripeCustomerId || "—"}</p>
+                    </div>
+                    <div className="col-span-2">
+                        <p className="text-white/30 mb-1">Stripe Subscription ID</p>
+                        <p className="font-mono text-white/50 truncate">{client.stripeSubscriptionId || "—"}</p>
+                    </div>
+                </div>
+            </div>
+
+            {/* Actions */}
+            {hasSubscription ? (
+                <div className="rounded-2xl bg-white/[0.03] border border-white/5 p-5 space-y-3">
+                    <h3 className="font-black text-sm mb-3">Gestión de Facturación</h3>
+                    <p className="text-white/40 text-xs">Accede al portal de Stripe para ver facturas, cambiar el método de pago o cancelar la suscripción.</p>
+                    <button
+                        onClick={onOpenPortal}
+                        disabled={openingPortal}
+                        className="w-full flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-500 disabled:opacity-50 text-white font-bold py-3 rounded-xl text-sm transition-all"
+                    >
+                        {openingPortal ? (
+                            <><div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" /> Abriendo portal...</>
+                        ) : (
+                            <><ExternalLink className="w-4 h-4" /> Abrir Portal de Facturación</>
+                        )}
+                    </button>
+                </div>
+            ) : (
+                <div className="rounded-2xl bg-white/[0.03] border border-white/5 p-5 space-y-4">
+                    <h3 className="font-black text-sm">Crear Suscripción</h3>
+                    <p className="text-white/40 text-xs">Selecciona un plan y genera el enlace de pago para este cliente. Se abrirá en una nueva pestaña.</p>
+
+                    <div className="grid grid-cols-3 gap-2">
+                        {(["monthly", "biannual", "annual"] as const).map(plan => (
+                            <button
+                                key={plan}
+                                onClick={() => setSelectedPlan(plan)}
+                                className={`p-3 rounded-xl border text-xs font-bold transition-all ${selectedPlan === plan ? "bg-blue-600 border-blue-500 text-white" : "bg-white/5 border-white/10 text-white/50 hover:text-white"}`}
+                            >
+                                {planLabels[plan]}
+                            </button>
+                        ))}
+                    </div>
+
+                    <button
+                        onClick={() => onCreateCheckout(selectedPlan)}
+                        disabled={creatingCheckout}
+                        className="w-full flex items-center justify-center gap-2 bg-emerald-600 hover:bg-emerald-500 disabled:opacity-50 text-white font-bold py-3 rounded-xl text-sm transition-all"
+                    >
+                        {creatingCheckout ? (
+                            <><div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" /> Creando enlace de pago...</>
+                        ) : (
+                            <><Zap className="w-4 h-4" /> Generar Enlace de Pago</>
+                        )}
+                    </button>
+                </div>
+            )}
+
+            {/* Renewal reminder status */}
+            <div className="rounded-2xl bg-white/[0.03] border border-white/5 p-5">
+                <h3 className="font-black text-sm mb-3">Recordatorio de Renovación</h3>
+                <div className="flex items-center gap-3">
+                    <span className={`w-3 h-3 rounded-full ${client.renewalReminderSent ? "bg-emerald-400" : "bg-white/10"}`} />
+                    <span className="text-xs text-white/50">
+                        {client.renewalReminderSent
+                            ? `Email enviado el ${client.renewalReminderSentAt ? new Date(client.renewalReminderSentAt).toLocaleDateString("es-ES") : "—"}`
+                            : "Pendiente de enviar (se enviará 7 días antes del vencimiento)"}
+                    </span>
+                </div>
+            </div>
         </div>
     );
 }

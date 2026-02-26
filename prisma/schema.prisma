@@ -35,6 +35,19 @@ model Client {
   onboardingDone  Boolean   @default(false)
   isActive        Boolean   @default(true)
 
+  // Stripe Subscription
+  stripeCustomerId     String?   @unique
+  stripeSubscriptionId String?   @unique
+  stripePriceId        String?   // ID del precio/plan en Stripe
+  subscriptionPlan     String?   // "monthly", "biannual", "annual"
+  subscriptionStatus   String?   @default("inactive") // "active", "past_due", "canceled", "inactive"
+  subscriptionStart    DateTime?
+  subscriptionEnd      DateTime?
+  trialEnd             DateTime?
+  lastPaymentAt        DateTime?
+  renewalReminderSent  Boolean   @default(false)
+  renewalReminderSentAt DateTime?
+
   // Google Calendar OAuth (Configuración maestra del negocio)
   googleAccessToken  String?  @db.Text
   googleRefreshToken String?  @db.Text
