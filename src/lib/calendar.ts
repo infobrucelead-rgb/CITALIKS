@@ -471,31 +471,43 @@ export async function listEvents(clientId: string, params?: { staffCalendarId?: 
 
     // 2. Get Local Appointments
     try {
+        // FIX: Use a date string directly (YYYY-MM-DD) for comparison instead of
+        // new Date().toISOString().split('T')[0] which returns UTC date and can
+        // exclude today's appointments in UTC+ timezones (e.g. Spain UTC+1).
+        const todayStr = new Date().toLocaleDateString('sv-SE'); // 'sv-SE' gives YYYY-MM-DD in local time
         const localApts = await (db as any).appointment.findMany({
             where: {
                 clientId,
                 staffName: staffName || undefined,
                 status: "CONFIRMED",
-                date: { gte: new Date().toISOString().split('T')[0] }
+                date: { gte: todayStr }
             },
             orderBy: [{ date: 'asc' }, { time: 'asc' }],
             take: 20
         });
 
-        allEvents.push(...localApts.map((a: any) => ({
-            id: `local-${a.id}`,
-            summary: a.serviceName,
-            start: { dateTime: new Date(`${a.date}T${a.time}:00`).toISOString() },
-            end: { dateTime: new Date(new Date(`${a.date}T${a.time}:00`).getTime() + 30 * 60_000).toISOString() },
-            source: 'local',
-            metadata: {
-                callerName: a.callerName,
-                callerPhone: a.callerPhone,
-                serviceName: a.serviceName,
-                notes: a.notes,
-                status: a.status
-            }
-        })));
+        allEvents.push(...localApts.map((a: any) => {
+            // FIX: Build ISO string with explicit +00:00 offset so the browser
+            // interprets the time as-is (local wall-clock time stored in DB)
+            // instead of shifting it to UTC, which caused events to appear on
+            // the wrong day or hour in the calendar UI.
+            const startISO = `${a.date}T${a.time}:00+00:00`;
+            const endISO = new Date(new Date(startISO).getTime() + 30 * 60_000).toISOString();
+            return {
+                id: `local-${a.id}`,
+                summary: a.serviceName,
+                start: { dateTime: startISO },
+                end: { dateTime: endISO },
+                source: 'local',
+                metadata: {
+                    callerName: a.callerName,
+                    callerPhone: a.callerPhone,
+                    serviceName: a.serviceName,
+                    notes: a.notes,
+                    status: a.status
+                }
+            };
+        }));
     } catch (err) {
         console.error(`[calendar/listEvents] Local fetch failed:`, err);
     }
