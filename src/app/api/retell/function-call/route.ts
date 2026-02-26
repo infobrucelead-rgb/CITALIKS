@@ -5,6 +5,7 @@ import {
     bookAppointment,
     cancelAppointment,
 } from "@/lib/calendar";
+import { sendSms, buildConfirmationSms, buildCancellationSms } from "@/lib/sms";
 
 import fs from 'fs';
 import path from 'path';
@@ -309,6 +310,42 @@ export async function POST(req: NextRequest) {
                     } catch (logErr) {
                         console.warn("[retell/function-call] CallLog save failed:", (logErr as any).message);
                     }
+
+                    // ── SMS Confirmation ──────────────────────────────────────
+                    // Send confirmation SMS if we have a phone number.
+                    // This runs asynchronously — failure does NOT affect the booking.
+                    if (resolvedPhone) {
+                        const smsMessage = buildConfirmationSms({
+                            businessName: masterClient.businessName || "Tu negocio",
+                            clientName: caller_name,
+                            serviceName: service_name,
+                            date: formatDateES(date),
+                            time,
+                            staffName: bookStaff?.name,
+                        });
+
+                        sendSms(resolvedPhone, smsMessage, (masterClient.businessName || "CITALIKS").slice(0, 11))
+                            .then(async (smsResult) => {
+                                console.log(`[retell/function-call] SMS confirmation: ${smsResult.success ? 'sent' : 'failed'} — ${smsResult.error || smsResult.smsId}`);
+                                // Update appointment SMS status in DB (best effort)
+                                if (eventId) {
+                                    try {
+                                        await (activePrisma as any).appointment.update({
+                                            where: { id: eventId },
+                                            data: {
+                                                smsConfirmationSent: smsResult.success,
+                                                smsConfirmationSentAt: smsResult.success ? new Date() : undefined,
+                                            },
+                                        });
+                                    } catch { /* ignore — SMS status is non-critical */ }
+                                }
+                            })
+                            .catch((err) => {
+                                console.error("[retell/function-call] SMS confirmation error:", err?.message);
+                            });
+                    } else {
+                        console.log("[retell/function-call] No phone number — skipping SMS confirmation");
+                    }
                 } else {
                     const msg = `BOOKING_FAILED: ${bookingError} for ${caller_name} at ${time}`;
                     console.error(`[retell/function-call] ${msg}`);
@@ -374,6 +411,25 @@ export async function POST(req: NextRequest) {
                         });
                     } catch (logErr) {
                         console.warn("[retell/function-call] CallLog save failed:", (logErr as any).message);
+                    }
+
+                    // ── SMS Cancellation ────────────────────────────────
+                    // Send cancellation SMS if we have a phone number.
+                    if (cancelResolvedPhone) {
+                        const smsCancelMessage = buildCancellationSms({
+                            businessName: masterClient.businessName || "Tu negocio",
+                            clientName: caller_name || "Cliente",
+                            date: date ? formatDateES(date) : "la fecha indicada",
+                            time,
+                        });
+
+                        sendSms(cancelResolvedPhone, smsCancelMessage, (masterClient.businessName || "CITALIKS").slice(0, 11))
+                            .then((smsResult) => {
+                                console.log(`[retell/function-call] SMS cancellation: ${smsResult.success ? 'sent' : 'failed'} — ${smsResult.error || smsResult.smsId}`);
+                            })
+                            .catch((err) => {
+                                console.error("[retell/function-call] SMS cancellation error:", err?.message);
+                            });
                     }
                 }
 

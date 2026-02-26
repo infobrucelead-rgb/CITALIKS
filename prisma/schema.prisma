@@ -138,6 +138,14 @@ model Appointment {
   notes         String?
   externalId    String?  // ID en Google Calendar o similar
 
+  // SMS Reminders
+  smsConfirmationSent   Boolean   @default(false)
+  smsConfirmationSentAt DateTime?
+  smsReminderSent       Boolean   @default(false)
+  smsReminderSentAt     DateTime?
+  smsCancellationSent   Boolean   @default(false)
+  smsCancellationSentAt DateTime?
+
   client Client @relation(fields: [clientId], references: [id], onDelete: Cascade)
   
   createdAt DateTime @default(now())
