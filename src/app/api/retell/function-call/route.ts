@@ -360,7 +360,7 @@ export async function POST(req: NextRequest) {
                         await activePrisma.callLog.create({
                             data: {
                                 clientId,
-                                callerNumber: resolvedPhone ?? "desconocido",
+                                callerNumber: callerPhoneFromRetell ?? args.caller_number ?? "desconocido",
                                 actionTaken: "cancelled",
                                 summary: `Cita cancelada de ${caller_name} el ${date}`,
                             },
