@@ -1,0 +1,12 @@
+node_modules
+.next
+.env.local
+.env
+dist
+credentials/
+*.log
+retell_debug.log
+tunnel.txt
+tunnel_err.txt
+ngrok.log
+ngrok_err.log

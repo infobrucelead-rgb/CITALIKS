@@ -1,0 +1,179 @@
+// This is your Prisma schema file
+// Learn more about it at: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum UserRole {
+  BUSINESS
+  PLATFORM_ADMIN
+}
+
+model Client {
+  id              String    @id @default(cuid())
+  clerkUserId     String    @unique
+  email           String    @unique
+  role            UserRole  @default(BUSINESS)
+  businessName    String?
+  businessType    String?   // "peluqueria", "medico", "restaurante", etc.
+  city            String?
+  agentName       String?   @default("Asistente")
+  agentTone       String?   @default("profesional") 
+  phone           String?   
+  transferPhone   String?   
+  retellAgentId   String?   
+  netelipNumberId String?   
+  databaseUrl     String?   
+  agentPrompt     String?   @db.Text
+  onboardingStep  Int       @default(0)
+  onboardingDone  Boolean   @default(false)
+  isActive        Boolean   @default(true)
+
+  // Google Calendar OAuth (Configuración maestra del negocio)
+  googleAccessToken  String?  @db.Text
+  googleRefreshToken String?  @db.Text
+  googleTokenExpiry  DateTime?
+  calendarId         String?  @default("primary")
+
+  // Relaciones
+  staff     Staff[]
+  services  Service[]
+  schedules Schedule[]
+  callLogs  CallLog[]
+  appointments Appointment[]
+  botLogs      BotLog[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("clients")
+}
+
+model Staff {
+  id               String  @id @default(cuid())
+  clientId         String
+  name             String
+  email            String?
+  googleCalendarId String? @default("primary")
+  isActive         Boolean @default(true)
+
+  client Client @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  
+  // Relaciones específicas de staff
+  services  Service[]
+  schedules Schedule[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("staff")
+}
+
+model Service {
+  id          String  @id @default(cuid())
+  clientId    String
+  staffId     String? // Opcional: si el servicio es de todo el negocio o de alguien concreto
+  name        String
+  description String?
+  durationMin Int     @default(30)
+  price       Float?
+  isActive    Boolean @default(true)
+
+  client Client @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  staff  Staff? @relation(fields: [staffId], references: [id], onDelete: SetNull)
+
+  @@map("services")
+}
+
+model Schedule {
+  id        String  @id @default(cuid())
+  clientId  String
+  staffId   String? // Opcional: horario general o del profesional
+  dayOfWeek Int     // 0=Lunes, 1=Martes ... 6=Domingo
+  openTime  String  // "09:00"
+  closeTime String  // "20:00"
+  isOpen    Boolean @default(true)
+
+  client Client @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  staff  Staff? @relation(fields: [staffId], references: [id], onDelete: Cascade)
+
+  @@unique([clientId, staffId, dayOfWeek])
+  @@map("schedules")
+}
+
+model CallLog {
+  id            String   @id @default(cuid())
+  clientId      String
+  retellCallId  String?  @unique
+  callerNumber  String?
+  durationSec   Int?
+  summary       String?  @db.Text
+  transcript    String?  @db.Text
+  actionTaken   String?  // "booked", "modified", "cancelled", "transferred", "info"
+  appointmentId String?  // ID del evento en Google Calendar
+
+  client Client @relation(fields: [clientId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+
+  @@map("call_logs")
+}
+
+model Appointment {
+  id            String   @id @default(cuid())
+  clientId      String
+  callerName    String
+  callerPhone   String?
+  serviceName   String
+  staffName     String?
+  date          String   // YYYY-MM-DD
+  time          String   // HH:MM
+  status        String   @default("CONFIRMED") // "CONFIRMED", "CANCELLED"
+  notes         String?
+  externalId    String?  // ID en Google Calendar o similar
+
+  client Client @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("appointments")
+}
+
+model BotLog {
+  id           String   @id @default(cuid())
+  clientId     String
+  functionName String
+  inputArgs    String   @db.Text
+  resultJson   String?  @db.Text
+  slotsFound   Int?
+  scheduleUsed String?  @db.Text
+  errorMsg     String?  @db.Text
+  durationMs   Int?
+  webhookUrl   String?  @db.Text
+  confirmed    Boolean?
+  createdAt    DateTime @default(now())
+
+  client Client @relation(fields: [clientId], references: [id], onDelete: Cascade)
+
+  @@index([clientId])
+  @@map("bot_logs")
+}
+
+model Invitation {
+  id           String   @id @default(cuid())
+  email        String
+  businessName String?
+  token        String   @unique
+  status       String   @default("PENDING") // "PENDING", "ACCEPTED", "EXPIRED"
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@map("invitations")
+}
