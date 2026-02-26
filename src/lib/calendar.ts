@@ -367,26 +367,38 @@ export async function bookAppointment(params: {
 
 export async function cancelAppointment(params: {
     clientId: string;
-    callerName: string;
-    date: string;
+    callerName?: string;    // Optional: search by name
+    callerPhone?: string;   // Optional: search by phone (fallback when name not remembered)
+    date?: string;          // Optional: narrow search by date
     time?: string;
     prismaOverride?: any;
     staffCalendarId?: string;
-}): Promise<{ cancelled: boolean; message: string }> {
+}): Promise<{ cancelled: boolean; message: string; appointmentFound?: boolean }> {
     const db = params.prismaOverride || prisma;
 
     // FIX: Try local DB first (source of truth), then Google Calendar
     // Previous code went directly to Google Calendar and crashed if not connected
 
-    // 1. Cancel in local DB
+    // 1. Cancel in local DB — try by name first, then by phone
     let localCancelled = false;
     try {
+        // Build flexible where clause: match by name OR phone
         const whereClause: any = {
             clientId: params.clientId,
-            callerName: { contains: params.callerName, mode: 'insensitive' },
-            date: params.date,
             status: "CONFIRMED"
         };
+
+        if (params.callerName) {
+            whereClause.callerName = { contains: params.callerName, mode: 'insensitive' };
+        } else if (params.callerPhone) {
+            // Search by last digits of phone for flexibility (e.g. "678" matches "+34612345678")
+            const phoneSuffix = params.callerPhone.replace(/\D/g, '').slice(-9);
+            whereClause.callerPhone = { endsWith: phoneSuffix };
+        }
+
+        if (params.date) {
+            whereClause.date = params.date;
+        }
         if (params.time) {
             whereClause.time = params.time.substring(0, 5);
         }
@@ -418,10 +430,28 @@ export async function cancelAppointment(params: {
     }
 
     if (localCancelled) {
-        return { cancelled: true, message: `Cita del ${params.date} cancelada correctamente` };
+        const dateMsg = params.date ? ` del ${params.date}` : '';
+        return { cancelled: true, appointmentFound: true, message: `Cita${dateMsg} cancelada correctamente` };
     }
 
-    // 2. Fallback: try Google Calendar search if local not found
+    // If no name or phone provided, we cannot search further
+    if (!params.callerName && !params.callerPhone) {
+        return {
+            cancelled: false,
+            appointmentFound: false,
+            message: "Para cancelar necesito al menos tu nombre o el número de teléfono con el que hiciste la reserva."
+        };
+    }
+
+    // 2. Fallback: try Google Calendar search if local not found (only when date is provided)
+    if (!params.date) {
+        return {
+            cancelled: false,
+            appointmentFound: false,
+            message: "No encontré ninguna cita con esos datos. ¿Puedes decirme el día de la cita?"
+        };
+    }
+
     try {
         const { oAuth2Client, calendarId } = await getAuthenticatedClient(params.clientId, db, params.staffCalendarId);
         const calendar = google.calendar({ version: "v3", auth: oAuth2Client });
@@ -433,20 +463,28 @@ export async function cancelAppointment(params: {
             calendarId,
             timeMin: timeMin.toISOString(),
             timeMax: timeMax.toISOString(),
-            q: params.callerName,
+            q: params.callerName ?? params.callerPhone ?? '',
             singleEvents: true,
         });
 
         const events = res.data.items ?? [];
         if (events.length === 0) {
-            return { cancelled: false, message: "No se encontró ninguna cita para esa fecha con ese nombre" };
+            return {
+                cancelled: false,
+                appointmentFound: false,
+                message: "No encontré ninguna cita para esa fecha con esos datos. ¿Puedes confirmar el nombre o el teléfono con el que reservaste?"
+            };
         }
 
         await calendar.events.delete({ calendarId, eventId: events[0].id! });
-        return { cancelled: true, message: `Cita del ${params.date} cancelada correctamente` };
+        return { cancelled: true, appointmentFound: true, message: `Cita del ${params.date} cancelada correctamente` };
     } catch (err) {
         console.warn(`[calendar/cancelAppointment] Google fallback failed:`, (err as any).message);
-        return { cancelled: false, message: "No se encontró ninguna cita para esa fecha" };
+        return {
+            cancelled: false,
+            appointmentFound: false,
+            message: "No encontré ninguna cita para esa fecha. ¿Puedes decirme el número de teléfono con el que reservaste?"
+        };
     }
 }
 

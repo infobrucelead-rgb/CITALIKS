@@ -214,10 +214,10 @@ export async function POST(req: NextRequest) {
                 console.log(`[retell/function-call] Slots found: ${slots.length}`);
 
                 // Include detected phone number in response so the bot can:
-                // a) Confirm it with the caller ("¿Te llamo al +34612345678?")
+                // a) Confirm it with the caller (they called US, so we detected their number)
                 // b) Pass it to book_appointment as caller_phone if confirmed
                 const phoneMsg = callerPhoneFromRetell
-                    ? ` Te estamos llamando desde el número ${callerPhoneFromRetell}. ¿Quieres que usemos este número para la cita o prefieres facilitar otro?`
+                    ? ` Veo que nos llamas desde el número ${callerPhoneFromRetell}. ¿Quieres que guardemos este número para la cita o prefieres indicar otro?`
                     : '';
 
                 result = {
@@ -284,7 +284,7 @@ export async function POST(req: NextRequest) {
                 const { eventId, confirmed, error: bookingError } = await bookAppointment({
                     clientId,
                     callerName: caller_name,
-                    callerPhone: args.caller_number,
+                    callerPhone: resolvedPhone ?? undefined,
                     serviceName: service_name,
                     date,
                     time,
@@ -315,8 +315,10 @@ export async function POST(req: NextRequest) {
                     fs.appendFileSync(logPath, `[${new Date().toISOString()}] ${msg}\n`);
                 }
 
-                const phoneConfirmMsg = resolvedPhone
-                    ? ` Hemos guardado tu número ${resolvedPhone} por si necesitamos contactarte.`
+                // Show only last 3 digits for privacy and conversational agility
+                const phoneLast3 = resolvedPhone ? resolvedPhone.replace(/\D/g, '').slice(-3) : null;
+                const phoneConfirmMsg = phoneLast3
+                    ? ` Hemos guardado tu teléfono acabado en ${phoneLast3} por si necesitamos contactarte.`
                     : '';
 
                 result = {
@@ -341,15 +343,20 @@ export async function POST(req: NextRequest) {
 
             case "cancelar_cita":
             case "cancel_appointment": {
-                const { caller_name, date, time } = args as {
-                    caller_name: string;
-                    date: string;
+                const { caller_name, date, time, caller_phone: cancelPhone } = args as {
+                    caller_name?: string;
+                    date?: string;
                     time?: string;
+                    caller_phone?: string; // Phone provided verbally when caller doesn't remember their name
                 };
+
+                // Resolve phone: Retell real number > verbally provided > null
+                const cancelResolvedPhone = callerPhoneFromRetell ?? cancelPhone ?? null;
 
                 const { cancelled, message } = await cancelAppointment({
                     clientId,
                     callerName: caller_name,
+                    callerPhone: cancelResolvedPhone ?? undefined,
                     date,
                     time,
                     prismaOverride: activePrisma
