@@ -81,7 +81,15 @@ export async function POST(req: NextRequest) {
     const args: any = body.args ?? body.arguments ?? {};
     const clientId = args?.client_id as string;
 
-    console.log(`[retell/function-call] Resolved function_name='${function_name}' clientId='${clientId}'`);
+    // Extract caller phone number from the Retell call object.
+    // Retell exposes it as body.call.from_number for inbound calls.
+    // This is the real phone number of the person calling, not a parameter the LLM passes.
+    const callerPhoneFromRetell: string | null =
+        body.call?.from_number ??
+        body.call?.caller_number ??
+        null;
+
+    console.log(`[retell/function-call] Resolved function_name='${function_name}' clientId='${clientId}' callerPhone='${callerPhoneFromRetell ?? 'unknown'}'`);
 
     if (!clientId) {
         await saveBotLog({
@@ -205,10 +213,18 @@ export async function POST(req: NextRequest) {
 
                 console.log(`[retell/function-call] Slots found: ${slots.length}`);
 
+                // Include detected phone number in response so the bot can:
+                // a) Confirm it with the caller ("¿Te llamo al +34612345678?")
+                // b) Pass it to book_appointment as caller_phone if confirmed
+                const phoneMsg = callerPhoneFromRetell
+                    ? ` Te estamos llamando desde el número ${callerPhoneFromRetell}. ¿Quieres que usemos este número para la cita o prefieres facilitar otro?`
+                    : '';
+
                 result = {
                     available_slots: slotStrings,
                     staff_name: staff?.name || null,
-                    message: slotsMessage,
+                    detected_phone: callerPhoneFromRetell,
+                    message: slotsMessage + phoneMsg,
                 };
 
                 await saveBotLog({
@@ -226,14 +242,28 @@ export async function POST(req: NextRequest) {
 
             case "reservar_cita":
             case "book_appointment": {
-                const { caller_name, service_name, date, time, notes, staff_name } = args as {
+                const { caller_name, service_name, date, time, notes, staff_name, caller_phone } = args as {
                     caller_name: string;
                     service_name: string;
                     date: string;
                     time: string;
                     notes?: string;
                     staff_name?: string;
+                    caller_phone?: string; // Optional: phone number provided verbally by the caller
                 };
+
+                // Phone number resolution priority:
+                // 1. Real phone from Retell (body.call.from_number) — most reliable
+                // 2. Phone provided verbally by the caller during the call (caller_phone arg)
+                // 3. Legacy args.caller_number field
+                // 4. null if none available
+                const resolvedPhone: string | null =
+                    callerPhoneFromRetell ??
+                    caller_phone ??
+                    args.caller_number ??
+                    null;
+
+                console.log(`[retell/function-call] Phone resolution: retell=${callerPhoneFromRetell} verbal=${caller_phone} resolved=${resolvedPhone}`);
 
                 const service = (safeContext.services || []).find(
                     (s: any) => !service_name || s.name.toLowerCase().includes(service_name.toLowerCase())
@@ -270,7 +300,7 @@ export async function POST(req: NextRequest) {
                         await activePrisma.callLog.create({
                             data: {
                                 clientId,
-                                callerNumber: args.caller_number ?? "desconocido",
+                                callerNumber: resolvedPhone ?? "desconocido",
                                 actionTaken: "booked",
                                 appointmentId: eventId,
                                 summary: `Cita ${service_name} para ${caller_name} el ${date} a las ${time}${bookStaff ? ` con ${bookStaff.name}` : ""}`,
@@ -285,10 +315,14 @@ export async function POST(req: NextRequest) {
                     fs.appendFileSync(logPath, `[${new Date().toISOString()}] ${msg}\n`);
                 }
 
+                const phoneConfirmMsg = resolvedPhone
+                    ? ` Hemos guardado tu número ${resolvedPhone} por si necesitamos contactarte.`
+                    : '';
+
                 result = {
                     confirmed,
                     message: confirmed
-                        ? `Perfecto, ${caller_name}. Tu cita de ${service_name}${bookStaff ? ` con ${bookStaff.name}` : ""} queda confirmada para el ${formatDateES(date)} a las ${time}. ¡Hasta pronto!`
+                        ? `Perfecto, ${caller_name}. Tu cita de ${service_name}${bookStaff ? ` con ${bookStaff.name}` : ""} queda confirmada para el ${formatDateES(date)} a las ${time}.${phoneConfirmMsg} ¡Hasta pronto!`
                         : `Lo siento, no he podido confirmar la cita. ${bookingError || "Por favor, intenta con otro horario."}`,
                 };
 
@@ -326,7 +360,7 @@ export async function POST(req: NextRequest) {
                         await activePrisma.callLog.create({
                             data: {
                                 clientId,
-                                callerNumber: args.caller_number ?? "desconocido",
+                                callerNumber: resolvedPhone ?? "desconocido",
                                 actionTaken: "cancelled",
                                 summary: `Cita cancelada de ${caller_name} el ${date}`,
                             },
