@@ -96,7 +96,7 @@ export default function Step6Launch({
                             {
                                 step: "3",
                                 title: "Alternativa: desvío cuando no contestas",
-                                desc: "Si prefieres atender tú primero y que el bot solo actúe cuando no puedas coger la llamada, pide el "desvío por no respuesta" al mismo número.",
+                                desc: "Si prefieres atender tú primero y que el bot solo actúe cuando no puedas coger la llamada, pide el 'desvío por no respuesta' al mismo número.",
                             },
                             {
                                 step: "4",
