@@ -13,8 +13,9 @@ import path from 'path';
 
 function formatDateES(dateStr: string): string {
     try {
-        const d = new Date(`${dateStr}T12:00:00`);
-        return d.toLocaleDateString("es-ES", { weekday: "long", day: "numeric", month: "long" });
+        // FIX: Use UTC noon to avoid day-boundary shift when formatting
+        const d = new Date(`${dateStr}T12:00:00Z`);
+        return d.toLocaleDateString("es-ES", { weekday: "long", day: "numeric", month: "long", timeZone: "Europe/Madrid" });
     } catch { return dateStr; }
 }
 
@@ -59,9 +60,9 @@ export async function POST(req: NextRequest) {
     const logPath = path.join(process.cwd(), 'retell_debug.log');
     const rawBody = await req.text();
     const webhookUrl = req.url || "unknown";
-    const headers = Object.fromEntries(req.headers.entries());
 
-    fs.appendFileSync(logPath, `\n[${new Date().toISOString()}] REQUEST_START: ${webhookUrl}\nHEADERS: ${JSON.stringify(headers)}\nRAW: ${rawBody}\n`);
+    // FIX: Do NOT log full headers (may contain auth tokens) — only log method and URL
+    fs.appendFileSync(logPath, `\n[${new Date().toISOString()}] REQUEST_START: ${webhookUrl}\nRAW: ${rawBody}\n`);
 
     let body: any;
     try {
@@ -125,9 +126,12 @@ export async function POST(req: NextRequest) {
             })
             : masterClient;
 
+        // FIX: If tenant DB lookup returns null, fall back to masterClient to avoid null reference crashes
+        const safeContext = clientContext || masterClient;
+
         const resolveStaff = async (name?: string) => {
             if (!name) return null;
-            const staffList = (clientContext as any).staff || [];
+            const staffList = (safeContext as any).staff || [];
             return staffList.find((s: any) => s.name.toLowerCase().includes(name.toLowerCase())) || null;
         };
 
@@ -143,7 +147,7 @@ export async function POST(req: NextRequest) {
                 };
 
                 // Find service duration
-                const service = (clientContext.services || []).find(
+                const service = (safeContext.services || []).find(
                     (s: any) => !service_name || s.name.toLowerCase().includes(service_name.toLowerCase())
                 );
                 const durationMin = service?.durationMin ?? 30;
@@ -152,10 +156,11 @@ export async function POST(req: NextRequest) {
 
                 console.log(`[retell/function-call] check_availability: date=${date} service=${service_name}(${durationMin}min) staff=${staff?.name || 'none'}`);
 
-                // Find the business-wide schedule for this day (staffId=null only!)
-                const dateObj = new Date(`${date}T12:00:00`);
-                const dayOfWeek = (dateObj.getDay() + 6) % 7;
-                const businessSchedules = (clientContext.schedules || []).filter((s: any) => !s.staffId);
+                // Find the business-wide schedule for this day
+                // FIX: Use UTC noon + getUTCDay() to avoid timezone-induced day shift
+                const dateObj = new Date(`${date}T12:00:00Z`);
+                const dayOfWeek = (dateObj.getUTCDay() + 6) % 7;
+                const businessSchedules = (safeContext.schedules || []).filter((s: any) => !s.staffId);
                 const daySchedule = businessSchedules.find((s: any) => s.dayOfWeek === dayOfWeek);
                 const scheduleUsed = daySchedule
                     ? (daySchedule.isOpen ? `OPEN ${daySchedule.openTime}-${daySchedule.closeTime}` : `CLOSED`)
@@ -209,12 +214,12 @@ export async function POST(req: NextRequest) {
                     staff_name?: string;
                 };
 
-                const service = (clientContext.services || []).find(
+                const service = (safeContext.services || []).find(
                     (s: any) => !service_name || s.name.toLowerCase().includes(service_name.toLowerCase())
                 );
                 const staff = await resolveStaff(staff_name);
 
-                console.log(`[retell/function-call] book_appointment: ${caller_name} ${service_name} ${date} ${time}`);
+                console.log(`[retell/function-call] book_appointment: ${caller_name} | ${service_name} | ${date} | ${time}`);
 
                 const { eventId, confirmed, error: bookingError } = await bookAppointment({
                     clientId,
@@ -352,7 +357,6 @@ export async function POST(req: NextRequest) {
             durationMs: Date.now() - startMs,
             webhookUrl,
         }).catch(() => { });
-
 
         return NextResponse.json({
             error: "Error de ejecución",

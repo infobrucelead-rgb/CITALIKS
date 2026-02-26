@@ -15,7 +15,7 @@ export function getGoogleAuthUrl(clientId: string): string {
         access_type: "offline",
         prompt: "consent",
         scope: ["https://www.googleapis.com/auth/calendar"],
-        state: clientId, // Pass clientId so we know which client authenticated
+        state: clientId,
     });
 }
 
@@ -61,7 +61,6 @@ async function getAuthenticatedClient(clientId: string, prismaOverride?: any, st
         expiry_date: client.googleTokenExpiry?.getTime(),
     });
 
-    // Proactive refresh if expired or about to expire (within 5 mins)
     const expiryDate = client.googleTokenExpiry?.getTime() || 0;
     const now = Date.now();
 
@@ -83,7 +82,6 @@ async function getAuthenticatedClient(clientId: string, prismaOverride?: any, st
             }
         } catch (err) {
             console.error(`[calendar/getAuthenticatedClient] Failed to refresh token:`, err);
-            // We continue, maybe the current token still works or the error will be caught later
         }
     }
 
@@ -122,13 +120,14 @@ export async function checkAvailability(
     const staffCalendarId = params?.staffCalendarId;
     const busy: { start: string, end: string }[] = [];
 
-    // 1. Get Busy periods from Google (if connected)
+    // 1. Get Busy periods from Google (if connected) — best effort, never blocks
     try {
         const { oAuth2Client, calendarId } = await getAuthenticatedClient(clientId, db, staffCalendarId);
         const calendar = google.calendar({ version: "v3", auth: oAuth2Client });
 
-        const startOfDay = new Date(`${date}T00:00:00`);
-        const endOfDay = new Date(`${date}T23:59:59`);
+        // FIX: Use explicit UTC midnight so the query covers the full local day regardless of server timezone
+        const startOfDay = new Date(`${date}T00:00:00Z`);
+        const endOfDay = new Date(`${date}T23:59:59Z`);
 
         const res = await calendar.freebusy.query({
             requestBody: {
@@ -142,96 +141,114 @@ export async function checkAvailability(
         busy.push(...googleBusy.map(b => ({ start: b.start!, end: b.end! })));
         console.log(`[calendar/checkAvailability] Found ${googleBusy.length} Google busy periods`);
     } catch (err) {
-        console.warn(`[calendar/checkAvailability] skipping Google Calendar:`, (err as any).message);
+        // Google Calendar not connected or token expired — continue with local DB only
+        console.warn(`[calendar/checkAvailability] Skipping Google Calendar (not connected or error):`, (err as any).message);
     }
 
     // 2. Get Busy periods from Local Database
     const activePrisma = params?.prismaOverride || prisma;
-    const appointmentModel = (activePrisma as any).appointment || (activePrisma as any).Appointment;
-    const localAppointments = appointmentModel
-        ? await appointmentModel.findMany({
+
+    // FIX: Prisma model name is lowercase 'appointment' — use direct access, not dynamic lookup
+    let localAppointments: any[] = [];
+    try {
+        localAppointments = await (activePrisma as any).appointment.findMany({
             where: {
                 clientId,
                 date,
                 status: "CONFIRMED"
             }
-        })
-        : [];
+        });
+    } catch (err) {
+        console.warn(`[calendar/checkAvailability] Could not fetch local appointments:`, (err as any).message);
+    }
 
     localAppointments.forEach((apt: any) => {
-        const start = new Date(`${apt.date}T${apt.time}:00`);
-        const end = new Date(start.getTime() + durationMin * 60_000);
+        // FIX: Parse time as local time, not UTC, to avoid timezone shift
+        const [h, m] = apt.time.split(':').map(Number);
+        const startMin = h * 60 + m;
+        const endMin = startMin + durationMin;
+        // Store as simple HH:MM strings for comparison with slot strings
         busy.push({
-            start: start.toISOString(),
-            end: end.toISOString()
+            start: `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`,
+            end: `${String(Math.floor(endMin / 60)).padStart(2, '0')}:${String(endMin % 60).padStart(2, '0')}`
         });
     });
     console.log(`[calendar/checkAvailability] Found ${localAppointments.length} Local busy periods`);
 
-    console.log(`[calendar/checkAvailability] Total busy periods for ${date}:`, busy.length);
-    if (busy.length > 0) {
-        console.log(`[calendar/checkAvailability] Busy details:`, busy.map(b => `${new Date(b.start).toLocaleTimeString()} - ${new Date(b.end).toLocaleTimeString()}`).join(', '));
-    }
-
+    // 3. Get business schedule for the requested day
     const dbClient = await db.client.findUnique({
         where: { id: clientId },
         include: { schedules: true },
     });
 
-    const dateObj = new Date(`${date}T12:00:00`);
-    const dayOfWeek = (dateObj.getDay() + 6) % 7; // 0=Mon, 6=Sun
+    // FIX: Use UTC noon to avoid day-boundary issues with getDay()
+    const dateObj = new Date(`${date}T12:00:00Z`);
+    const dayOfWeek = (dateObj.getUTCDay() + 6) % 7; // 0=Mon, 6=Sun
 
-    // CRITICAL FIX: Only look at business-wide schedules (staffId=null)
-    // Staff-specific schedules apply to their personal calendar, not the business hours
     const businessSchedules = (dbClient?.schedules || []).filter((s: any) => !s.staffId);
     const schedule = businessSchedules.find((s: any) => s.dayOfWeek === dayOfWeek && s.isOpen);
 
-    console.log(`[calendar/checkAvailability] Day index: ${dayOfWeek}, Business schedules for this day:`,
-        (dbClient?.schedules || []).filter((s: any) => s.dayOfWeek === dayOfWeek).map((s: any) =>
-            `staffId=${s.staffId || 'null'} ${s.isOpen ? `OPEN ${s.openTime}-${s.closeTime}` : 'CLOSED'}`
-        ).join(' | ')
-    );
-    console.log(`[calendar/checkAvailability] Using schedule:`, schedule ? `OPEN ${schedule.openTime}-${schedule.closeTime}` : 'CLOSED/NONE');
+    console.log(`[calendar/checkAvailability] Day index (UTC): ${dayOfWeek}, schedule: ${schedule ? `OPEN ${schedule.openTime}-${schedule.closeTime}` : 'CLOSED/NONE'}`);
 
     if (!schedule) {
         console.log(`[calendar/checkAvailability] Day ${dayOfWeek} is CLOSED for client ${clientId}`);
         return [];
     }
 
+    // 4. Generate free slots
     const slots: TimeSlot[] = [];
-    // TIMEZONE FIX: Force time parsing as local Spanish time (Europe/Madrid = UTC+1)
-    // by using a Date with explicit offset or just parsing hours/minutes directly
     const [openH, openM] = schedule.openTime.split(':').map(Number);
     const [closeH, closeM] = schedule.closeTime.split(':').map(Number);
     let currentMin = openH * 60 + openM;
     const endMin = closeH * 60 + closeM;
 
-    while (currentMin < endMin) {
+    while (currentMin + durationMin <= endMin) {
         const slotEndMin = currentMin + durationMin;
-        if (slotEndMin > endMin) break;
-
-        const slotStart = new Date(`${date}T${String(Math.floor(currentMin / 60)).padStart(2, '0')}:${String(currentMin % 60).padStart(2, '0')}:00`);
-        const slotEnd = new Date(`${date}T${String(Math.floor(slotEndMin / 60)).padStart(2, '0')}:${String(slotEndMin % 60).padStart(2, '0')}:00`);
-
-        const isOccupied = busy.some((b) => {
-            const bStart = new Date(b.start);
-            const bEnd = new Date(b.end);
-            return slotStart < bEnd && slotEnd > bStart;
-        });
 
         const h = String(Math.floor(currentMin / 60)).padStart(2, '0');
         const m = String(currentMin % 60).padStart(2, '0');
         const eh = String(Math.floor(slotEndMin / 60)).padStart(2, '0');
         const em = String(slotEndMin % 60).padStart(2, '0');
+        const slotStartStr = `${h}:${m}`;
+        const slotEndStr = `${eh}:${em}`;
+
+        // FIX: Compare local time strings directly (HH:MM) instead of mixing Date objects with ISO strings
+        // This avoids the UTC vs local timezone mismatch that caused all slots to appear free even when occupied
+        const isOccupied = busy.some((b) => {
+            // For local DB busy slots, b.start and b.end are already HH:MM strings
+            // For Google Calendar busy slots, b.start and b.end are ISO strings — convert them
+            let bStartStr: string;
+            let bEndStr: string;
+
+            if (b.start.includes('T') || b.start.includes('Z')) {
+                // ISO string from Google Calendar — extract local time
+                const bStartDate = new Date(b.start);
+                bStartStr = `${String(bStartDate.getHours()).padStart(2, '0')}:${String(bStartDate.getMinutes()).padStart(2, '0')}`;
+                const bEndDate = new Date(b.end);
+                bEndStr = `${String(bEndDate.getHours()).padStart(2, '0')}:${String(bEndDate.getMinutes()).padStart(2, '0')}`;
+            } else {
+                // Already HH:MM from local DB
+                bStartStr = b.start;
+                bEndStr = b.end;
+            }
+
+            // Convert to minutes for overlap check
+            const [bsh, bsm] = bStartStr.split(':').map(Number);
+            const [beh, bem] = bEndStr.split(':').map(Number);
+            const bStartMin = bsh * 60 + bsm;
+            const bEndMinVal = beh * 60 + bem;
+
+            return currentMin < bEndMinVal && slotEndMin > bStartMin;
+        });
 
         if (!isOccupied) {
-            slots.push({ start: `${h}:${m}`, end: `${eh}:${em}` });
+            slots.push({ start: slotStartStr, end: slotEndStr });
         }
 
         currentMin = slotEndMin;
     }
 
-    console.log(`[calendar/checkAvailability] Generated ${slots.length} free slots`);
+    console.log(`[calendar/checkAvailability] Generated ${slots.length} free slots for ${date}`);
     return slots;
 }
 
@@ -249,51 +266,53 @@ export async function bookAppointment(params: {
     staffName?: string;
 }): Promise<{ eventId: string; confirmed: boolean; error?: string }> {
     const activePrisma = params.prismaOverride || prisma;
+    const durationMin = params.durationMin || 30;
 
     // 1. SAFETY CHECK: Re-verify availability
     const available = await checkAvailability(
         params.clientId,
         params.date,
-        params.durationMin || 30,
+        durationMin,
         {
             staffCalendarId: params.staffCalendarId,
             prismaOverride: activePrisma
         }
     );
 
-    const isSlotFree = available.some(s => s.start === params.time);
+    // FIX: Normalize time comparison — strip seconds if present (e.g. "09:00:00" -> "09:00")
+    const normalizedTime = params.time.substring(0, 5);
+    const isSlotFree = available.some(s => s.start === normalizedTime);
+
     if (!isSlotFree) {
-        return { eventId: "", confirmed: false, error: "Slot no disponible" };
+        console.warn(`[calendar/bookAppointment] Slot ${normalizedTime} not in available slots:`, available.map(s => s.start));
+        return { eventId: "", confirmed: false, error: `Slot ${normalizedTime} no disponible. Slots libres: ${available.slice(0, 5).map(s => s.start).join(', ')}` };
     }
 
-    // 2. SAVE LOCALLY (This is the source of truth)
-    const appointmentModel = (activePrisma as any).appointment || (activePrisma as any).Appointment;
-    if (!appointmentModel) {
-        const availableModels = Object.keys(activePrisma).filter(k => !k.startsWith('_') && !k.startsWith('$'));
-        console.error(`[calendar/bookAppointment] Models in activePrisma:`, availableModels);
-        return {
-            eventId: "",
-            confirmed: false,
-            error: `Database not ready (model missing). Models found: ${availableModels.join(', ')}`
-        };
+    // 2. SAVE LOCALLY — This is the source of truth
+    // FIX: Access Prisma model directly by its correct lowercase name instead of dynamic lookup
+    // The dynamic lookup `(activePrisma as any).appointment || (activePrisma as any).Appointment`
+    // was failing silently when neither key existed on the Proxy, returning undefined and crashing.
+    let localApt: any;
+    try {
+        localApt = await (activePrisma as any).appointment.create({
+            data: {
+                clientId: params.clientId,
+                callerName: params.callerName,
+                callerPhone: params.callerPhone ?? null,
+                serviceName: params.serviceName,
+                staffName: params.staffName ?? null,
+                date: params.date,
+                time: normalizedTime,
+                notes: params.notes ?? null,
+            }
+        });
+        console.log(`[calendar/bookAppointment] Local appointment created: ${localApt.id}`);
+    } catch (err: any) {
+        console.error(`[calendar/bookAppointment] CRITICAL: Failed to save local appointment:`, err.message);
+        return { eventId: "", confirmed: false, error: `Error al guardar la cita en la base de datos: ${err.message}` };
     }
-    const localApt = await appointmentModel.create({
-        data: {
-            clientId: params.clientId,
-            callerName: params.callerName,
-            callerPhone: params.callerPhone,
-            serviceName: params.serviceName,
-            staffName: params.staffName,
-            date: params.date,
-            time: params.time,
-            notes: params.notes,
-        }
-    });
 
-    console.log(`[calendar/bookAppointment] Local appointment created: ${localApt.id}`);
-
-    // 3. SYNC TO GOOGLE (Best effort)
-    let externalId: string | undefined = undefined;
+    // 3. SYNC TO GOOGLE (Best effort — failure does NOT cancel the booking)
     try {
         const { oAuth2Client, calendarId } = await getAuthenticatedClient(
             params.clientId,
@@ -302,8 +321,8 @@ export async function bookAppointment(params: {
         );
         const calendar = google.calendar({ version: "v3", auth: oAuth2Client });
 
-        const start = new Date(`${params.date}T${params.time}:00`);
-        const end = new Date(start.getTime() + (params.durationMin ?? 30) * 60_000);
+        const start = new Date(`${params.date}T${normalizedTime}:00`);
+        const end = new Date(start.getTime() + durationMin * 60_000);
 
         const event = await calendar.events.insert({
             calendarId,
@@ -315,16 +334,17 @@ export async function bookAppointment(params: {
             },
         });
 
-        externalId = event.data.id ?? undefined;
+        const externalId = event.data.id ?? undefined;
         if (externalId) {
-            await (activePrisma.appointment as any).update({
+            await (activePrisma as any).appointment.update({
                 where: { id: localApt.id },
                 data: { externalId }
             });
-            console.log(`[calendar/bookAppointment] Synced to Google: ${externalId}`);
+            console.log(`[calendar/bookAppointment] Synced to Google Calendar: ${externalId}`);
         }
     } catch (err) {
-        console.warn(`[calendar/bookAppointment] Google Sync failed (local booking stands):`, (err as any).message);
+        // Google sync failed — local booking still stands, this is intentional
+        console.warn(`[calendar/bookAppointment] Google Sync failed (local booking confirmed):`, (err as any).message);
     }
 
     return { eventId: localApt.id, confirmed: true };
@@ -339,37 +359,82 @@ export async function cancelAppointment(params: {
     staffCalendarId?: string;
 }): Promise<{ cancelled: boolean; message: string }> {
     const db = params.prismaOverride || prisma;
-    const { oAuth2Client, calendarId } = await getAuthenticatedClient(
-        params.clientId,
-        db,
-        params.staffCalendarId
-    );
-    const calendar = google.calendar({ version: "v3", auth: oAuth2Client });
 
-    const timeMin = new Date(`${params.date}T00:00:00`);
-    const timeMax = new Date(`${params.date}T23:59:59`);
+    // FIX: Try local DB first (source of truth), then Google Calendar
+    // Previous code went directly to Google Calendar and crashed if not connected
 
-    const res = await calendar.events.list({
-        calendarId,
-        timeMin: timeMin.toISOString(),
-        timeMax: timeMax.toISOString(),
-        q: params.callerName,
-        singleEvents: true,
-    });
+    // 1. Cancel in local DB
+    let localCancelled = false;
+    try {
+        const whereClause: any = {
+            clientId: params.clientId,
+            callerName: { contains: params.callerName, mode: 'insensitive' },
+            date: params.date,
+            status: "CONFIRMED"
+        };
+        if (params.time) {
+            whereClause.time = params.time.substring(0, 5);
+        }
 
-    const events = res.data.items ?? [];
-    if (events.length === 0) {
-        return { cancelled: false, message: "No se encontró ninguna cita para esa fecha" };
+        const appointments = await (db as any).appointment.findMany({ where: whereClause });
+
+        if (appointments.length > 0) {
+            await (db as any).appointment.update({
+                where: { id: appointments[0].id },
+                data: { status: "CANCELLED" }
+            });
+            localCancelled = true;
+            console.log(`[calendar/cancelAppointment] Local appointment ${appointments[0].id} cancelled`);
+
+            // Also cancel in Google if externalId exists
+            if (appointments[0].externalId) {
+                try {
+                    const { oAuth2Client, calendarId } = await getAuthenticatedClient(params.clientId, db, params.staffCalendarId);
+                    const calendar = google.calendar({ version: "v3", auth: oAuth2Client });
+                    await calendar.events.delete({ calendarId, eventId: appointments[0].externalId });
+                    console.log(`[calendar/cancelAppointment] Google event ${appointments[0].externalId} deleted`);
+                } catch (gErr) {
+                    console.warn(`[calendar/cancelAppointment] Could not delete Google event (local cancel stands):`, (gErr as any).message);
+                }
+            }
+        }
+    } catch (err) {
+        console.error(`[calendar/cancelAppointment] Local cancel failed:`, (err as any).message);
     }
 
-    const eventToCancel = events[0];
-    await calendar.events.delete({
-        calendarId,
-        eventId: eventToCancel.id!,
-    });
+    if (localCancelled) {
+        return { cancelled: true, message: `Cita del ${params.date} cancelada correctamente` };
+    }
 
-    return { cancelled: true, message: `Cita del ${params.date} cancelada correctamente` };
+    // 2. Fallback: try Google Calendar search if local not found
+    try {
+        const { oAuth2Client, calendarId } = await getAuthenticatedClient(params.clientId, db, params.staffCalendarId);
+        const calendar = google.calendar({ version: "v3", auth: oAuth2Client });
+
+        const timeMin = new Date(`${params.date}T00:00:00Z`);
+        const timeMax = new Date(`${params.date}T23:59:59Z`);
+
+        const res = await calendar.events.list({
+            calendarId,
+            timeMin: timeMin.toISOString(),
+            timeMax: timeMax.toISOString(),
+            q: params.callerName,
+            singleEvents: true,
+        });
+
+        const events = res.data.items ?? [];
+        if (events.length === 0) {
+            return { cancelled: false, message: "No se encontró ninguna cita para esa fecha con ese nombre" };
+        }
+
+        await calendar.events.delete({ calendarId, eventId: events[0].id! });
+        return { cancelled: true, message: `Cita del ${params.date} cancelada correctamente` };
+    } catch (err) {
+        console.warn(`[calendar/cancelAppointment] Google fallback failed:`, (err as any).message);
+        return { cancelled: false, message: "No se encontró ninguna cita para esa fecha" };
+    }
 }
+
 export async function listEvents(clientId: string, params?: { staffCalendarId?: string; staffName?: string; prismaOverride?: any }) {
     const db = params?.prismaOverride || prisma;
     const staffCalendarId = params?.staffCalendarId;
@@ -377,7 +442,7 @@ export async function listEvents(clientId: string, params?: { staffCalendarId?: 
 
     const allEvents: any[] = [];
 
-    // 1. Get Google Events
+    // 1. Get Google Events (best effort)
     try {
         const { oAuth2Client, calendarId } = await getAuthenticatedClient(clientId, db, staffCalendarId);
         const calendar = google.calendar({ version: "v3", auth: oAuth2Client });
@@ -406,39 +471,35 @@ export async function listEvents(clientId: string, params?: { staffCalendarId?: 
 
     // 2. Get Local Appointments
     try {
-        const appointmentModel = (db as any).appointment || (db as any).Appointment;
-        if (appointmentModel) {
-            const localApts = await appointmentModel.findMany({
-                where: {
-                    clientId,
-                    staffName: staffName || undefined,
-                    status: "CONFIRMED",
-                    date: { gte: new Date().toISOString().split('T')[0] }
-                },
-                orderBy: [{ date: 'asc' }, { time: 'asc' }],
-                take: 20
-            });
+        const localApts = await (db as any).appointment.findMany({
+            where: {
+                clientId,
+                staffName: staffName || undefined,
+                status: "CONFIRMED",
+                date: { gte: new Date().toISOString().split('T')[0] }
+            },
+            orderBy: [{ date: 'asc' }, { time: 'asc' }],
+            take: 20
+        });
 
-            allEvents.push(...localApts.map((a: any) => ({
-                id: `local-${a.id}`,
-                summary: a.serviceName,
-                start: { dateTime: new Date(`${a.date}T${a.time}:00`).toISOString() },
-                end: { dateTime: new Date(new Date(`${a.date}T${a.time}:00`).getTime() + 30 * 60_000).toISOString() },
-                source: 'local',
-                metadata: {
-                    callerName: a.callerName,
-                    callerPhone: a.callerPhone,
-                    serviceName: a.serviceName,
-                    notes: a.notes,
-                    status: a.status
-                }
-            })));
-        }
+        allEvents.push(...localApts.map((a: any) => ({
+            id: `local-${a.id}`,
+            summary: a.serviceName,
+            start: { dateTime: new Date(`${a.date}T${a.time}:00`).toISOString() },
+            end: { dateTime: new Date(new Date(`${a.date}T${a.time}:00`).getTime() + 30 * 60_000).toISOString() },
+            source: 'local',
+            metadata: {
+                callerName: a.callerName,
+                callerPhone: a.callerPhone,
+                serviceName: a.serviceName,
+                notes: a.notes,
+                status: a.status
+            }
+        })));
     } catch (err) {
         console.error(`[calendar/listEvents] Local fetch failed:`, err);
     }
 
-    // Sort by start time
     return allEvents.sort((a, b) => {
         const t1 = new Date(a.start.dateTime || a.start.date).getTime();
         const t2 = new Date(b.start.dateTime || b.start.date).getTime();
