@@ -376,3 +376,48 @@ export async function updateRetellAgent(
 export async function deleteRetellAgent(agentId: string): Promise<void> {
     await retell.agent.delete(agentId);
 }
+
+/**
+ * Vincula un número de teléfono (Netelip/SIP) a un agente de Retell.
+ * El número debe estar en formato E.164 (ej: +34910053385).
+ * Retell permite importar números SIP externos como "phone numbers" y asignarlos a un agente.
+ */
+export async function linkPhoneNumberToAgent(
+    agentId: string,
+    phoneNumber: string
+): Promise<{ success: boolean; phoneNumberId?: string; error?: string }> {
+    try {
+        // Normalizar el número a formato E.164
+        const normalized = phoneNumber.startsWith("+") ? phoneNumber : `+${phoneNumber.replace(/^0+/, "")}`;
+
+        // Intentar importar el número en Retell (si no existe ya)
+        let phoneObj: any;
+        try {
+            // Buscar si el número ya está importado en Retell
+            const existingNumbers = await (retell as any).phoneNumber.list();
+            phoneObj = existingNumbers?.find((p: any) => p.phone_number === normalized);
+        } catch {
+            // Si no hay método list, continuamos
+        }
+
+        if (!phoneObj) {
+            // Importar el número como número externo (SIP/Netelip)
+            phoneObj = await (retell as any).phoneNumber.import({
+                phone_number: normalized,
+                termination_uri: `sip:${normalized.replace("+", "")}@sip.netelip.com`,
+            });
+        }
+
+        // Asignar el número al agente
+        await (retell as any).phoneNumber.update(phoneObj.phone_number_id || phoneObj.id, {
+            inbound_agent_id: agentId,
+        });
+
+        console.log(`[Retell] Número ${normalized} vinculado al agente ${agentId}`);
+        return { success: true, phoneNumberId: phoneObj.phone_number_id || phoneObj.id };
+    } catch (err: any) {
+        console.error("[Retell] Error vinculando número:", err?.message || err);
+        // No lanzamos error — guardamos el número en BD aunque Retell falle
+        return { success: false, error: err?.message || "Error desconocido" };
+    }
+}

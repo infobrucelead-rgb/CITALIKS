@@ -116,6 +116,12 @@ export default function AdminDashboardContent({ clients: initialClients }: { cli
                 if (selectedClient && selectedClient.id === clientId) {
                     setSelectedClient({ ...selectedClient, ...updates });
                 }
+                // Mostrar aviso si el número se guardó pero no se vinculó en Retell
+                if (data.warning) {
+                    alert(`⚠️ ${data.warning}\n\nEl número está guardado en el sistema. Para vincularlo a Retell, asegúrate de que el número esté importado en tu cuenta de Retell.`);
+                } else if (updates.phone) {
+                    alert(`✅ Número ${updates.phone} guardado y vinculado al agente de Retell correctamente.`);
+                }
             } else {
                 alert("Error al actualizar el campo");
             }
