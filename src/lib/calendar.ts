@@ -475,10 +475,19 @@ export async function listEvents(clientId: string, params?: { staffCalendarId?: 
         // new Date().toISOString().split('T')[0] which returns UTC date and can
         // exclude today's appointments in UTC+ timezones (e.g. Spain UTC+1).
         const todayStr = new Date().toLocaleDateString('sv-SE'); // 'sv-SE' gives YYYY-MM-DD in local time
+
+        // FIX: When a staffName filter is provided, also include appointments with
+        // no staffName assigned (bot bookings without explicit staff selection).
+        // Previously, filtering by staffName excluded these unassigned appointments,
+        // making bot-booked citas invisible in the calendar.
+        const staffFilter = staffName
+            ? { OR: [{ staffName }, { staffName: null }] }
+            : {};
+
         const localApts = await (db as any).appointment.findMany({
             where: {
                 clientId,
-                staffName: staffName || undefined,
+                ...staffFilter,
                 status: "CONFIRMED",
                 date: { gte: todayStr }
             },
