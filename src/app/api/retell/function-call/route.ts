@@ -74,8 +74,14 @@ export async function POST(req: NextRequest) {
 
     console.log("[retell/function-call] Incoming:", JSON.stringify(body, null, 2));
 
-    const { function_name, args } = body;
+    // FIX: Retell sends the function name in 'name' (not 'function_name') when the
+    // request comes wrapped inside a 'call' object (tool_call_invocation format).
+    // Support both formats to be robust against Retell API changes.
+    const function_name: string = body.function_name ?? body.name;
+    const args: any = body.args ?? body.arguments ?? {};
     const clientId = args?.client_id as string;
+
+    console.log(`[retell/function-call] Resolved function_name='${function_name}' clientId='${clientId}'`);
 
     if (!clientId) {
         await saveBotLog({
