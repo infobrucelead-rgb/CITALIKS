@@ -29,6 +29,44 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [2026-02-26c] — Sistema de Suscripciones Stripe
+
+### Added
+- **`src/lib/stripe.ts`** — Servicio Stripe completo:
+  - `getOrCreateStripeCustomer` — crea/recupera customer vinculado al email del cliente
+  - `createCheckoutSession` — genera sesión de pago para planes monthly/biannual/annual
+  - `createBillingPortalSession` — portal de facturación para el cliente
+  - `constructWebhookEvent` — verifica firma del webhook
+  - `extractSubscriptionData` — mapea datos de Stripe al modelo interno
+- **`src/app/api/stripe/checkout/route.ts`** — `POST`: crea sesión de checkout (admin o cliente)
+- **`src/app/api/stripe/portal/route.ts`** — `POST`: genera URL del portal de facturación
+- **`src/app/api/stripe/webhook/route.ts`** — Procesa eventos Stripe:
+  - `checkout.session.completed` → activa suscripción y envía email de bienvenida
+  - `customer.subscription.updated` → sincroniza estado, suspende si `past_due`
+  - `customer.subscription.deleted` → cancela y envía email de cancelación
+  - `invoice.payment_succeeded` → reactiva cliente y resetea recordatorio
+  - `invoice.payment_failed` → suspende cliente y envía email de alerta
+- **`src/app/api/stripe/subscription-cron/route.ts`** — Cron diario (08:00):
+  - Envía recordatorio de renovación 7 días antes de expirar
+  - Suspende automáticamente clientes con suscripción expirada
+  - Envía email de suspensión con enlace de renovación
+- **`prisma/migrations/20260226_add_stripe_subscription/migration.sql`** — 11 nuevos campos en `clients`
+
+### Modified
+- **`prisma/schema.prisma`** — 11 nuevos campos en modelo `Client` (stripeCustomerId, stripeSubscriptionId, stripePriceId, subscriptionPlan, subscriptionStatus, subscriptionStart, subscriptionEnd, trialEnd, lastPaymentAt, renewalReminderSent, renewalReminderSentAt)
+- **`AdminDashboardContent.tsx`** — Nueva pestaña **Suscripción** en modal de cliente con estado, fechas, IDs de Stripe, botón de checkout y portal de facturación
+- **`vercel.json`** — Cron diario a las 08:00 para `subscription-cron`
+- **`.env.example`** — Variables `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`, `STRIPE_PRICE_*`
+
+### Setup requerido en producción
+1. Aplicar migrón SQL: `prisma/migrations/20260226_add_stripe_subscription/migration.sql`
+2. Crear productos y precios en Stripe Dashboard
+3. Registrar webhook en Stripe: `POST https://tudominio.com/api/stripe/webhook`
+4. Añadir variables de entorno: `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`, `STRIPE_PRICE_*`
+5. Activar portal de facturación en Stripe Dashboard (Billing > Customer portal)
+
+---
+
 ## [2026-02-26b] — Panel Admin Refactorizado
 
 ### Modified
