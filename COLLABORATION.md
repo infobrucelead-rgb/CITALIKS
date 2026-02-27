@@ -31,3 +31,24 @@ Para mantener una comunicación asíncrona y efectiva, **todos los cambios funci
 
 ---
 *Este documento es una guía viva para asegurar que el código de CITALIKS sea siempre robusto y escalable.*
+
+## 🚀 Despliegue Continuo (CI/CD) con Vercel
+
+El despliegue de CitaLiks se gestiona a través de Vercel, conectado directamente a este repositorio de GitHub. Este sistema automatiza el proceso de build y deploy, garantizando estabilidad y facilidad para revertir cambios.
+
+### Flujo de Despliegue
+
+1.  **Desarrollo en Ramas:** Todo nuevo desarrollo se realiza en una rama separada (`feature/...`, `fix/...`).
+2.  **Pull Request (PR):** Al crear un PR hacia `master`, Vercel genera automáticamente una **URL de preview** aislada. Esta URL permite probar los cambios en un entorno idéntico a producción sin afectar a los usuarios.
+3.  **Revisión y Merge:** Una vez que el PR es revisado y aprobado (y las pruebas en la URL de preview son exitosas), se hace merge a `master`.
+4.  **Deploy a Producción:** El merge a `master` dispara automáticamente un nuevo build y deploy en Vercel. Si el build es exitoso, la nueva versión se publica en el dominio de producción.
+
+### Rollbacks
+
+Si un deploy a producción introduce un bug crítico, se puede revertir a cualquier versión anterior con un solo clic desde el **dashboard de Vercel → Deployments → seleccionar un deploy anterior → "Promote to Production"**.
+
+### Comandos clave
+
+- `npm run dev`: Iniciar el servidor de desarrollo local.
+- `npm run build`: Compilar la aplicación para producción. Vercel ejecuta esto automáticamente. Es importante ejecutarlo en local antes de hacer push para detectar errores de compilación.
+- `npm run start`: Iniciar el servidor de producción localmente (después de un `build` exitoso).
