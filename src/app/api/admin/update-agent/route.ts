@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@clerk/nextjs/server";
 import { prisma } from "@/lib/db";
 import { updateRetellAgent } from "@/lib/retell";
+import fs from "fs";
+import path from "path";
 
 // ── POST: Regenerate Retell agent prompt for a client ─────────────────────
 export async function POST(req: NextRequest) {
@@ -19,7 +21,13 @@ export async function POST(req: NextRequest) {
     try {
         const client = await prisma.client.findUnique({
             where: { id: clientId },
-            include: { services: true, schedules: true }
+            include: {
+                services: true,
+                schedules: true,
+                staff: {
+                    include: { schedules: true }
+                }
+            }
         }) as any;
 
         if (!client) return NextResponse.json({ error: "Cliente no encontrado" }, { status: 404 });
@@ -34,6 +42,8 @@ export async function POST(req: NextRequest) {
             tone: client.agentTone || "profesional",
             services: client.services,
             schedules: client.schedules,
+            staff: client.staff,
+            transferPhone: client.transferPhone,
             webhookUrl: appUrl
         });
 
@@ -46,6 +56,17 @@ export async function POST(req: NextRequest) {
         });
     } catch (error: any) {
         console.error("[Admin/UpdateAgent] Error:", error);
+
+        // Log error to file for diagnosis
+        const logPath = path.join(process.cwd(), "update_error.log");
+        const errorDetails = {
+            timestamp: new Date().toISOString(),
+            message: error.message,
+            stack: error.stack,
+            response: error.response?.data || error.response || "No response data"
+        };
+        fs.appendFileSync(logPath, JSON.stringify(errorDetails, null, 2) + "\n---\n");
+
         return NextResponse.json({ error: "Error al actualizar el agente", message: error.message }, { status: 500 });
     }
 }

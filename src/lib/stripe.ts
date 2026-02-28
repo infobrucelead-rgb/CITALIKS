@@ -35,7 +35,13 @@ export const PLANS: Record<string, { label: string; priceEnvKey: string; months:
         label: "Plan Mensual",
         priceEnvKey: "STRIPE_PRICE_MONTHLY",
         months: 1,
-        price: 0, // filled from Stripe
+        price: 0,
+    },
+    quarterly: {
+        label: "Plan Trimestral",
+        priceEnvKey: "STRIPE_PRICE_QUARTERLY",
+        months: 3,
+        price: 0,
     },
     biannual: {
         label: "Plan Semestral",
@@ -98,32 +104,46 @@ export async function getOrCreateStripeCustomer(params: {
  * Returns the session URL to redirect the customer to.
  */
 export async function createCheckoutSession(params: {
-    customerId: string;
+    customerId?: string;
+    customerEmail?: string;
     priceId: string;
     plan: string;
-    clientId: string;
+    clientId?: string;
     successUrl: string;
     cancelUrl: string;
+    setupPriceId?: string;
     trialDays?: number;
+    metadata?: Record<string, string>;
 }): Promise<string> {
     const stripe = getStripe();
 
+    const lineItems: Stripe.Checkout.SessionCreateParams.LineItem[] = [
+        { price: params.priceId, quantity: 1 }
+    ];
+
+    if (params.setupPriceId) {
+        lineItems.push({ price: params.setupPriceId, quantity: 1 });
+    }
+
     const session = await stripe.checkout.sessions.create({
         customer: params.customerId,
+        customer_email: !params.customerId ? params.customerEmail : undefined,
         mode: "subscription",
-        line_items: [{ price: params.priceId, quantity: 1 }],
+        line_items: lineItems,
         success_url: params.successUrl,
         cancel_url: params.cancelUrl,
         subscription_data: {
             metadata: {
-                citaliks_client_id: params.clientId,
+                ...(params.clientId && { citaliks_client_id: params.clientId }),
                 plan: params.plan,
+                ...(params.metadata || {}),
             },
             ...(params.trialDays ? { trial_period_days: params.trialDays } : {}),
         },
         metadata: {
-            citaliks_client_id: params.clientId,
+            ...(params.clientId && { citaliks_client_id: params.clientId }),
             plan: params.plan,
+            ...(params.metadata || {}),
         },
         allow_promotion_codes: true,
         billing_address_collection: "auto",

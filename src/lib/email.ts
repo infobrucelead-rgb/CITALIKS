@@ -1,4 +1,5 @@
 import nodemailer from 'nodemailer';
+import path from 'path';
 
 const transporter = nodemailer.createTransport({
     host: process.env.SMTP_HOST,
@@ -10,11 +11,26 @@ const transporter = nodemailer.createTransport({
     },
 });
 
-export async function sendEmail({ to, subject, html }: { to: string; subject: string; html: string }) {
+export async function sendEmail({ to, subject, html, attachments = [] }: {
+    to: string;
+    subject: string;
+    html: string;
+    attachments?: any[];
+}) {
     const from = process.env.SMTP_FROM || `"CitaLiks" <${process.env.SMTP_USER}>`;
 
+    // Default logo attachment if not provided
+    const logoPath = path.join(process.cwd(), 'public', 'logo.png');
+    const finalAttachments = [
+        {
+            filename: 'logo.png',
+            path: logoPath,
+            cid: 'logo' // matches <img src="cid:logo">
+        },
+        ...attachments
+    ];
+
     console.log(`[Email] Intentando enviar a ${to} desde ${from}...`);
-    console.log(`[Email] Config: ${process.env.SMTP_HOST}:${process.env.SMTP_PORT} (User: ${process.env.SMTP_USER})`);
 
     try {
         const info = await transporter.sendMail({
@@ -22,6 +38,7 @@ export async function sendEmail({ to, subject, html }: { to: string; subject: st
             to,
             subject,
             html,
+            attachments: finalAttachments
         });
         console.log('[Email] Enviado con éxito! ID:', info.messageId);
         return { success: true, messageId: info.messageId };

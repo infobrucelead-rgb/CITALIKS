@@ -44,7 +44,7 @@ export async function POST(req: NextRequest) {
         html: `
             <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #eee; border-radius: 10px; background-color: #f9fafb;">
                 <div style="text-align: center; margin-bottom: 25px;">
-                    <img src="https://i.ibb.co/C5Vf4xZ/logo-citaliks.png" alt="CitaLiks" style="max-width: 200px; height: auto;" />
+                    <img src="cid:logo" alt="CitaLiks" style="max-width: 200px; height: auto;" />
                 </div>
                 <div style="background-color: white; padding: 35px; border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); border: 1px solid #e5e7eb;">
                     <h1 style="color: #111827; margin-top: 0; font-size: 24px; text-align: center; font-weight: 800; letter-spacing: -0.025em;">¡Bienvenido a la revolución de las citas!</h1>

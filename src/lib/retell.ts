@@ -11,7 +11,12 @@ export interface AgentConfig {
     tone: string;
     services: Array<{ name: string; durationMin: number; price?: number | null }>;
     schedules: Array<{ dayOfWeek: number; openTime: string; closeTime: string; isOpen: boolean }>;
-    staff: Array<{ id: string; name: string; googleCalendarId?: string | null }>;
+    staff: Array<{
+        id: string;
+        name: string;
+        googleCalendarId?: string | null;
+        schedules?: Array<{ dayOfWeek: number; openTime: string; closeTime: string; isOpen: boolean }>;
+    }>;
     webhookUrl: string;
     transferPhone?: string | null;
 }
@@ -50,7 +55,13 @@ function generateSystemPrompt(config: AgentConfig): string {
         .join("\n") || "- Consulta los servicios disponibles";
 
     const staffTxt = (staff || [])
-        .map((s) => `- ${s.name}`)
+        .map((s) => {
+            const staffSchedules = (s.schedules || [])
+                .filter(sched => sched.isOpen)
+                .map(sched => `  - ${DAY_NAMES[sched.dayOfWeek]}: ${sched.openTime} a ${sched.closeTime}`)
+                .join("\n");
+            return `- ${s.name}${staffSchedules ? `. Horario específico:\n${staffSchedules}` : ""}`;
+        })
         .join("\n") || "- Equipo disponible";
 
     const now = new Date();
@@ -303,7 +314,7 @@ async function createRetellLLM(
         tools.push({
             type: "transfer_call",
             name: "transfer_call",
-            number: transferNumber,
+            transfer_destination: transferNumber,
             description: "Transfiere la llamada a una persona si el cliente lo solicita o si hay problemas técnicos que no puedes resolver."
         });
     }
@@ -337,8 +348,8 @@ export async function updateRetellAgent(
 
     const fullConfig: AgentConfig = {
         clientId: config.clientId!,
-        businessName: config.businessName || agent.agent_name.split(' — ')[0],
-        agentName: config.agentName || agent.agent_name.split(' — ')[1],
+        businessName: config.businessName || agent.agent_name?.split(' — ')[0] || "Negocio",
+        agentName: config.agentName || agent.agent_name?.split(' — ')[1] || "Asistente",
         tone: config.tone || "profesional",
         services: config.services || [],
         schedules: config.schedules || [],
@@ -346,6 +357,10 @@ export async function updateRetellAgent(
         webhookUrl: config.webhookUrl || process.env.NEXT_PUBLIC_APP_URL!,
         transferPhone: config.transferPhone
     };
+
+    if (!llmId) {
+        throw new Error(`No se encontró LLM ID para el agente ${agentId}`);
+    }
 
     const systemPrompt = generateSystemPrompt(fullConfig);
 
@@ -421,13 +436,14 @@ export async function updateRetellAgent(
         tools.push({
             type: "transfer_call",
             name: "transfer_call",
-            number: fullConfig.transferPhone,
+            transfer_destination: fullConfig.transferPhone,
             description: "Transfiere la llamada a una persona si el cliente lo solicita o si hay problemas técnicos que no puedes resolver."
         });
     }
 
     // Update LLM with new prompt and tools
     await retell.llm.update(llmId, {
+        model: "gpt-4o",
         general_prompt: systemPrompt,
         states: [
             {

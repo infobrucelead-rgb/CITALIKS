@@ -7,9 +7,26 @@ export default async function DashboardPage() {
     const { userId } = await auth();
     if (!userId) redirect("/sign-in");
 
-    const masterClient = await prisma.client.findUnique({
+    let masterClient = await prisma.client.findUnique({
         where: { clerkUserId: userId },
     });
+
+    // AUTO-CREATE FIRST USER AS ADMIN FOR LOCAL DEV
+    if (!masterClient) {
+        const userCount = await prisma.client.count();
+        if (userCount === 0) {
+            masterClient = await prisma.client.create({
+                data: {
+                    clerkUserId: userId,
+                    email: "admin@citaliks.com", // Dummy email para el admin local
+                    role: "PLATFORM_ADMIN",
+                    onboardingDone: true,
+                    businessName: "CitaLiks Admin",
+                    isActive: true,
+                }
+            });
+        }
+    }
 
     if (!masterClient || !masterClient.onboardingDone) {
         redirect("/onboarding");

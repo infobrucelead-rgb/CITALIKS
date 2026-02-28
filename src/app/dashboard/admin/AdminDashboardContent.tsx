@@ -9,13 +9,24 @@ import {
 } from "lucide-react";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
-type TabType = "clients" | "invitations" | "appointments";
+type TabType = "clients" | "prospects" | "invitations" | "appointments";
 type ClientDetailTab = "info" | "activity" | "appointments" | "subscription";
 
 // ─── Main Component ───────────────────────────────────────────────────────────
 export default function AdminDashboardContent({ clients: initialClients }: { clients: any[] }) {
     const [clients, setClients] = React.useState(initialClients);
     const [invitations, setInvitations] = React.useState<any[]>([]);
+    const [prospects, setProspects] = React.useState<any[]>([]);
+    const [loadingProspects, setLoadingProspects] = React.useState(false);
+    const [isInviteModalOpen, setIsInviteModalOpen] = React.useState(false);
+    const [inviteForm, setInviteForm] = React.useState({
+        email: "",
+        name: "",
+        phone: "",
+        plan: "biannual",
+        notes: ""
+    });
+    const [sendingInvite, setSendingInvite] = React.useState(false);
     const [activeTab, setActiveTab] = React.useState<TabType>("clients");
     const [selectedClient, setSelectedClient] = React.useState<any>(null);
     const [clientDetailTab, setClientDetailTab] = React.useState<ClientDetailTab>("info");
@@ -32,6 +43,7 @@ export default function AdminDashboardContent({ clients: initialClients }: { cli
     const [appointments, setAppointments] = React.useState<any[]>([]);
     const [loadingAppointments, setLoadingAppointments] = React.useState(false);
     const [appointmentFilter, setAppointmentFilter] = React.useState("all");
+    const [selectedClientFilter, setSelectedClientFilter] = React.useState("all");
     const [creatingCheckout, setCreatingCheckout] = React.useState(false);
     const [openingPortal, setOpeningPortal] = React.useState(false);
 
@@ -62,6 +74,7 @@ export default function AdminDashboardContent({ clients: initialClients }: { cli
     // ── Data fetching ─────────────────────────────────────────────────────────
     React.useEffect(() => {
         if (activeTab === "invitations") fetchInvitations();
+        if (activeTab === "prospects") fetchProspects();
         if (activeTab === "appointments") fetchAllAppointments();
     }, [activeTab]);
 
@@ -73,6 +86,20 @@ export default function AdminDashboardContent({ clients: initialClients }: { cli
             if (data.invitations) setInvitations(data.invitations);
         } catch (err) {
             console.error("Error fetching invitations:", err);
+        }
+    };
+
+    const fetchProspects = async () => {
+        setLoadingProspects(true);
+        try {
+            const res = await fetch("/api/admin/send-payment-link");
+            if (!res.ok) return;
+            const data = await res.json();
+            if (data.prospects) setProspects(data.prospects);
+        } catch (err) {
+            console.error("Error fetching prospects:", err);
+        } finally {
+            setLoadingProspects(false);
         }
     };
 
@@ -236,8 +263,10 @@ export default function AdminDashboardContent({ clients: initialClients }: { cli
             });
             const data = await res.json();
             if (res.ok && data.url) {
+                if (data.sent) {
+                    showToast("Enlace enviado al cliente por Email y SMS");
+                }
                 window.open(data.url, "_blank");
-                showToast("Sesión de pago creada. Abriendo en nueva pestaña...");
             } else {
                 showToast(data.error || "Error al crear sesión de pago", "err");
             }
@@ -303,22 +332,27 @@ export default function AdminDashboardContent({ clients: initialClients }: { cli
         }
     };
 
-    const handleInvite = async () => {
-        const email = prompt("Email del cliente a invitar:");
-        if (!email) return;
-        const businessName = prompt("Nombre del negocio:");
+    const handleSendInviteLink = async () => {
+        setSendingInvite(true);
         try {
-            const res = await fetch("/api/admin/invite", {
+            const res = await fetch("/api/admin/send-payment-link", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ email, businessName })
+                body: JSON.stringify(inviteForm)
             });
+            const data = await res.json();
             if (res.ok) {
-                showToast(`Invitación enviada a ${email}`);
-                if (activeTab === "invitations") fetchInvitations();
+                showToast("Invitación y enlace de pago enviados correctamente");
+                setIsInviteModalOpen(false);
+                setInviteForm({ email: "", name: "", phone: "", plan: "biannual", notes: "" });
+                if (activeTab === "prospects") fetchProspects();
+            } else {
+                showToast(data.error || "Error al enviar", "err");
             }
         } catch (err) {
-            showToast("Error al enviar invitación", "err");
+            showToast("Error de conexión", "err");
+        } finally {
+            setSendingInvite(false);
         }
     };
 
@@ -356,13 +390,9 @@ export default function AdminDashboardContent({ clients: initialClients }: { cli
                         </div>
                     </div>
                     <div className="flex gap-3">
-                        <button onClick={handleInvite} className="px-5 py-2.5 rounded-xl bg-white/5 border border-white/10 hover:bg-white/10 transition-colors flex items-center gap-2 font-bold text-sm">
-                            <Plus size={16} /> Invitar Cliente
+                        <button onClick={() => setIsInviteModalOpen(true)} className="px-5 py-2.5 rounded-xl bg-blue-600 shadow-lg shadow-blue-600/20 hover:bg-blue-500 transition-all flex items-center gap-2 font-bold text-sm">
+                            <Plus size={16} /> Enviar Invitación / Enlace
                         </button>
-                        <div className="px-5 py-2.5 rounded-xl bg-blue-600 shadow-lg shadow-blue-600/20 flex items-center gap-2">
-                            <ShieldCheck size={16} />
-                            <span className="font-bold text-sm">Super Admin</span>
-                        </div>
                     </div>
                 </header>
 
@@ -376,10 +406,10 @@ export default function AdminDashboardContent({ clients: initialClients }: { cli
 
                 {/* Tabs */}
                 <div className="flex gap-1 mb-6 bg-white/[0.03] p-1 rounded-2xl w-fit border border-white/5">
-                    {(["clients", "invitations", "appointments"] as TabType[]).map(tab => (
+                    {(["clients", "prospects", "invitations", "appointments"] as TabType[]).map(tab => (
                         <button key={tab} onClick={() => setActiveTab(tab)}
                             className={`px-5 py-2 rounded-xl text-sm font-bold transition-all ${activeTab === tab ? "bg-blue-600 text-white shadow-lg shadow-blue-600/20" : "text-white/40 hover:text-white"}`}>
-                            {tab === "clients" ? "Negocios" : tab === "invitations" ? "Invitaciones" : "Citas"}
+                            {tab === "clients" ? "Negocios Activos" : tab === "prospects" ? "Leads / Pagos" : tab === "invitations" ? "Invitaciones" : "Citas Globales"}
                         </button>
                     ))}
                 </div>
@@ -491,6 +521,70 @@ export default function AdminDashboardContent({ clients: initialClients }: { cli
                     </div>
                 )}
 
+                {/* ── Tab: Prospects (Leads) ─────────────────────────────────── */}
+                {activeTab === "prospects" && (
+                    <div className="space-y-4">
+                        <div className="flex justify-between items-center">
+                            <h2 className="text-lg font-bold">Leads y Enlaces de Pago</h2>
+                            <button onClick={fetchProspects} className="p-2 text-white/40 hover:text-white transition-colors rounded-lg hover:bg-white/5">
+                                <RefreshCw size={16} className={loadingProspects ? "animate-spin" : ""} />
+                            </button>
+                        </div>
+                        <div className="rounded-[1.5rem] overflow-hidden border border-white/5 bg-white/[0.02]">
+                            <table className="w-full text-left text-sm">
+                                <thead>
+                                    <tr className="border-b border-white/5 bg-white/[0.02]">
+                                        <th className="p-5 font-black text-white/30 uppercase text-[10px] tracking-widest">Prospecto</th>
+                                        <th className="p-5 font-black text-white/30 uppercase text-[10px] tracking-widest">Plan</th>
+                                        <th className="p-5 font-black text-white/30 uppercase text-[10px] tracking-widest text-center">Estado</th>
+                                        <th className="p-5 font-black text-white/30 uppercase text-[10px] tracking-widest">Último Envío</th>
+                                        <th className="p-5 font-black text-white/30 uppercase text-[10px] tracking-widest text-right">Acciones</th>
+                                    </tr>
+                                </thead>
+                                <tbody className="divide-y divide-white/5">
+                                    {prospects.length === 0 ? (
+                                        <tr><td colSpan={5} className="p-10 text-center text-white/20 italic">No hay prospectos registrados</td></tr>
+                                    ) : prospects.map(prospect => (
+                                        <tr key={prospect.id} className="hover:bg-white/[0.02] transition-colors">
+                                            <td className="p-5">
+                                                <p className="font-bold">{prospect.name}</p>
+                                                <p className="text-[10px] text-white/40 font-mono">{prospect.email}</p>
+                                            </td>
+                                            <td className="p-5">
+                                                <span className="px-2 py-1 rounded-md bg-blue-600/10 border border-blue-600/20 text-blue-400 text-[10px] font-black uppercase">
+                                                    {prospect.plan}
+                                                </span>
+                                            </td>
+                                            <td className="p-5 text-center">
+                                                <span className={`px-3 py-1 rounded-full text-[10px] font-black uppercase ${prospect.status === "paid" ? "bg-emerald-500/10 text-emerald-400 border border-emerald-500/20" : "bg-white/5 text-white/40 border border-white/10"}`}>
+                                                    {prospect.status === "paid" ? "Pagado" : "Pendiente"}
+                                                </span>
+                                            </td>
+                                            <td className="p-5 text-white/40 text-xs">
+                                                {prospect.paymentLinkSentAt ? new Date(prospect.paymentLinkSentAt).toLocaleString("es-ES") : "Nunca"}
+                                            </td>
+                                            <td className="p-5 text-right">
+                                                <button onClick={() => {
+                                                    setInviteForm({
+                                                        email: prospect.email,
+                                                        name: prospect.name,
+                                                        phone: prospect.phone || "",
+                                                        plan: prospect.plan || "biannual",
+                                                        notes: prospect.notes || ""
+                                                    });
+                                                    setIsInviteModalOpen(true);
+                                                }} className="p-2 text-white/20 hover:text-blue-400 hover:bg-blue-400/10 rounded-lg transition-all" title="Reenviar o Editar">
+                                                    <Mail size={15} />
+                                                </button>
+                                            </td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                )}
+
                 {/* ── Tab: Invitations ─────────────────────────────────────── */}
                 {activeTab === "invitations" && (
                     <div className="space-y-4">
@@ -549,13 +643,32 @@ export default function AdminDashboardContent({ clients: initialClients }: { cli
                                         {f === "all" ? "Todas" : f === "CONFIRMED" ? "Confirmadas" : "Canceladas"}
                                     </button>
                                 ))}
+
+                                <div className="relative">
+                                    <select
+                                        value={selectedClientFilter}
+                                        onChange={e => setSelectedClientFilter(e.target.value)}
+                                        className="bg-white/5 border border-white/10 rounded-xl px-4 py-1.5 text-[10px] font-black uppercase outline-none focus:border-blue-600 appearance-none cursor-pointer pr-10 text-white/60"
+                                    >
+                                        <option value="all" className="bg-[#0f0f18] text-white">Todas las cuentas</option>
+                                        {clients.map(c => (
+                                            <option key={c.id} value={c.id} className="bg-[#0f0f18] text-white">{c.businessName || c.email}</option>
+                                        ))}
+                                    </select>
+                                    <ChevronDown size={12} className="absolute right-3 top-1/2 -translate-y-1/2 text-white/30 pointer-events-none" />
+                                </div>
+
                                 <button onClick={fetchAllAppointments} className="p-2 text-white/40 hover:text-white transition-colors rounded-lg hover:bg-white/5">
                                     <RefreshCw size={15} />
                                 </button>
                             </div>
                         </div>
                         <AppointmentsTable
-                            appointments={appointments.filter(a => appointmentFilter === "all" || a.status === appointmentFilter)}
+                            appointments={appointments.filter(a => {
+                                const passStatus = appointmentFilter === "all" || a.status === appointmentFilter;
+                                const passClient = selectedClientFilter === "all" || a.clientId === selectedClientFilter || a.client?.id === selectedClientFilter;
+                                return passStatus && passClient;
+                            })}
                             loading={loadingAppointments}
                             onCancel={handleCancelAppointment}
                             showClient
@@ -563,6 +676,94 @@ export default function AdminDashboardContent({ clients: initialClients }: { cli
                     </div>
                 )}
             </div>
+
+            {/* ── Invitation / Lead Modal ─────────────────────────────────── */}
+            {isInviteModalOpen && (
+                <div className="fixed inset-0 bg-black/80 backdrop-blur-xl z-[60] flex items-center justify-center p-4">
+                    <div className="bg-[#0f0f18] w-full max-w-lg rounded-[2.5rem] border border-white/10 shadow-2xl overflow-hidden flex flex-col">
+                        <div className="p-8 border-b border-white/5 bg-white/[0.02]">
+                            <h2 className="text-2xl font-black mb-1">Nueva Invitación</h2>
+                            <p className="text-white/30 text-xs uppercase font-black tracking-widest">Venta y Captura de Prospectos</p>
+                        </div>
+                        <div className="p-8 space-y-5">
+                            <div className="grid grid-cols-2 gap-4">
+                                <div className="space-y-1.5">
+                                    <label className="text-[10px] font-black text-white/30 uppercase tracking-widest ml-1">Nombre / Empresa</label>
+                                    <input
+                                        value={inviteForm.name}
+                                        onChange={e => setInviteForm({ ...inviteForm, name: e.target.value })}
+                                        placeholder="Ej: Neural360"
+                                        className="w-full bg-white/5 border border-white/10 rounded-2xl px-4 py-3 text-sm focus:border-blue-600 outline-none"
+                                    />
+                                </div>
+                                <div className="space-y-1.5">
+                                    <label className="text-[10px] font-black text-white/30 uppercase tracking-widest ml-1">Email</label>
+                                    <input
+                                        value={inviteForm.email}
+                                        onChange={e => setInviteForm({ ...inviteForm, email: e.target.value })}
+                                        placeholder="correo@ejemplo.com"
+                                        className="w-full bg-white/5 border border-white/10 rounded-2xl px-4 py-3 text-sm focus:border-blue-600 outline-none"
+                                    />
+                                </div>
+                            </div>
+
+                            <div className="grid grid-cols-2 gap-4">
+                                <div className="space-y-1.5">
+                                    <label className="text-[10px] font-black text-white/30 uppercase tracking-widest ml-1">Teléfono (Opcional)</label>
+                                    <input
+                                        value={inviteForm.phone}
+                                        onChange={e => setInviteForm({ ...inviteForm, phone: e.target.value })}
+                                        placeholder="+34..."
+                                        className="w-full bg-white/5 border border-white/10 rounded-2xl px-4 py-3 text-sm focus:border-blue-600 outline-none"
+                                    />
+                                </div>
+                                <div className="space-y-1.5">
+                                    <label className="text-[10px] font-black text-white/30 uppercase tracking-widest ml-1">Plan Elegido</label>
+                                    <div className="relative">
+                                        <select
+                                            value={inviteForm.plan}
+                                            onChange={e => setInviteForm({ ...inviteForm, plan: e.target.value })}
+                                            className="w-full bg-white/5 border border-white/10 rounded-2xl px-4 py-3 text-sm focus:border-blue-600 outline-none appearance-none cursor-pointer pr-10"
+                                        >
+                                            <option value="monthly" className="bg-[#0f0f18] text-white">Mensual (Setup Incl.)</option>
+                                            <option value="quarterly" className="bg-[#0f0f18] text-white">Trimestral</option>
+                                            <option value="biannual" className="bg-[#0f0f18] text-white">Semestral</option>
+                                            <option value="annual" className="bg-[#0f0f18] text-white">Anual</option>
+                                        </select>
+                                        <ChevronDown size={14} className="absolute right-4 top-1/2 -translate-y-1/2 text-white/30 pointer-events-none" />
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div className="space-y-1.5">
+                                <label className="text-[10px] font-black text-white/30 uppercase tracking-widest ml-1">Notas Internas</label>
+                                <textarea
+                                    value={inviteForm.notes}
+                                    onChange={e => setInviteForm({ ...inviteForm, notes: e.target.value })}
+                                    placeholder="Cualquier detalle relevante para la venta..."
+                                    className="w-full bg-white/5 border border-white/10 rounded-2xl px-4 py-3 text-sm focus:border-blue-600 outline-none h-24 resize-none"
+                                />
+                            </div>
+
+                            <div className="pt-4 flex gap-3">
+                                <button
+                                    onClick={() => setIsInviteModalOpen(false)}
+                                    className="flex-1 bg-white/5 hover:bg-white/10 text-white font-bold py-4 rounded-2xl transition-all"
+                                >
+                                    Cancelar
+                                </button>
+                                <button
+                                    onClick={handleSendInviteLink}
+                                    disabled={sendingInvite}
+                                    className="flex-1 bg-blue-600 hover:bg-blue-500 disabled:opacity-50 text-white font-bold py-4 rounded-2xl shadow-xl shadow-blue-600/20 transition-all flex items-center justify-center gap-2"
+                                >
+                                    {sendingInvite ? <RefreshCw size={18} className="animate-spin" /> : <><Zap size={18} /> Enviar Propuesta</>}
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            )}
 
             {/* ── Client Detail Modal ──────────────────────────────────────── */}
             {selectedClient && (
@@ -963,6 +1164,7 @@ function SubscriptionTab({ client, onCreateCheckout, onOpenPortal, creatingCheck
 
     const planLabels: Record<string, string> = {
         monthly: "Mensual",
+        quarterly: "Trimestral",
         biannual: "Semestral",
         annual: "Anual",
     };
@@ -1030,14 +1232,14 @@ function SubscriptionTab({ client, onCreateCheckout, onOpenPortal, creatingCheck
             ) : (
                 <div className="rounded-2xl bg-white/[0.03] border border-white/5 p-5 space-y-4">
                     <h3 className="font-black text-sm">Crear Suscripción</h3>
-                    <p className="text-white/40 text-xs">Selecciona un plan y genera el enlace de pago para este cliente. Se abrirá en una nueva pestaña.</p>
+                    <p className="text-white/40 text-xs text-balance">Selecciona un plan. Solo en el **Plan Mensual** se añadirá automáticamente el <strong className="text-blue-400">Setup de 899€</strong>.</p>
 
-                    <div className="grid grid-cols-3 gap-2">
-                        {(["monthly", "biannual", "annual"] as const).map(plan => (
+                    <div className="grid grid-cols-2 lg:grid-cols-4 gap-2">
+                        {(["monthly", "quarterly", "biannual", "annual"] as const).map(plan => (
                             <button
                                 key={plan}
                                 onClick={() => setSelectedPlan(plan)}
-                                className={`p-3 rounded-xl border text-xs font-bold transition-all ${selectedPlan === plan ? "bg-blue-600 border-blue-500 text-white" : "bg-white/5 border-white/10 text-white/50 hover:text-white"}`}
+                                className={`p-3 rounded-xl border text-[10px] font-black uppercase transition-all ${selectedPlan === plan ? "bg-blue-600 border-blue-500 text-white shadow-lg shadow-blue-600/20" : "bg-white/5 border-white/10 text-white/50 hover:text-white"}`}
                             >
                                 {planLabels[plan]}
                             </button>

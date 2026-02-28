@@ -52,6 +52,8 @@ CitaLiks es una plataforma SaaS multi-tenant que permite a negocios tener su pro
 | `STRIPE_WEBHOOK_SECRET` | ⚠️ Pendiente | Registrar webhook en Stripe Dashboard |
 | `STRIPE_PRICE_MONTHLY` | ⚠️ Pendiente | Crear productos en Stripe Dashboard |
 | `STRIPE_PRICE_BIANNUAL` | ⚠️ Pendiente | Crear productos en Stripe Dashboard |
+| `STRIPE_PRICE_SETUP` | ⚠️ Pendiente | Crear productos en Stripe Dashboard |
+| `STRIPE_PRICE_QUARTERLY` | ⚠️ Pendiente | Crear productos en Stripe Dashboard |
 | `STRIPE_PRICE_ANNUAL` | ⚠️ Pendiente | Crear productos en Stripe Dashboard |
 | `CRON_SECRET` | ⚠️ Pendiente | Generar con `openssl rand -hex 32` |
 | `SMTP_*` | ✅ Activo | Gmail configurado |
@@ -246,4 +248,24 @@ CREATE UNIQUE INDEX IF NOT EXISTS "prospects_stripeSessionId_key" ON "prospects"
 
 ---
 
-*Última actualización: 26 Feb 2026 — Manus*
+## [2026-02-28a] — Entorno Local (Bypass de Onboarding para Admin)
+
+### Modified
+- **`src/app/dashboard/page.tsx`** — Modificado para desarrollo local:
+  - Cuando la base de datos de Prisima está vacía (0 clientes), el primer usuario de Clerk que inicie sesión se crea automáticamente en la base de datos con el rol `PLATFORM_ADMIN` y el flag `onboardingDone: true`.
+  - Esto evita tener que usar scripts externos o hacer el onboarding completo si solo se quiere entrar al dashboard de administrador en una instalación local desde cero.
+
+## [2026-02-28b] — Fixes de Despliegue en Vercel (CI/CD)
+
+### Added
+- **`.npmrc`** — Añadido con `legacy-peer-deps=true` para resolver el error `ERESOLVE` de Vercel (conflicto estricto de versión peer de `@clerk/nextjs` exigiendo Next >=15.2, mientras que el proyecto usa `next@15.0.3`).
+
+### Modified
+- **`package.json`** — Script de `"build"` actualizado:
+  - Antes: `"build": "next build"`
+  - Ahora: `"build": "npx prisma generate && npx prisma migrate deploy && next build"`
+  - **Propósito:** Automatizar la aplicación segura de migraciones SQL (`migrate deploy`) en el servidor de producción justo antes de cada compilación de Vercel.
+
+---
+
+*Última actualización: 28 Feb 2026 — Antigravity*
