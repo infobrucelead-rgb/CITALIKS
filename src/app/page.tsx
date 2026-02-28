@@ -10,10 +10,10 @@ export default async function HomePage() {
         <main className="min-h-screen bg-gradient-animated text-white overflow-hidden">
             {/* Nav */}
             <nav className="flex items-center justify-between px-8 py-6 max-w-7xl mx-auto">
-                <div className="flex items-center gap-2">
-                    <div className="w-8 h-8 rounded-lg bg-violet-500 flex items-center justify-center text-sm font-bold">C</div>
+                <Link href="/" className="flex items-center gap-2 hover:opacity-80 transition-opacity">
+                    <img src="/logo.png" alt="CitaLiks Logo" className="w-10 h-10 object-contain drop-shadow-lg" />
                     <span className="text-xl font-bold">Cita <span className="gradient-text">Liks</span></span>
-                </div>
+                </Link>
                 <div className="flex items-center gap-4">
                     <Link href="/sign-in" className="text-sm text-white/60 hover:text-white transition-colors">
                         Iniciar sesión
@@ -82,6 +82,18 @@ export default async function HomePage() {
                     </Link>
                 </div>
             </section>
+
+            {/* Footer */}
+            <footer className="border-t border-white/10 mt-auto py-8">
+                <div className="max-w-7xl mx-auto px-8 flex flex-col md:flex-row items-center justify-between gap-4 text-sm text-white/40">
+                    <p>© {new Date().getFullYear()} NeuralAds360. Todos los derechos reservados.</p>
+                    <div className="flex items-center gap-6">
+                        <a href="https://neuralads360.com/privacy-policy/" target="_blank" rel="noopener noreferrer" className="hover:text-white transition-colors">
+                            Política de Privacidad
+                        </a>
+                    </div>
+                </div>
+            </footer>
         </main>
     );
 }

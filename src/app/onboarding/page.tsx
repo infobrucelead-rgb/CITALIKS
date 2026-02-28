@@ -2,6 +2,7 @@
 
 import { useState, useEffect, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
+import Link from "next/link";
 import Step1Business from "./steps/Step1Business";
 import Step2Services from "./steps/Step2Services";
 import Step3Schedule from "./steps/Step3Schedule";
@@ -130,9 +131,12 @@ function OnboardingContent() {
         <div className="min-h-screen bg-gradient-animated flex flex-col">
             {/* Header */}
             <div className="px-8 py-6 flex items-center gap-3">
-                <div className="w-8 h-8 rounded-lg bg-blue-500 flex items-center justify-center text-sm font-bold text-white">C</div>
-                <span className="text-white font-bold text-lg">Cita<span className="gradient-text">Liks</span></span>
-                <span className="ml-4 text-white/40 text-sm">Configurando tu asistente</span>
+                <Link href="/" className="flex items-center gap-2 hover:opacity-80 transition-opacity">
+                    <img src="/logo.png" alt="CitaLiks Logo" className="w-10 h-10 object-contain drop-shadow-lg" />
+                    <span className="text-white font-bold text-lg">Cita<span className="gradient-text">Liks</span></span>
+                </Link>
+                <div className="w-px h-6 bg-white/20 mx-2" />
+                <span className="text-white/40 text-sm">Configurando tu asistente</span>
             </div>
 
             {/* Progress */}
