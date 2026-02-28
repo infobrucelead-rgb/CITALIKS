@@ -385,27 +385,27 @@ export default function AdminDashboardContent({ clients: initialClients }: { cli
                 </div>
             )}
 
-            <div className="p-8 max-w-[1600px] mx-auto">
+            <div className="p-4 md:p-8 max-w-[1600px] mx-auto">
                 {/* Header */}
-                <header className="flex justify-between items-center mb-10">
-                    <div className="flex items-center gap-5">
-                        <button onClick={() => window.location.href = "/dashboard"} className="p-3 rounded-2xl bg-white/5 hover:bg-white/10 transition-colors">
+                <header className="flex flex-col md:flex-row md:justify-between items-start md:items-center gap-4 mb-6 md:mb-10">
+                    <div className="flex items-center gap-4 md:gap-5">
+                        <button onClick={() => window.location.href = "/dashboard"} className="p-3 rounded-2xl bg-white/5 hover:bg-white/10 transition-colors shrink-0">
                             <ArrowLeft size={20} />
                         </button>
                         <div>
-                            <h1 className="text-3xl font-black mb-0.5">Panel <span className="text-blue-500">Master</span></h1>
-                            <p className="text-white/30 uppercase text-[10px] font-black tracking-[0.2em]">Platform Administration · Super Admin</p>
+                            <h1 className="text-2xl md:text-3xl font-black mb-0.5">Panel <span className="text-blue-500">Master</span></h1>
+                            <p className="text-white/30 uppercase text-[9px] md:text-[10px] font-black tracking-[0.2em]">Platform Administration · Super Admin</p>
                         </div>
                     </div>
-                    <div className="flex gap-3">
-                        <button onClick={() => setIsInviteModalOpen(true)} className="px-5 py-2.5 rounded-xl bg-blue-600 shadow-lg shadow-blue-600/20 hover:bg-blue-500 transition-all flex items-center gap-2 font-bold text-sm">
-                            <Plus size={16} /> Enviar Invitación / Enlace
+                    <div className="flex gap-3 w-full md:w-auto">
+                        <button onClick={() => setIsInviteModalOpen(true)} className="w-full md:w-auto justify-center px-5 py-3 md:py-2.5 rounded-xl bg-blue-600 shadow-lg shadow-blue-600/20 hover:bg-blue-500 transition-all flex items-center gap-2 font-bold text-sm">
+                            <Plus size={16} /> <span className="hidden sm:inline">Enviar Invitación / Enlace</span><span className="sm:hidden">Invitación VIP / Pago</span>
                         </button>
                     </div>
                 </header>
 
                 {/* Metrics */}
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 mb-8">
                     <MetricCard title="Clientes Totales" value={clients.length} sub={`${activeCount} activos`} icon={<Users size={20} className="text-blue-400" />} color="blue" />
                     <MetricCard title="Llamadas Totales" value={totalCalls} sub="todas las cuentas" icon={<Phone size={20} className="text-emerald-400" />} color="emerald" />
                     <MetricCard title="Agentes Retell" value={withAgent} sub={`${clients.length - withAgent} sin agente`} icon={<Bot size={20} className="text-violet-400" />} color="violet" />
@@ -413,10 +413,10 @@ export default function AdminDashboardContent({ clients: initialClients }: { cli
                 </div>
 
                 {/* Tabs */}
-                <div className="flex gap-1 mb-6 bg-white/[0.03] p-1 rounded-2xl w-fit border border-white/5">
+                <div className="flex gap-1 mb-6 bg-white/[0.03] p-1 rounded-2xl w-full md:w-fit border border-white/5 overflow-x-auto sticky top-0 md:static z-10 custom-scrollbar">
                     {(["clients", "prospects", "invitations", "appointments"] as TabType[]).map(tab => (
                         <button key={tab} onClick={() => setActiveTab(tab)}
-                            className={`px-5 py-2 rounded-xl text-sm font-bold transition-all ${activeTab === tab ? "bg-blue-600 text-white shadow-lg shadow-blue-600/20" : "text-white/40 hover:text-white"}`}>
+                            className={`px-4 sm:px-5 py-2 rounded-xl text-xs sm:text-sm whitespace-nowrap font-bold transition-all ${activeTab === tab ? "bg-blue-600 text-white shadow-lg shadow-blue-600/20" : "text-white/40 hover:text-white"}`}>
                             {tab === "clients" ? "Negocios Activos" : tab === "prospects" ? "Leads / Pagos" : tab === "invitations" ? "Invitaciones" : "Citas Globales"}
                         </button>
                     ))}
@@ -440,8 +440,8 @@ export default function AdminDashboardContent({ clients: initialClients }: { cli
                         </div>
 
                         {/* Table */}
-                        <div className="rounded-[1.5rem] overflow-hidden border border-white/5 bg-white/[0.02]">
-                            <table className="w-full text-left text-sm">
+                        <div className="rounded-[1.5rem] overflow-x-auto border border-white/5 bg-white/[0.02] custom-scrollbar">
+                            <table className="w-full text-left text-sm min-w-[800px]">
                                 <thead>
                                     <tr className="border-b border-white/5 bg-white/[0.02]">
                                         <th className="p-5 font-black text-white/30 uppercase text-[10px] tracking-widest">Negocio</th>
@@ -538,8 +538,8 @@ export default function AdminDashboardContent({ clients: initialClients }: { cli
                                 <RefreshCw size={16} className={loadingProspects ? "animate-spin" : ""} />
                             </button>
                         </div>
-                        <div className="rounded-[1.5rem] overflow-hidden border border-white/5 bg-white/[0.02]">
-                            <table className="w-full text-left text-sm">
+                        <div className="rounded-[1.5rem] overflow-x-auto border border-white/5 bg-white/[0.02] custom-scrollbar">
+                            <table className="w-full text-left text-sm min-w-[700px]">
                                 <thead>
                                     <tr className="border-b border-white/5 bg-white/[0.02]">
                                         <th className="p-5 font-black text-white/30 uppercase text-[10px] tracking-widest">Prospecto</th>
@@ -603,8 +603,8 @@ export default function AdminDashboardContent({ clients: initialClients }: { cli
                                 <RefreshCw size={16} />
                             </button>
                         </div>
-                        <div className="rounded-[1.5rem] overflow-hidden border border-white/5 bg-white/[0.02]">
-                            <table className="w-full text-left text-sm">
+                        <div className="rounded-[1.5rem] overflow-x-auto border border-white/5 bg-white/[0.02] custom-scrollbar">
+                            <table className="w-full text-left text-sm min-w-[600px]">
                                 <thead>
                                     <tr className="border-b border-white/5 bg-white/[0.02]">
                                         <th className="p-5 font-black text-white/30 uppercase text-[10px] tracking-widest">Email</th>
@@ -643,21 +643,23 @@ export default function AdminDashboardContent({ clients: initialClients }: { cli
                 {/* ── Tab: Appointments ────────────────────────────────────── */}
                 {activeTab === "appointments" && (
                     <div className="space-y-4">
-                        <div className="flex justify-between items-center">
-                            <h2 className="text-lg font-bold">Citas de Todos los Negocios</h2>
-                            <div className="flex gap-2">
-                                {["all", "CONFIRMED", "CANCELLED"].map(f => (
-                                    <button key={f} onClick={() => setAppointmentFilter(f)}
-                                        className={`px-4 py-1.5 rounded-xl text-[10px] font-black uppercase transition-all ${appointmentFilter === f ? "bg-blue-600 text-white" : "bg-white/5 text-white/40 hover:bg-white/10"}`}>
-                                        {f === "all" ? "Todas" : f === "CONFIRMED" ? "Confirmadas" : "Canceladas"}
-                                    </button>
-                                ))}
+                        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                            <h2 className="text-lg font-bold shrink-0">Citas de Todos los Negocios</h2>
+                            <div className="flex flex-wrap gap-2 items-center w-full sm:w-auto">
+                                <div className="flex gap-1 bg-white/5 p-1 rounded-xl w-full sm:w-auto overflow-x-auto custom-scrollbar">
+                                    {["all", "CONFIRMED", "CANCELLED"].map(f => (
+                                        <button key={f} onClick={() => setAppointmentFilter(f)}
+                                            className={`flex-1 sm:flex-none whitespace-nowrap px-4 py-1.5 rounded-lg text-[10px] font-black uppercase transition-all ${appointmentFilter === f ? "bg-blue-600 text-white" : "text-white/40 hover:text-white"}`}>
+                                            {f === "all" ? "Todas" : f === "CONFIRMED" ? "Confirmadas" : "Canceladas"}
+                                        </button>
+                                    ))}
+                                </div>
 
-                                <div className="relative">
+                                <div className="relative flex-1 sm:flex-none">
                                     <select
                                         value={selectedClientFilter}
                                         onChange={e => setSelectedClientFilter(e.target.value)}
-                                        className="bg-white/5 border border-white/10 rounded-xl px-4 py-1.5 text-[10px] font-black uppercase outline-none focus:border-blue-600 appearance-none cursor-pointer pr-10 text-white/60"
+                                        className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2 text-[10px] sm:py-1.5 font-black uppercase outline-none focus:border-blue-600 appearance-none cursor-pointer pr-10 text-white/60"
                                     >
                                         <option value="all" className="bg-[#0f0f18] text-white">Todas las cuentas</option>
                                         {clients.map(c => (
@@ -667,7 +669,7 @@ export default function AdminDashboardContent({ clients: initialClients }: { cli
                                     <ChevronDown size={12} className="absolute right-3 top-1/2 -translate-y-1/2 text-white/30 pointer-events-none" />
                                 </div>
 
-                                <button onClick={fetchAllAppointments} className="p-2 text-white/40 hover:text-white transition-colors rounded-lg hover:bg-white/5">
+                                <button onClick={fetchAllAppointments} className="p-2 sm:p-1.5 shrink-0 text-white/40 hover:text-white transition-colors rounded-xl bg-white/5 hover:bg-white/10 border border-white/10">
                                     <RefreshCw size={15} />
                                 </button>
                             </div>
@@ -688,14 +690,17 @@ export default function AdminDashboardContent({ clients: initialClients }: { cli
 
             {/* ── Invitation / Lead Modal ─────────────────────────────────── */}
             {isInviteModalOpen && (
-                <div className="fixed inset-0 bg-black/80 backdrop-blur-xl z-[60] flex items-center justify-center p-4">
-                    <div className="bg-[#0f0f18] w-full max-w-lg rounded-[2.5rem] border border-white/10 shadow-2xl overflow-hidden flex flex-col">
-                        <div className="p-8 border-b border-white/5 bg-white/[0.02]">
-                            <h2 className="text-2xl font-black mb-1">Nueva Invitación</h2>
-                            <p className="text-white/30 text-xs uppercase font-black tracking-widest">Venta y Captura de Prospectos</p>
+                <div className="fixed inset-0 bg-black/80 backdrop-blur-xl z-[60] flex items-center justify-center p-3 sm:p-4 overflow-y-auto">
+                    <div className="bg-[#0f0f18] w-full max-w-lg rounded-[2rem] sm:rounded-[2.5rem] border border-white/10 shadow-2xl overflow-hidden flex flex-col my-auto max-h-screen relative">
+                        <div className="p-6 sm:p-8 border-b border-white/5 bg-white/[0.02]">
+                            <h2 className="text-xl sm:text-2xl font-black mb-1">Nueva Invitación</h2>
+                            <p className="text-white/30 text-[10px] sm:text-xs uppercase font-black tracking-widest">Venta y Captura de Prospectos</p>
+                            <button onClick={() => setIsInviteModalOpen(false)} className="absolute top-6 right-6 p-2 bg-white/5 rounded-full hover:bg-white/10 text-white/50 hover:text-white transition-colors">
+                                <X size={18} />
+                            </button>
                         </div>
-                        <div className="p-8 space-y-5">
-                            <div className="grid grid-cols-2 gap-4">
+                        <div className="p-6 sm:p-8 space-y-4 overflow-y-auto custom-scrollbar">
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                 <div className="space-y-1.5">
                                     <label className="text-[10px] font-black text-white/30 uppercase tracking-widest ml-1">Nombre / Empresa</label>
                                     <input
@@ -716,7 +721,7 @@ export default function AdminDashboardContent({ clients: initialClients }: { cli
                                 </div>
                             </div>
 
-                            <div className="grid grid-cols-2 gap-4">
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                 <div className="space-y-1.5">
                                     <label className="text-[10px] font-black text-white/30 uppercase tracking-widest ml-1">Tipo de Invitación</label>
                                     <div className="flex gap-2">
@@ -820,10 +825,10 @@ export default function AdminDashboardContent({ clients: initialClients }: { cli
                         </div>
 
                         {/* Modal Tabs */}
-                        <div className="flex gap-1 px-6 pt-4 shrink-0 border-b border-white/5">
+                        <div className="flex gap-1 px-4 sm:px-6 pt-4 shrink-0 border-b border-white/5 overflow-x-auto custom-scrollbar">
                             {(["info", "activity", "appointments", "subscription"] as ClientDetailTab[]).map(t => (
                                 <button key={t} onClick={() => setClientDetailTab(t)}
-                                    className={`pb-3 px-4 text-sm font-bold transition-all border-b-2 ${clientDetailTab === t ? "text-blue-400 border-blue-500" : "text-white/30 border-transparent hover:text-white"}`}>
+                                    className={`pb-3 px-3 sm:px-4 text-xs sm:text-sm whitespace-nowrap font-bold transition-all border-b-2 ${clientDetailTab === t ? "text-blue-400 border-blue-500" : "text-white/30 border-transparent hover:text-white"}`}>
                                     {t === "info" ? "Configuración" : t === "activity" ? "Actividad" : t === "appointments" ? "Citas" : "Suscripción"}
                                 </button>
                             ))}
