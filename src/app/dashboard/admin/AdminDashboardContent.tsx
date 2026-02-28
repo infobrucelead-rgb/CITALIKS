@@ -876,7 +876,17 @@ export default function AdminDashboardContent({ clients: initialClients }: { cli
                                         <div className="cursor-pointer hover:scale-[1.02] transition-transform" onClick={() => handleSaveField("onboardingDone", !selectedClient.onboardingDone as any)}>
                                             <StatusBadge label="Onboarding" value={selectedClient.onboardingDone ? "Completado" : `Paso ${selectedClient.onboardingStep}`} active={selectedClient.onboardingDone} />
                                         </div>
-                                        <StatusBadge label="Google Calendar" value={selectedClient.googleAccessToken ? "Conectado" : "No conectado"} active={!!selectedClient.googleAccessToken} />
+                                        {selectedClient.googleAccessToken ? (
+                                            <StatusBadge label="Google Calendar" value="Conectado" active={true} />
+                                        ) : (
+                                            <div
+                                                className="cursor-pointer hover:scale-[1.02] transition-transform group"
+                                                onClick={() => window.location.href = '/api/google/connect'}
+                                                title="Haz clic para autorizar a Google Calendar en esta cuenta"
+                                            >
+                                                <StatusBadge label="Google Calendar" value="Haz clic para conectar" active={false} />
+                                            </div>
+                                        )}
                                         <StatusBadge label="Agente Retell" value={selectedClient.retellAgentId ? "Vinculado" : "Sin agente"} active={!!selectedClient.retellAgentId} />
                                     </div>
                                 </>
