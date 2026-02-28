@@ -418,9 +418,20 @@ function TeamTab({ client, onUpdate, onSelectStaff }: { client: any, onUpdate: (
                                         }
                                         className="w-full bg-white/5 border border-white/10 rounded-xl p-3 text-sm focus:border-blue-600 outline-none transition-all"
                                     />
-                                    <p className="text-[10px] text-amber-500 mt-2 px-1 flex items-center gap-1 font-bold">
-                                        ⚠️ Conecta Google en Opciones para cargar tu lista.
-                                    </p>
+                                    <div className="mt-3 text-[10px] text-amber-500 font-bold bg-amber-500/5 p-3 rounded-xl border border-amber-500/20">
+                                        <p className="flex items-center gap-1 mb-2">
+                                            <span>⚠️</span> Conecta Google Calendar Central para ver las listas.
+                                        </p>
+                                        <button
+                                            onClick={(e) => { e.preventDefault(); window.location.href = '/api/google/connect'; }}
+                                            className="bg-amber-500 hover:bg-amber-600 text-black px-3 py-1.5 rounded-lg text-[9px] uppercase tracking-wider transition-colors shadow-lg shadow-amber-500/20"
+                                        >
+                                            Conectar Cuenta de Google Ahora
+                                        </button>
+                                        <p className="text-[9px] text-amber-500/70 mt-2 font-normal leading-relaxed">
+                                            (Nota: El <strong>Email (Opcional)</strong> escrito arriba es solo decorativo. Para vincular calendarios debes autorizar a CitaLiks haciendo clic en el botón de arriba).
+                                        </p>
+                                    </div>
                                 </>
                             )}
                         </div>
