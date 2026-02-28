@@ -102,6 +102,18 @@ async function getAuthenticatedClient(clientId: string, prismaOverride?: any, st
     return { oAuth2Client, calendarId: staffCalendarId || client.calendarId || "primary" };
 }
 
+export async function listGoogleCalendars(clientId: string, prismaOverride?: any) {
+    try {
+        const { oAuth2Client } = await getAuthenticatedClient(clientId, prismaOverride);
+        const calendar = google.calendar({ version: "v3", auth: oAuth2Client });
+        const res = await calendar.calendarList.list();
+        return res.data.items || [];
+    } catch (err) {
+        console.error("[calendar/listGoogleCalendars] Error fetching calendars:", err);
+        return [];
+    }
+}
+
 export interface TimeSlot {
     start: string;
     end: string;
@@ -213,7 +225,7 @@ export async function checkAvailability(
             // Round up to the next slot boundary
             const slotsToSkip = Math.ceil((nowMinutes - currentMin) / durationMin);
             currentMin += slotsToSkip * durationMin;
-            console.log(`[calendar/checkAvailability] Today: skipping past slots, starting from ${String(Math.floor(currentMin/60)).padStart(2,'0')}:${String(currentMin%60).padStart(2,'0')} (now+15min buffer)`);
+            console.log(`[calendar/checkAvailability] Today: skipping past slots, starting from ${String(Math.floor(currentMin / 60)).padStart(2, '0')}:${String(currentMin % 60).padStart(2, '0')} (now+15min buffer)`);
         }
     }
 

@@ -4,7 +4,8 @@ import {
     LayoutDashboard, Users, Calendar, Phone, Activity,
     Settings, LogOut, Clock, ShieldCheck, Plus,
     Trash2, Search, UserPlus, Image as ImageIcon,
-    ExternalLink, Brain, Loader2, Edit2, ChevronRight, DollarSign, X
+    Trash2, Search, UserPlus, Image as ImageIcon,
+    ExternalLink, Brain, Loader2, Edit2, ChevronRight, ChevronDown, DollarSign, X
 } from "lucide-react";
 import { useClerk } from "@clerk/nextjs";
 import { DAY_NAMES, formatDuration, formatPrice } from "@/lib/utils";
@@ -276,6 +277,27 @@ function TeamTab({ client, onUpdate, onSelectStaff }: { client: any, onUpdate: (
     const [isAdding, setIsAdding] = useState(false);
     const [editingStaff, setEditingStaff] = useState<any>(null);
     const [newData, setNewData] = useState({ name: "", email: "", googleCalendarId: "primary" });
+    const [calendars, setCalendars] = useState<{ id: string, summary: string }[]>([]);
+    const [loadingCalendars, setLoadingCalendars] = useState(false);
+
+    useEffect(() => {
+        if (!client.googleAccessToken) return;
+        const fetchCalendars = async () => {
+            setLoadingCalendars(true);
+            try {
+                const res = await fetch('/api/calendar/list');
+                const data = await res.json();
+                if (data.calendars) {
+                    setCalendars([{ id: "primary", summary: "Calendario Principal (primary)" }, ...data.calendars]);
+                }
+            } catch (err) {
+                console.error(err);
+            } finally {
+                setLoadingCalendars(false);
+            }
+        };
+        fetchCalendars();
+    }, [client.googleAccessToken]);
 
     const handleAddStaff = async () => {
         if (!newData.name) return;
@@ -363,16 +385,45 @@ function TeamTab({ client, onUpdate, onSelectStaff }: { client: any, onUpdate: (
                             />
                         </div>
                         <div>
-                            <label className="text-[10px] uppercase font-bold text-white/30 block mb-2 px-1">Google Calendar ID</label>
-                            <input
-                                placeholder="primary o ID de calendario"
-                                value={editingStaff ? (editingStaff.googleCalendarId || "") : newData.googleCalendarId}
-                                onChange={(e) => editingStaff
-                                    ? setEditingStaff({ ...editingStaff, googleCalendarId: e.target.value })
-                                    : setNewData({ ...newData, googleCalendarId: e.target.value })
-                                }
-                                className="w-full bg-white/5 border border-white/10 rounded-xl p-3 text-sm focus:border-blue-600 outline-none transition-all"
-                            />
+                            <div className="flex justify-between items-center mb-2 px-1">
+                                <label className="text-[10px] uppercase font-bold text-white/30 block">Google Calendar ID</label>
+                                {loadingCalendars && <Loader2 size={12} className="animate-spin text-blue-400" />}
+                            </div>
+                            {client.googleAccessToken ? (
+                                <div className="relative">
+                                    <select
+                                        value={editingStaff ? (editingStaff.googleCalendarId || "primary") : newData.googleCalendarId}
+                                        onChange={(e) => editingStaff
+                                            ? setEditingStaff({ ...editingStaff, googleCalendarId: e.target.value })
+                                            : setNewData({ ...newData, googleCalendarId: e.target.value })
+                                        }
+                                        className="w-full bg-white/5 border border-white/10 rounded-xl p-3 pr-10 text-sm focus:border-blue-600 outline-none transition-all cursor-pointer appearance-none truncate"
+                                    >
+                                        {calendars.length === 0 && <option value="primary" className="bg-[#0f0f18] text-white">Cargando calendarios...</option>}
+                                        {calendars.map(c => (
+                                            <option key={c.id} value={c.id} className="bg-[#0f0f18] text-white text-sm">
+                                                {c.summary}
+                                            </option>
+                                        ))}
+                                    </select>
+                                    <ChevronDown size={14} className="absolute right-3 top-1/2 -translate-y-1/2 text-white/30 pointer-events-none" />
+                                </div>
+                            ) : (
+                                <>
+                                    <input
+                                        placeholder="primary o ID de calendario"
+                                        value={editingStaff ? (editingStaff.googleCalendarId || "") : newData.googleCalendarId}
+                                        onChange={(e) => editingStaff
+                                            ? setEditingStaff({ ...editingStaff, googleCalendarId: e.target.value })
+                                            : setNewData({ ...newData, googleCalendarId: e.target.value })
+                                        }
+                                        className="w-full bg-white/5 border border-white/10 rounded-xl p-3 text-sm focus:border-blue-600 outline-none transition-all"
+                                    />
+                                    <p className="text-[10px] text-amber-500 mt-2 px-1 flex items-center gap-1 font-bold">
+                                        ⚠️ Conecta Google en Opciones para cargar tu lista.
+                                    </p>
+                                </>
+                            )}
                         </div>
                     </div>
                     <div className="flex gap-4 pt-2">
