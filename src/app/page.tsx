@@ -38,7 +38,7 @@ export default async function HomePage() {
                     <span className="gradient-text">por IA</span>
                 </h1>
                 <p className="text-xl text-white/60 max-w-2xl mx-auto mb-10 animate-fade-in">
-                    Un asistente telefónico en español que atiende llamadas, reserva citas y gestiona tu Google Calendar — 24 horas al día, sin que tú intervengas.
+                    Un asistente telefónico en Español que atiende llamadas, reserva citas y gestiona tu Google Calendar — 24 horas al día, sin que tú intervengas.
                 </p>
                 <div className="flex items-center justify-center gap-4 animate-fade-in">
                     <Link
@@ -55,7 +55,7 @@ export default async function HomePage() {
             <section className="max-w-6xl mx-auto px-8 py-16 grid grid-cols-1 md:grid-cols-3 gap-6">
                 {[
                     { icon: "📞", title: "Número +34 propio", desc: "Cada cliente recibe un número de teléfono español exclusivo para su negocio." },
-                    { icon: "🤖", title: "IA en español natural", desc: "Tu agente habla español de España con voz realista. Nadie sabrá que es IA." },
+                    { icon: "🤖", title: "IA en Español natural", desc: "Tu agente habla Español de España con voz realista. Nadie sabrá que es IA." },
                     { icon: "📅", title: "Google Calendar sincronizado", desc: "Crea, modifica y cancela citas directamente en tu agenda de Google." },
                     { icon: "🔀", title: "Transferencia a humano", desc: "Si el cliente lo necesita, la llamada se transfiere a ti automáticamente." },
                     { icon: "📊", title: "Dashboard de llamadas", desc: "Consulta transcripciones, resúmenes y estadísticas de todas las llamadas." },

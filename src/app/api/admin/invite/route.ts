@@ -34,7 +34,7 @@ export async function POST(req: NextRequest) {
         }
     });
 
-    const appUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3003";
+    const appUrl = req.nextUrl.origin;
     const inviteLink = `${appUrl}/onboarding?token=${token}&email=${encodeURIComponent(email)}`;
 
     // Send Real Email

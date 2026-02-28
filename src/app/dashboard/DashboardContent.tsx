@@ -53,43 +53,43 @@ export default function DashboardContent({ client: initialClient }: { client: an
     };
 
     return (
-        <div className="min-h-screen bg-[#0a0a0f] text-white flex">
+        <div className="min-h-screen bg-[#0a0a0f] text-white flex relative">
             {/* Sidebar */}
-            <aside className="w-64 border-r border-white/5 bg-black/20 p-6 flex flex-col gap-8">
-                <div className="flex items-center gap-3 px-2">
-                    <div className="w-10 h-10 rounded-2xl flex items-center justify-center overflow-hidden">
+            <aside className="fixed top-0 left-0 h-screen z-50 w-[72px] hover:w-64 border-r border-white/5 bg-[#0a0a0f] md:bg-black/20 p-3 md:p-4 flex flex-col gap-6 md:gap-8 transition-all duration-300 ease-[cubic-bezier(0.4,0,0.2,1)] group overflow-hidden">
+                <div className="flex items-center gap-3 px-1 mt-2">
+                    <div className="w-10 h-10 shrink-0 rounded-2xl flex items-center justify-center overflow-hidden">
                         <img src="/logo.png" alt="CitaLiks Logo" className="w-full h-full object-contain" />
                     </div>
-                    <span className="font-bold text-xl tracking-tight bg-gradient-to-r from-white to-white/60 bg-clip-text text-transparent">CitaLiks</span>
+                    <span className="font-bold text-xl tracking-tight bg-gradient-to-r from-white to-white/60 bg-clip-text text-transparent opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">CitaLiks</span>
                 </div>
 
                 <nav className="space-y-2 flex-1">
                     <NavItem
-                        icon={<LayoutDashboard size={18} />}
+                        icon={<LayoutDashboard size={20} />}
                         label="Vista general"
                         active={activeTab === "overview"}
                         onClick={() => setActiveTab("overview")}
                     />
                     <NavItem
-                        icon={<Phone size={18} />}
+                        icon={<Phone size={20} />}
                         label="Llamadas"
                         active={activeTab === "calls"}
                         onClick={() => setActiveTab("calls")}
                     />
                     <NavItem
-                        icon={<Users size={18} />}
+                        icon={<Users size={20} />}
                         label="Equipo"
                         active={activeTab === "team"}
                         onClick={() => setActiveTab("team")}
                     />
                     <NavItem
-                        icon={<Calendar size={18} />}
+                        icon={<Calendar size={20} />}
                         label="Servicios & Horarios"
                         active={activeTab === "services"}
                         onClick={() => setActiveTab("services")}
                     />
                     <NavItem
-                        icon={<Settings size={18} />}
+                        icon={<Settings size={20} />}
                         label="Configuración"
                         active={activeTab === "config"}
                         onClick={() => setActiveTab("config")}
@@ -97,9 +97,9 @@ export default function DashboardContent({ client: initialClient }: { client: an
 
                     {client.role === "PLATFORM_ADMIN" && (
                         <div className="pt-6 mt-6 border-t border-white/5">
-                            <p className="px-4 mb-2 text-[10px] uppercase font-bold text-white/20 tracking-widest">Platform</p>
+                            <p className="px-1 mb-2 text-[10px] uppercase font-bold text-white/20 tracking-widest opacity-0 group-hover:opacity-100 transition-opacity truncate">Platform</p>
                             <NavItem
-                                icon={<ShieldCheck className="text-amber-400" size={18} />}
+                                icon={<ShieldCheck className="text-amber-400" size={20} />}
                                 label="Panel Admin"
                                 active={activeTab === "admin"}
                                 onClick={() => window.location.href = "/dashboard/admin"}
@@ -109,21 +109,24 @@ export default function DashboardContent({ client: initialClient }: { client: an
                 </nav>
 
                 <div className="border-t border-white/5 pt-6 space-y-4">
-                    <div className="px-4 py-3 rounded-2xl bg-white/5 border border-white/5 text-center">
-                        <p className="text-[10px] text-white/40 uppercase font-bold mb-1">Negocio</p>
-                        <p className="text-sm font-medium truncate">{client.businessName}</p>
+                    <div className="px-1 py-3 rounded-2xl bg-white/5 border border-white/5 text-center flex flex-col items-center justify-center min-h-[50px]">
+                        <p className="text-[10px] text-white/40 uppercase font-bold mb-1 opacity-0 group-hover:opacity-100 transition-opacity hidden group-hover:block">Negocio</p>
+                        <p className="text-sm font-medium truncate opacity-0 group-hover:opacity-100 transition-opacity w-full hidden group-hover:block">{client.businessName}</p>
+                        <div className="group-hover:hidden text-white/40 font-bold text-sm w-full text-center">
+                            {client.businessName.substring(0, 2).toUpperCase()}
+                        </div>
                     </div>
                     <button
                         onClick={() => signOut()}
-                        className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium text-red-400 hover:bg-red-500/10 transition-all group">
-                        <LogOut size={18} className="group-hover:-translate-x-1 transition-transform" />
-                        Cerrar Sesión
+                        className="w-full flex items-center gap-4 px-3 py-3 rounded-xl text-sm font-medium text-red-400 hover:bg-red-500/10 transition-all group/logout">
+                        <LogOut size={20} className="shrink-0 group-hover/logout:-translate-x-1 transition-transform" />
+                        <span className="opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">Cerrar Sesión</span>
                     </button>
                 </div>
             </aside>
 
             {/* Main Content */}
-            <main className="flex-1 overflow-auto p-10">
+            <main className="flex-1 overflow-auto p-4 md:p-10 ml-[72px]">
                 {renderContent()}
             </main>
         </div>
@@ -134,12 +137,13 @@ function NavItem({ icon, label, active = false, onClick }: { icon: any, label: s
     return (
         <button
             onClick={onClick}
-            className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all ${active
+            title={label}
+            className={`w-full flex items-center gap-4 px-3 py-3 rounded-xl text-sm font-medium transition-all group/nav ${active
                 ? "bg-blue-600 text-white shadow-lg shadow-blue-600/20"
                 : "text-white/40 hover:text-white hover:bg-white/5"
                 }`}>
-            {icon}
-            {label}
+            <div className="shrink-0 flex items-center justify-center w-5 h-5">{icon}</div>
+            <span className="opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap overflow-hidden text-left flex-1">{label}</span>
         </button>
     );
 }
