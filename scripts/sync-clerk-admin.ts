@@ -6,7 +6,8 @@ import { prisma } from "../src/lib/db";
 
 async function makeAdmin() {
     console.log("Fetching Clerk users...");
-    const users = await clerkClient.users.getUserList();
+    const client = await clerkClient();
+    const users = await client.users.getUserList();
     console.log(`Found ${users.data.length} users in Clerk.`);
 
     for (const user of users.data) {

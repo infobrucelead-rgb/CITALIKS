@@ -306,8 +306,7 @@ function emailTemplate({ title, body, cta, color }: { title: string; body: strin
     </div>`;
 }
 
-// Export for use in cron
-export { sendSubscriptionEmail };
+// Export removed because Next.js route files can only export HTTP method functions.
 
 // ── Onboarding email for new prospects ───────────────────────────────────────
 

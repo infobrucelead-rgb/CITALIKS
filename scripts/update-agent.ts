@@ -1,5 +1,5 @@
-import { updateRetellAgent } from "./src/lib/retell";
-import { prisma } from "./src/lib/db";
+import { updateRetellAgent } from "../src/lib/retell";
+import { prisma } from "../src/lib/db";
 
 async function run() {
     const clientId = "cmm0hcj6w000013wgcfyqalro";

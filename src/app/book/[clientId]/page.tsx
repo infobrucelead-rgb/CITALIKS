@@ -2,7 +2,7 @@ import { prisma as db } from "@/lib/db";
 import { notFound } from "next/navigation";
 import BookingClient from "./BookingClient";
 
-export default async function BookingPage({ params }: { params: { clientId: string } }) {
+export default async function BookingPage({ params }: { params: Promise<{ clientId: string }> }) {
     const { clientId } = await params;
 
     const client = await db.client.findUnique({

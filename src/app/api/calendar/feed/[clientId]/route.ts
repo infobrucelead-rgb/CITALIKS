@@ -4,9 +4,10 @@ import ical from "ical-generator";
 
 export async function GET(
     req: NextRequest,
-    { params }: { params: { clientId: string } }
+    context: { params: Promise<{ clientId: string }> }
 ) {
     try {
+        const params = await context.params;
         const { clientId } = params;
 
         // Verify client exists

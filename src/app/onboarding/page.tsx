@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Step1Business from "./steps/Step1Business";
 import Step2Services from "./steps/Step2Services";
@@ -37,7 +37,7 @@ async function saveStep(step: number, data: Partial<OnboardingData>, token?: str
     });
 }
 
-export default function OnboardingPage() {
+function OnboardingContent() {
     const router = useRouter();
     const [isLoading, setIsLoading] = useState(true);
     const [step, setStep] = useState(1);
@@ -171,5 +171,17 @@ export default function OnboardingPage() {
                 </div>
             </div>
         </div>
+    );
+}
+
+export default function OnboardingPage() {
+    return (
+        <Suspense fallback={
+            <div className="min-h-screen bg-slate-950 flex items-center justify-center">
+                <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-blue-500" />
+            </div>
+        }>
+            <OnboardingContent />
+        </Suspense>
     );
 }
