@@ -12,7 +12,7 @@
     --card-foreground: 0 0% 98%;
     --popover: 240 10% 6%;
     --popover-foreground: 0 0% 98%;
-    --primary: 221 83% 53%; /* blue-600 */
+    --primary: 175 95% 36%;
     --primary-foreground: 0 0% 98%;
     --secondary: 240 5% 13%;
     --secondary-foreground: 0 0% 98%;
@@ -24,7 +24,7 @@
     --destructive-foreground: 0 0% 98%;
     --border: 240 6% 16%;
     --input: 240 6% 16%;
-    --ring: 221 83% 53%;
+    --ring: 175 95% 36%;
     --radius: 0.75rem;
   }
 }
@@ -33,21 +33,39 @@
   * {
     @apply border-border;
   }
+
   body {
     @apply bg-background text-foreground;
     font-family: "Inter", sans-serif;
     -webkit-font-smoothing: antialiased;
   }
-  h1, h2, h3, h4, h5 {
+
+  h1,
+  h2,
+  h3,
+  h4,
+  h5 {
     font-family: "Plus Jakarta Sans", sans-serif;
   }
 }
 
 /* Scrollbar custom */
-::-webkit-scrollbar { width: 6px; }
-::-webkit-scrollbar-track { background: hsl(var(--background)); }
-::-webkit-scrollbar-thumb { background: hsl(var(--border)); border-radius: 3px; }
-::-webkit-scrollbar-thumb:hover { background: hsl(var(--primary)); }
+::-webkit-scrollbar {
+  width: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: hsl(var(--background));
+}
+
+::-webkit-scrollbar-thumb {
+  background: hsl(var(--border));
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: hsl(var(--primary));
+}
 
 /* Glass morphism util */
 .glass {
@@ -59,24 +77,22 @@
 
 /* Gradient text */
 .gradient-text {
-  background: linear-gradient(135deg, #3b82f6 0%, #10b981 100%);
-   -webkit-background-clip: text;
+  background: linear-gradient(135deg, #0284c7 0%, #05B2A4 100%);
+  -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
 }
 
 /* Glow effects */
 .glow-blue {
-  box-shadow: 0 0 40px rgba(37, 99, 235, 0.25);
+  box-shadow: 0 0 40px rgba(5, 178, 164, 0.25);
 }
 
 /* Animated gradient background */
 .bg-gradient-animated {
-  background: linear-gradient(
-    135deg,
-    #1e1b4b 0%,
-    #0f0f23 35%,
-    #0a0a1a 65%,
-    #1a0a2e 100%
-  );
+  background: linear-gradient(135deg,
+      #1e1b4b 0%,
+      #0f0f23 35%,
+      #0a0a1a 65%,
+      #1a0a2e 100%);
 }

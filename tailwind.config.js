@@ -15,6 +15,32 @@ module.exports = {
         },
         extend: {
             colors: {
+                violet: {
+                    50: '#f0fdfc',
+                    100: '#ccfbf7',
+                    200: '#99f6f0',
+                    300: '#5eead4',
+                    400: '#2dd4c2',
+                    500: '#05B2A4', // BRAND
+                    600: '#049286', // HOVER
+                    700: '#0f766e',
+                    800: '#115e59',
+                    900: '#134e4a',
+                    950: '#042f2e',
+                },
+                blue: {
+                    50: '#f0fdfc',
+                    100: '#ccfbf7',
+                    200: '#99f6f0',
+                    300: '#5eead4',
+                    400: '#2dd4c2',
+                    500: '#05B2A4',
+                    600: '#049286',
+                    700: '#0f766e',
+                    800: '#115e59',
+                    900: '#134e4a',
+                    950: '#042f2e',
+                },
                 border: "hsl(var(--border))",
                 input: "hsl(var(--input))",
                 ring: "hsl(var(--ring))",
