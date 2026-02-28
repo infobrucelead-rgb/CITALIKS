@@ -387,8 +387,8 @@ export default function AdminDashboardContent({ clients: initialClients }: { cli
 
             <div className="p-4 md:p-8 max-w-[1600px] mx-auto">
                 {/* Header */}
-                <header className="flex flex-col md:flex-row md:justify-between items-start md:items-center gap-4 mb-6 md:mb-10">
-                    <div className="flex items-center gap-4 md:gap-5">
+                <header className="flex flex-col md:flex-row md:justify-between items-center md:items-center gap-6 md:gap-4 mb-6 md:mb-10 text-center md:text-left">
+                    <div className="flex flex-col md:flex-row items-center gap-4 md:gap-5">
                         <button onClick={() => window.location.href = "/dashboard"} className="p-3 rounded-2xl bg-white/5 hover:bg-white/10 transition-colors shrink-0">
                             <ArrowLeft size={20} />
                         </button>
@@ -397,7 +397,7 @@ export default function AdminDashboardContent({ clients: initialClients }: { cli
                             <p className="text-white/30 uppercase text-[9px] md:text-[10px] font-black tracking-[0.2em]">Platform Administration · Super Admin</p>
                         </div>
                     </div>
-                    <div className="flex gap-3 w-full md:w-auto">
+                    <div className="flex flex-col sm:flex-row items-center gap-3 w-full md:w-auto justify-center md:justify-end">
                         <button onClick={() => setIsInviteModalOpen(true)} className="w-full md:w-auto justify-center px-5 py-3 md:py-2.5 rounded-xl bg-blue-600 shadow-lg shadow-blue-600/20 hover:bg-blue-500 transition-all flex items-center gap-2 font-bold text-sm">
                             <Plus size={16} /> <span className="hidden sm:inline">Enviar Invitación / Enlace</span><span className="sm:hidden">Invitación VIP / Pago</span>
                         </button>

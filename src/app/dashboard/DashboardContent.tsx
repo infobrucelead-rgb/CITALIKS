@@ -150,12 +150,12 @@ function NavItem({ icon, label, active = false, onClick }: { icon: any, label: s
 
 function Header({ title, subtitle, status, actions }: { title: string, subtitle: string, status?: boolean, actions?: React.ReactNode }) {
     return (
-        <header className="flex justify-between items-end mb-10">
-            <div>
-                <h1 className="text-3xl font-bold mb-2">{title}</h1>
-                <p className="text-white/40 text-sm">{subtitle}</p>
+        <header className="flex flex-col md:flex-row md:justify-between items-center md:items-end gap-6 md:gap-4 mb-8 md:mb-10 text-center md:text-left">
+            <div className="flex flex-col items-center md:items-start w-full md:w-auto">
+                <h1 className="text-2xl md:text-3xl font-bold mb-2">{title}</h1>
+                <p className="text-white/40 text-xs md:text-sm max-w-sm md:max-w-none">{subtitle}</p>
             </div>
-            <div className="flex items-center gap-4">
+            <div className="flex flex-col sm:flex-row items-center gap-4 w-full md:w-auto justify-center md:justify-end">
                 {actions}
                 {status !== undefined && (
                     <div className={`px-4 py-2 rounded-xl text-xs font-medium border flex items-center gap-2 ${status
