@@ -842,11 +842,15 @@ export default function AdminDashboardContent({ clients: initialClients }: { cli
                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                         {[
                                             { field: "businessName", label: "Nombre del Negocio", icon: <Users size={14} /> },
+                                            { field: "email", label: "Email", icon: <Mail size={14} /> },
                                             { field: "phone", label: "Teléfono Bot (Netelip)", icon: <Phone size={14} /> },
                                             { field: "transferPhone", label: "Teléfono Desvío", icon: <Phone size={14} /> },
                                             { field: "agentName", label: "Nombre del Agente", icon: <Bot size={14} /> },
                                             { field: "agentTone", label: "Tono del Agente", icon: <MessageSquare size={14} /> },
                                             { field: "calendarId", label: "ID Calendario Google", icon: <Calendar size={14} /> },
+                                            { field: "retellAgentId", label: "Retell Agent ID", icon: <Database size={14} /> },
+                                            { field: "databaseUrl", label: "URL de Base de Datos", icon: <Database size={14} /> },
+                                            { field: "googleAccessToken", label: "Token Google (Dev Mock)", icon: <Settings size={14} /> },
                                         ].map(({ field, label, icon }) => (
                                             <EditableField
                                                 key={field}
@@ -864,17 +868,14 @@ export default function AdminDashboardContent({ clients: initialClients }: { cli
                                         ))}
                                     </div>
 
-                                    {/* Read-only Info */}
-                                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                                        <InfoCard label="Email" value={selectedClient.email} onCopy={() => copyToClipboard(selectedClient.email)} />
-                                        <InfoCard label="Retell Agent ID" value={selectedClient.retellAgentId || "No configurado"} onCopy={selectedClient.retellAgentId ? () => copyToClipboard(selectedClient.retellAgentId) : undefined} />
-                                        <InfoCard label="Tipo de BD" value={selectedClient.databaseUrl ? "Dedicada (AWS)" : "Compartida (Master)"} />
-                                    </div>
-
                                     {/* Status + Onboarding */}
-                                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                                        <StatusBadge label="Estado" value={selectedClient.isActive ? "Activo" : "Suspendido"} active={selectedClient.isActive} />
-                                        <StatusBadge label="Onboarding" value={selectedClient.onboardingDone ? "Completado" : `Paso ${selectedClient.onboardingStep}`} active={selectedClient.onboardingDone} />
+                                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-6">
+                                        <div className="cursor-pointer hover:scale-[1.02] transition-transform" onClick={() => handleSaveField("isActive", !selectedClient.isActive as any)}>
+                                            <StatusBadge label="Estado" value={selectedClient.isActive ? "Activo" : "Suspendido"} active={selectedClient.isActive} />
+                                        </div>
+                                        <div className="cursor-pointer hover:scale-[1.02] transition-transform" onClick={() => handleSaveField("onboardingDone", !selectedClient.onboardingDone as any)}>
+                                            <StatusBadge label="Onboarding" value={selectedClient.onboardingDone ? "Completado" : `Paso ${selectedClient.onboardingStep}`} active={selectedClient.onboardingDone} />
+                                        </div>
                                         <StatusBadge label="Google Calendar" value={selectedClient.googleAccessToken ? "Conectado" : "No conectado"} active={!!selectedClient.googleAccessToken} />
                                         <StatusBadge label="Agente Retell" value={selectedClient.retellAgentId ? "Vinculado" : "Sin agente"} active={!!selectedClient.retellAgentId} />
                                     </div>
