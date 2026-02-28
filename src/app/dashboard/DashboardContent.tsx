@@ -1293,25 +1293,27 @@ function ConfigTab({ client, onUpdate }: { client: any, onUpdate: () => void }) 
                         </div>
                     </div>
 
-                    <h3 className="text-lg font-bold flex items-center gap-2 pt-4 border-t border-white/5">
-                        <Brain size={20} className="text-blue-400" /> Identidad del Agente
+                    <h3 className="text-lg font-bold flex justify-between items-center gap-2 pt-4 border-t border-white/5">
+                        <span className="flex items-center gap-2"><Brain size={20} className="text-blue-400" /> Identidad del Agente</span>
+                        <span className="text-[9px] uppercase tracking-widest text-orange-400 border border-orange-500/20 bg-orange-500/10 px-2 py-1 rounded-full flex items-center gap-1">Solo ADMIN</span>
                     </h3>
-                    <div className="space-y-4">
-                        <div>
+                    <div className="space-y-4 relative group">
+                        <div className="absolute inset-0 z-10 cursor-not-allowed" title="Contacta con tu administrador para modificar estos datos"></div>
+                        <div className="opacity-60 transition-opacity">
                             <label className="text-[10px] uppercase font-bold text-white/30 block mb-2">Nombre del asistente</label>
                             <input
                                 value={config.agentName}
-                                onChange={(e) => setConfig({ ...config, agentName: e.target.value })}
-                                className="w-full bg-white/5 border border-white/10 rounded-xl p-3 text-sm focus:border-blue-600 outline-none transition-all"
+                                disabled
+                                className="w-full bg-white/5 border border-white/10 rounded-xl p-3 text-sm outline-none transition-all"
                             />
                         </div>
-                        <div>
+                        <div className="opacity-60 transition-opacity">
                             <label className="text-[10px] uppercase font-bold text-white/30 block mb-2">Tono de voz</label>
                             <div className="relative">
                                 <select
                                     value={config.agentTone}
-                                    onChange={(e) => setConfig({ ...config, agentTone: e.target.value as any })}
-                                    className="w-full bg-white/5 border border-white/10 rounded-xl p-3 text-sm focus:border-blue-600 outline-none transition-all appearance-none"
+                                    disabled
+                                    className="w-full bg-white/5 border border-white/10 rounded-xl p-3 text-sm outline-none transition-all appearance-none"
                                 >
                                     <option value="profesional" className="text-black">Profesional</option>
                                     <option value="cercano" className="text-black">Cercano</option>
@@ -1319,15 +1321,15 @@ function ConfigTab({ client, onUpdate }: { client: any, onUpdate: () => void }) 
                                 <Settings size={16} className="absolute right-4 top-1/2 -translate-y-1/2 text-white/20 pointer-events-none" />
                             </div>
                         </div>
-                        <div className="pt-4">
+                        <div className="pt-4 opacity-60 transition-opacity">
                             <label className="text-[10px] uppercase font-bold text-white/30 block mb-2">Teléfono de desvío (Humano)</label>
                             <input
                                 value={config.transferPhone}
-                                onChange={(e) => setConfig({ ...config, transferPhone: e.target.value })}
+                                disabled
                                 placeholder="+34 600 000 000"
-                                className="w-full bg-white/5 border border-white/10 rounded-xl p-3 text-sm focus:border-blue-600 outline-none transition-all font-mono"
+                                className="w-full bg-white/5 border border-white/10 rounded-xl p-3 text-sm outline-none transition-all font-mono"
                             />
-                            <p className="text-[9px] text-white/20 mt-1 italic">Número al que se transferirá la llamada si el bot no puede ayudar.</p>
+                            <p className="text-[9px] text-white/40 mt-1 italic">Estos datos configuran el motor de Inteligencia Artificial directamente.</p>
                         </div>
                     </div>
                 </div>
