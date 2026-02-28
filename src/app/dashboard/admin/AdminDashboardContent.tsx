@@ -24,7 +24,8 @@ export default function AdminDashboardContent({ clients: initialClients }: { cli
         name: "",
         phone: "",
         plan: "biannual",
-        notes: ""
+        notes: "",
+        type: "stripe" as "stripe" | "free"
     });
     const [sendingInvite, setSendingInvite] = React.useState(false);
     const [activeTab, setActiveTab] = React.useState<TabType>("clients");
@@ -335,17 +336,24 @@ export default function AdminDashboardContent({ clients: initialClients }: { cli
     const handleSendInviteLink = async () => {
         setSendingInvite(true);
         try {
-            const res = await fetch("/api/admin/send-payment-link", {
+            const isFree = inviteForm.type === "free";
+            const endpoint = isFree ? "/api/admin/invite" : "/api/admin/send-payment-link";
+            const body = isFree
+                ? { email: inviteForm.email, businessName: inviteForm.name }
+                : inviteForm;
+
+            const res = await fetch(endpoint, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify(inviteForm)
+                body: JSON.stringify(body)
             });
             const data = await res.json();
             if (res.ok) {
-                showToast("Invitación y enlace de pago enviados correctamente");
+                showToast(isFree ? "Invitación gratuita enviada (Pase VIP)" : "Invitación y enlace de pago enviados correctamente");
                 setIsInviteModalOpen(false);
-                setInviteForm({ email: "", name: "", phone: "", plan: "biannual", notes: "" });
+                setInviteForm({ email: "", name: "", phone: "", plan: "biannual", notes: "", type: "stripe" });
                 if (activeTab === "prospects") fetchProspects();
+                if (activeTab === "invitations") fetchInvitations();
             } else {
                 showToast(data.error || "Error al enviar", "err");
             }
@@ -570,7 +578,8 @@ export default function AdminDashboardContent({ clients: initialClients }: { cli
                                                         name: prospect.name,
                                                         phone: prospect.phone || "",
                                                         plan: prospect.plan || "biannual",
-                                                        notes: prospect.notes || ""
+                                                        notes: prospect.notes || "",
+                                                        type: "stripe"
                                                     });
                                                     setIsInviteModalOpen(true);
                                                 }} className="p-2 text-white/20 hover:text-blue-400 hover:bg-blue-400/10 rounded-lg transition-all" title="Reenviar o Editar">
@@ -709,30 +718,48 @@ export default function AdminDashboardContent({ clients: initialClients }: { cli
 
                             <div className="grid grid-cols-2 gap-4">
                                 <div className="space-y-1.5">
-                                    <label className="text-[10px] font-black text-white/30 uppercase tracking-widest ml-1">Teléfono (Opcional)</label>
-                                    <input
-                                        value={inviteForm.phone}
-                                        onChange={e => setInviteForm({ ...inviteForm, phone: e.target.value })}
-                                        placeholder="+34..."
-                                        className="w-full bg-white/5 border border-white/10 rounded-2xl px-4 py-3 text-sm focus:border-blue-600 outline-none"
-                                    />
-                                </div>
-                                <div className="space-y-1.5">
-                                    <label className="text-[10px] font-black text-white/30 uppercase tracking-widest ml-1">Plan Elegido</label>
-                                    <div className="relative">
-                                        <select
-                                            value={inviteForm.plan}
-                                            onChange={e => setInviteForm({ ...inviteForm, plan: e.target.value })}
-                                            className="w-full bg-white/5 border border-white/10 rounded-2xl px-4 py-3 text-sm focus:border-blue-600 outline-none appearance-none cursor-pointer pr-10"
-                                        >
-                                            <option value="monthly" className="bg-[#0f0f18] text-white">Mensual (Setup Incl.)</option>
-                                            <option value="quarterly" className="bg-[#0f0f18] text-white">Trimestral</option>
-                                            <option value="biannual" className="bg-[#0f0f18] text-white">Semestral</option>
-                                            <option value="annual" className="bg-[#0f0f18] text-white">Anual</option>
-                                        </select>
-                                        <ChevronDown size={14} className="absolute right-4 top-1/2 -translate-y-1/2 text-white/30 pointer-events-none" />
+                                    <label className="text-[10px] font-black text-white/30 uppercase tracking-widest ml-1">Tipo de Invitación</label>
+                                    <div className="flex gap-2">
+                                        <button
+                                            onClick={() => setInviteForm({ ...inviteForm, type: "stripe" })}
+                                            className={`flex-1 py-3 rounded-2xl text-[11px] font-black uppercase transition-all border ${inviteForm.type === "stripe" ? "bg-blue-600/20 border-blue-500 text-blue-400" : "bg-white/5 border-white/10 text-white/40 hover:bg-white/10"}`}>
+                                            Cobrar (Stripe)
+                                        </button>
+                                        <button
+                                            onClick={() => setInviteForm({ ...inviteForm, type: "free" })}
+                                            className={`flex-1 py-3 rounded-2xl text-[11px] font-black uppercase transition-all border ${inviteForm.type === "free" ? "bg-emerald-500/20 border-emerald-500 text-emerald-400" : "bg-white/5 border-white/10 text-white/40 hover:bg-white/10"}`}>
+                                            Gratis (Pase VIP)
+                                        </button>
                                     </div>
                                 </div>
+                                {inviteForm.type === "stripe" && (
+                                    <div className="space-y-1.5">
+                                        <label className="text-[10px] font-black text-white/30 uppercase tracking-widest ml-1">Plan Elegido</label>
+                                        <div className="relative">
+                                            <select
+                                                value={inviteForm.plan}
+                                                onChange={e => setInviteForm({ ...inviteForm, plan: e.target.value })}
+                                                className="w-full bg-white/5 border border-white/10 rounded-2xl px-4 py-3 text-sm focus:border-blue-600 outline-none appearance-none cursor-pointer pr-10"
+                                            >
+                                                <option value="monthly" className="bg-[#0f0f18] text-white">Mensual (Setup Incl.)</option>
+                                                <option value="quarterly" className="bg-[#0f0f18] text-white">Trimestral</option>
+                                                <option value="biannual" className="bg-[#0f0f18] text-white">Semestral</option>
+                                                <option value="annual" className="bg-[#0f0f18] text-white">Anual</option>
+                                            </select>
+                                            <ChevronDown size={14} className="absolute right-4 top-1/2 -translate-y-1/2 text-white/30 pointer-events-none" />
+                                        </div>
+                                    </div>
+                                )}
+                            </div>
+
+                            <div className="space-y-1.5">
+                                <label className="text-[10px] font-black text-white/30 uppercase tracking-widest ml-1">Teléfono (Opcional)</label>
+                                <input
+                                    value={inviteForm.phone}
+                                    onChange={e => setInviteForm({ ...inviteForm, phone: e.target.value })}
+                                    placeholder="+34..."
+                                    className="w-full bg-white/5 border border-white/10 rounded-2xl px-4 py-3 text-sm focus:border-blue-600 outline-none"
+                                />
                             </div>
 
                             <div className="space-y-1.5">
