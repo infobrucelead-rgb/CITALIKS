@@ -4,7 +4,6 @@ import {
     LayoutDashboard, Users, Calendar, Phone, Activity,
     Settings, LogOut, Clock, ShieldCheck, Plus,
     Trash2, Search, UserPlus, Image as ImageIcon,
-    Trash2, Search, UserPlus, Image as ImageIcon,
     ExternalLink, Brain, Loader2, Edit2, ChevronRight, ChevronDown, DollarSign, X
 } from "lucide-react";
 import { useClerk } from "@clerk/nextjs";
