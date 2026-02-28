@@ -55,7 +55,7 @@ export default function DashboardContent({ client: initialClient }: { client: an
     return (
         <div className="min-h-screen bg-[#0a0a0f] text-white flex relative">
             {/* Sidebar */}
-            <aside className="fixed top-0 left-0 h-screen z-50 w-[72px] hover:w-64 border-r border-white/5 bg-[#0a0a0f] md:bg-black/20 p-3 md:p-4 flex flex-col gap-6 md:gap-8 transition-all duration-300 ease-[cubic-bezier(0.4,0,0.2,1)] group overflow-hidden">
+            <aside className="fixed top-0 left-0 h-screen z-50 w-[72px] hover:w-64 border-r border-white/5 bg-[#0a0a0f] p-3 md:p-4 flex flex-col gap-6 md:gap-8 transition-all duration-300 ease-[cubic-bezier(0.4,0,0.2,1)] group overflow-x-hidden overflow-y-auto custom-scrollbar shadow-2xl md:shadow-none">
                 <div className="flex items-center gap-3 px-1 mt-2">
                     <div className="w-10 h-10 shrink-0 rounded-2xl flex items-center justify-center overflow-hidden">
                         <img src="/logo.png" alt="CitaLiks Logo" className="w-full h-full object-contain" />
