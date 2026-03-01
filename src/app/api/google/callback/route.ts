@@ -26,7 +26,8 @@ export async function GET(req: NextRequest) {
     }
 
     try {
-        await exchangeCodeForTokens(code, baseClientIdStr);
+        const redirectUri = `${req.nextUrl.origin}/api/google/callback`;
+        await exchangeCodeForTokens(code, baseClientIdStr, redirectUri);
 
         // Update onboarding step to 5 (Calendar connected)
         await prisma.client.update({

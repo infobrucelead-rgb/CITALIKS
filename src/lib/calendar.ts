@@ -1,16 +1,17 @@
 import { google } from "googleapis";
 import { prisma } from "./db";
 
-function getOAuthClient() {
+// Allow passing a dynamic redirectUri to override the environment variable
+function getOAuthClient(redirectUri?: string) {
     return new google.auth.OAuth2(
         process.env.GOOGLE_CLIENT_ID,
         process.env.GOOGLE_CLIENT_SECRET,
-        process.env.GOOGLE_REDIRECT_URI
+        redirectUri || process.env.GOOGLE_REDIRECT_URI
     );
 }
 
-export function getGoogleAuthUrl(clientId: string): string {
-    const oAuth2Client = getOAuthClient();
+export function getGoogleAuthUrl(clientId: string, redirectUri?: string): string {
+    const oAuth2Client = getOAuthClient(redirectUri);
     return oAuth2Client.generateAuthUrl({
         access_type: "offline",
         prompt: "consent",
@@ -21,9 +22,10 @@ export function getGoogleAuthUrl(clientId: string): string {
 
 export async function exchangeCodeForTokens(
     code: string,
-    clientId: string
+    clientId: string,
+    redirectUri?: string
 ): Promise<void> {
-    const oAuth2Client = getOAuthClient();
+    const oAuth2Client = getOAuthClient(redirectUri);
     const { tokens } = await oAuth2Client.getToken(code);
 
     await prisma.client.update({

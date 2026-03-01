@@ -34,7 +34,10 @@ export async function GET(req: NextRequest) {
 
         const token = req.nextUrl.searchParams.get("token");
         const state = token ? `${client.id}:${token}` : client.id;
-        const url = getGoogleAuthUrl(state);
+
+        // Compute the absolute redirect URI based on the request origin dynamically
+        const redirectUri = `${req.nextUrl.origin}/api/google/callback`;
+        const url = getGoogleAuthUrl(state, redirectUri);
 
         // Ensure valid absolute URL
         return NextResponse.redirect(new URL(url));
