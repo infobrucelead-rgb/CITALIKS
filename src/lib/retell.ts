@@ -175,7 +175,7 @@ export async function createRetellAgent(config: AgentConfig): Promise<string> {
                 type: "retell-llm",
                 llm_id: llmId,
             },
-            voice_id: "eleven_multilingual_v2-Isabella",
+            voice_id: "11labs-Gaby",
             language: "es-ES",
             voice_speed: 0.95,
             voice_temperature: 0.7,
@@ -456,7 +456,7 @@ export async function updateRetellAgent(
 
     // Actualizar también la voz y configuración de audio del agente
     await retell.agent.update(agentId, {
-        voice_id: "eleven_multilingual_v2-Isabella",
+        voice_id: "11labs-Gaby",
         voice_speed: 0.95,
         voice_temperature: 0.7,
         responsiveness: 0.9,
