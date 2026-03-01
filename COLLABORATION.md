@@ -52,3 +52,38 @@ Si un deploy a producción introduce un bug crítico, se puede revertir a cualqu
 - `npm run dev`: Iniciar el servidor de desarrollo local.
 - `npm run build`: Compilar la aplicación para producción. Vercel ejecuta esto automáticamente. Es importante ejecutarlo en local antes de hacer push para detectar errores de compilación.
 - `npm run start`: Iniciar el servidor de producción localmente (después de un `build` exitoso).
+
+---
+
+## 📋 Notas de sesión — 01 Mar 2026 (Manus)
+
+### Problemas resueltos en esta sesión
+
+1. **Error ERESOLVE en Vercel** — Resuelto actualizando `next` a `15.2.3` en `package.json` y regenerando `package-lock.json`.
+
+2. **Schema Neon desincronizado** — La BD tenía columnas faltantes (`role`, enums). Se hizo reset completo del schema público y se reaplicó desde cero. Ahora `prisma migrate diff` devuelve `empty migration`.
+
+3. **`.env` con valores de ejemplo en local** — El archivo `.env` de la raíz tenía claves falsas (`pk_test_xxxxxxxxxxxx`) que Next.js leía antes que `.env.local`. **Antigravity: asegúrate de que en tu entorno local NO existe el archivo `.env` en la raíz. Solo `.env.local` (con valores reales) y `.env.example` (plantilla).**
+
+4. **Voz Retell `eleven_multilingual_v2-Isabella` eliminada** — Retell AI eliminó esta voz de su catálogo. Actualizada a `custom_voice_630a60422ba640c56991af203d` (voz personalizada de Pablo). Afectaba al botón "Lanzar CitaLiks" en el onboarding con error 404.
+
+5. **Google OAuth `redirect_uri_mismatch`** — El fix `910a7b1` de Antigravity es correcto. El error era caché de navegador. En ventana de incógnito funciona. No requiere cambios de código adicionales.
+
+### Estado actual del proyecto (01 Mar 2026)
+
+| Sistema | Estado |
+|---|---|
+| Vercel deploy | ✅ Funciona |
+| Base de datos Neon | ✅ Sincronizada con schema |
+| Auth Clerk | ✅ Funciona |
+| Google Calendar OAuth | ✅ Funciona |
+| Onboarding completo + Lanzar | ✅ Funciona (voz corregida) |
+| SMS Netelip | ⚠️ API SMS no contratada en Neural360 |
+| Stripe producción | ⚠️ Pendiente configurar webhook y precios |
+| Verificación Google OAuth | ⚠️ Pendiente solicitar a Google (1-2 semanas) |
+
+### Próximos pasos sugeridos para Antigravity
+
+- Solicitar verificación de la app en Google Cloud Console (eliminar aviso "app no verificada")
+- Configurar Stripe en producción: webhook + productos + precios
+- Contratar módulo SMS en Netelip para activar recordatorios

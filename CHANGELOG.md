@@ -268,4 +268,39 @@ CREATE UNIQUE INDEX IF NOT EXISTS "prospects_stripeSessionId_key" ON "prospects"
 
 ---
 
-*Última actualización: 28 Feb 2026 — Antigravity*
+## [2026-03-01] — Sesión de Fixes Manus (Entorno local + Producción)
+
+### Fixed
+
+#### Dependencias y despliegue en Vercel
+- **`package.json` + `package-lock.json`** — Actualizado `next` de `15.0.3` a `15.2.3` para satisfacer el peer dependency de `@clerk/nextjs@6.38.1`. Esto resolvía el error `ERESOLVE` en el build de Vercel que impedía desplegar.
+
+#### Base de datos Neon — Schema desincronizado
+- La base de datos Neon tenía un esquema antiguo sin la columna `role` en `clients` ni el enum `UserRole` correcto. Se hizo un reset completo del schema (`DROP SCHEMA public CASCADE`) y se reaplicó el schema completo desde `prisma migrate diff`. El diff ahora devuelve `empty migration` (100% sincronizado).
+- **Causa raíz:** Las migraciones parciales previas habían dejado el schema en un estado inconsistente que impedía arrancar la app localmente con el error `column "role" does not exist`.
+
+#### Entorno local — .env con valores de ejemplo
+- El archivo `.env` (no el `.env.local`) tenía `pk_test_xxxxxxxxxxxx` como valor de `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY`. Next.js lo leía antes que el `.env.local`, ignorando las claves reales de Clerk. **Solución:** borrar el `.env` y dejar solo el `.env.local` con los valores reales.
+- **Nota para Antigravity:** El `.env` de la raíz del proyecto local debe eliminarse. Solo debe existir `.env.local` (ignorado por git) y `.env.example` (plantilla).
+
+#### Google OAuth — redirect_uri_mismatch
+- **Error 400 `redirect_uri_mismatch`** — Investigado en profundidad. Conclusión: el código es correcto (el fix de Antigravity `910a7b1` funciona bien), las variables de Vercel son correctas y la URI `https://citaliks.vercel.app/api/google/callback` está registrada en Google Cloud Console. El error se producía por caché de sesión del navegador. En ventana de incógnito funciona correctamente.
+- **Aviso "app no verificada"** — Normal para apps con scope de Google Calendar. Los usuarios pueden hacer clic en "Continuar" y funciona. Para eliminarlo definitivamente hay que solicitar la verificación formal a Google (proceso de 1-2 semanas).
+
+#### Voz del agente Retell — 404 al lanzar
+- **`src/lib/retell.ts`** — La voz `eleven_multilingual_v2-Isabella` fue eliminada del catálogo de Retell AI, causando error `404 Item not found from voice` al pulsar "Lanzar CitaLiks" en el onboarding.
+- **Fix final:** Actualizada a la **voz personalizada `custom_voice_630a60422ba640c56991af203d`** (voz de Pablo, subida previamente a Retell). Esta voz se usa en todos los agentes nuevos que se creen desde el onboarding.
+
+### Added
+- **`src/app/api/diag/route.ts`** — Ampliado para mostrar: `req_origin`, `req_host`, `x_forwarded_host`, `x_forwarded_proto`, `dynamic_redirect_uri_built`, `google_sends_dynamic`, `google_sends_env`. Útil para depurar problemas OAuth en Vercel.
+
+### Estado tras esta sesión
+- ✅ Vercel despliega correctamente (Next 15.2.3 + Clerk 6.38.1)
+- ✅ Base de datos Neon sincronizada con el schema de Prisma
+- ✅ Login con Google Calendar funciona en producción
+- ✅ Botón "Lanzar CitaLiks" funciona (voz corregida)
+- ⚠️ Aviso "app no verificada" de Google — pendiente solicitar verificación formal
+
+---
+
+*Última actualización: 01 Mar 2026 — Manus*
