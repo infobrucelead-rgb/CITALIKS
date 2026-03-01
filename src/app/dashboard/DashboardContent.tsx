@@ -788,8 +788,41 @@ function ServicesTab({ client, onUpdate, selectedStaff, setSelectedStaff }: { cl
                             };
                             const dayName = DAY_NAMES[dayIdx];
 
+                            const handleCopyToAll = async (sourceSchedule: any) => {
+                                if (!confirm("¿Aplicar este mismo horario a todos los días laborales habilitados?")) return;
+
+                                const openDays = localSchedules.filter(s => s.isOpen);
+                                const updates = openDays.map(s => ({
+                                    ...s,
+                                    openTime: sourceSchedule.openTime,
+                                    closeTime: sourceSchedule.closeTime,
+                                    staffId: selectedStaff?.id || null
+                                }));
+
+                                // Optimistic update
+                                const newSchedules = localSchedules.map(s => {
+                                    if (s.isOpen) {
+                                        return { ...s, openTime: sourceSchedule.openTime, closeTime: sourceSchedule.closeTime };
+                                    }
+                                    return s;
+                                });
+                                setLocalSchedules(newSchedules);
+
+                                // Save all changes sequentially or in parallel
+                                try {
+                                    await Promise.all(updates.map(data => fetch('/api/schedules', {
+                                        method: 'POST',
+                                        body: JSON.stringify(data)
+                                    })));
+                                    onUpdate();
+                                } catch (err) {
+                                    console.error("Error copy to all", err);
+                                    onUpdate(); // Rollback
+                                }
+                            };
+
                             return (
-                                <div key={dayName} className="flex justify-between items-center py-2 border-b border-white/5 last:border-0">
+                                <div key={dayName} className="flex justify-between items-center py-2 border-b border-white/5 last:border-0 relative">
                                     <div className="flex items-center gap-3">
                                         {isEditingSchedule && (
                                             <input
@@ -819,6 +852,12 @@ function ServicesTab({ client, onUpdate, selectedStaff, setSelectedStaff }: { cl
                                                         onChange={(e) => handleTimeUpdate(dayIdx, 'closeTime', e.target.value)}
                                                         className="bg-white/5 border border-white/10 rounded-lg px-2 py-1 text-xs font-mono text-blue-400 outline-none focus:border-blue-600"
                                                     />
+                                                    <button
+                                                        onClick={() => handleCopyToAll(schedule)}
+                                                        title="Copiar a todos los días habilitados"
+                                                        className="ml-2 text-white/40 hover:text-blue-400 p-1 hover:bg-white/5 rounded-md transition-colors">
+                                                        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect width="14" height="14" x="8" y="8" rx="2" ry="2" /><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2" /></svg>
+                                                    </button>
                                                 </>
                                             ) : (
                                                 <span className="text-xs font-mono font-bold bg-blue-600/10 text-blue-400 px-3 py-1 rounded-lg border border-blue-600/20">

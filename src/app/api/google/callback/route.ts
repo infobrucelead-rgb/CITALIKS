@@ -9,28 +9,41 @@ export async function GET(req: NextRequest) {
     const state = searchParams.get("state"); // clientId or clientId:token
     const error = searchParams.get("error");
 
-    if (error || !code || !state) {
-        return NextResponse.redirect(new URL("/onboarding?calendar=error", req.url));
+    // Safely parse state to find token
+    let tokenStr = "";
+    let baseClientIdStr = "";
+    if (state) {
+        const parts = state.split(":");
+        baseClientIdStr = parts[0];
+        if (parts.length > 1) tokenStr = parts[1];
     }
 
-    const [clientId, token] = state.split(":");
+    if (error || !code || !state) {
+        const errUrl = tokenStr
+            ? `/onboarding?token=${tokenStr}&calendar=error`
+            : `/onboarding?calendar=error`;
+        return NextResponse.redirect(new URL(errUrl, req.url));
+    }
 
     try {
-        await exchangeCodeForTokens(code, clientId);
+        await exchangeCodeForTokens(code, baseClientIdStr);
 
         // Update onboarding step to 5 (Calendar connected)
         await prisma.client.update({
-            where: { id: clientId },
+            where: { id: baseClientIdStr },
             data: { onboardingStep: 5 }
         });
 
-        const onboardingUrl = token
-            ? `/onboarding?token=${token}&calendar=connected`
+        const onboardingUrl = tokenStr
+            ? `/onboarding?token=${tokenStr}&calendar=connected`
             : `/onboarding?calendar=connected`;
 
         return NextResponse.redirect(new URL(onboardingUrl, req.url));
     } catch (err) {
         console.error("[google/callback] error:", err);
-        return NextResponse.redirect(new URL("/onboarding?calendar=error", req.url));
+        const errFallbackUrl = tokenStr
+            ? `/onboarding?token=${tokenStr}&calendar=error`
+            : `/onboarding?calendar=error`;
+        return NextResponse.redirect(new URL(errFallbackUrl, req.url));
     }
 }
