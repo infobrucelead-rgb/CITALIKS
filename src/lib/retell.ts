@@ -514,16 +514,18 @@ export async function updateRetellAgent(
     // Normalize transfer number to E.164. Skip tool if number can't be normalized.
     const normalizedTransferFull = normalizePhone(fullConfig.transferPhone);
     if (normalizedTransferFull) {
-        /* [TEMPORARY FIX] Retell API 400 error: tools/4 type must be bridge_transfer
         tools.push({
             type: "transfer_call",
             name: "transfer_call",
+            transfer_destination: {
+                type: "predefined",
+                number: normalizedTransferFull, // Must be verified in Retell Dashboard identity first
+            },
             transfer_option: {
                 type: "cold_transfer",
-                number: normalizedTransferFull,
             },
-            description: "Transfiere la llamada a una persona si el cliente lo solicita o si hay problemas técnicos que no puedes resolver."
-        }); */
+            description: "Transfiere la llamada a una persona física humana si el cliente lo solicita expresamente (\"quiero hablar con un humano\" / \"pásame con alguien\") o si hay problemas técnicos sistemáticos que no puedes resolver."
+        });
     }
 
     // Update LLM with new prompt and tools
@@ -541,8 +543,8 @@ export async function updateRetellAgent(
 
     // Actualizar también la voz y configuración de audio del agente
     await retell.agent.update(agentId, {
-        voice_id: "custom_voice_630a60422ba640c56991af203d",
-        voice_speed: 0.95,
+        voice_id: "custom_voice_e3fbb6c669bc652610c5b60c8c", // 11Labs Pablo V2
+        voice_speed: 1.0,
         voice_temperature: 0.7,
         responsiveness: 0.9,
         interruption_sensitivity: 0.8,
