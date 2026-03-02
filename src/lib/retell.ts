@@ -289,7 +289,10 @@ async function createRetellLLM(
         tools.push({
             type: "transfer_call",
             name: "transfer_call",
-            transfer_destination: transferNumber,
+            transfer_option: {
+                type: "cold_transfer",
+                number: transferNumber,
+            },
             description: "Transfiere la llamada a una persona si el cliente lo solicita o si hay problemas técnicos que no puedes resolver."
         });
     }
@@ -411,7 +414,10 @@ export async function updateRetellAgent(
         tools.push({
             type: "transfer_call",
             name: "transfer_call",
-            transfer_destination: fullConfig.transferPhone,
+            transfer_option: {
+                type: "cold_transfer",
+                number: fullConfig.transferPhone,
+            },
             description: "Transfiere la llamada a una persona si el cliente lo solicita o si hay problemas técnicos que no puedes resolver."
         });
     }
