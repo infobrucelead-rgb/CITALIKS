@@ -26,7 +26,14 @@ export async function GET(req: NextRequest) {
     }
 
     try {
-        const redirectUri = `${req.nextUrl.origin}/api/google/callback`;
+        let redirectUri: string;
+        const appUrl = process.env.NEXT_PUBLIC_APP_URL || req.nextUrl.origin;
+
+        if (appUrl.includes("ngrok") || req.nextUrl.origin.includes("ngrok")) {
+            redirectUri = process.env.GOOGLE_REDIRECT_URI || "http://localhost:3003/api/google/callback";
+        } else {
+            redirectUri = `${appUrl}/api/google/callback`;
+        }
         await exchangeCodeForTokens(code, baseClientIdStr, redirectUri);
 
         // Update onboarding step to 5 (Calendar connected)

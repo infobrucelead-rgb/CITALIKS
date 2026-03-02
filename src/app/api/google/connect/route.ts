@@ -35,8 +35,15 @@ export async function GET(req: NextRequest) {
         const token = req.nextUrl.searchParams.get("token");
         const state = token ? `${client.id}:${token}` : client.id;
 
-        // Compute the absolute redirect URI based on the request origin dynamically
-        const redirectUri = `${req.nextUrl.origin}/api/google/callback`;
+        // Forzamos la URI que Google tiene en la whitelist si usamos ngrok.
+        let redirectUri: string;
+        const appUrl = process.env.NEXT_PUBLIC_APP_URL || req.nextUrl.origin;
+
+        if (appUrl.includes("ngrok") || req.nextUrl.origin.includes("ngrok")) {
+            redirectUri = process.env.GOOGLE_REDIRECT_URI || "http://localhost:3003/api/google/callback";
+        } else {
+            redirectUri = `${appUrl}/api/google/callback`;
+        }
         const url = getGoogleAuthUrl(state, redirectUri);
 
         // Ensure valid absolute URL

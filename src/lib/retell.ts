@@ -206,9 +206,9 @@ export async function createRetellAgent(config: AgentConfig): Promise<string> {
                 type: "retell-llm",
                 llm_id: llmId,
             },
-            voice_id: "custom_voice_630a60422ba640c56991af203d",
+            voice_id: "custom_voice_e3fbb6c669bc652610c5b60c8c", // 11Labs Pablo V2
             language: "es-ES",
-            voice_speed: 0.95,
+            voice_speed: 1.0,
             voice_temperature: 0.7,
             ambient_sound: "call-center",
             boosted_keywords: [config.businessName],
@@ -365,16 +365,18 @@ async function createRetellLLM(
     // Normalize transfer number to E.164. Skip tool if number can't be normalized.
     const normalizedTransfer = normalizePhone(transferNumber);
     if (normalizedTransfer) {
-        /* [TEMPORARY FIX] Retell API 400 error: tools/4 type must be bridge_transfer
         tools.push({
             type: "transfer_call",
             name: "transfer_call",
+            transfer_destination: {
+                type: "predefined",
+                number: normalizedTransfer, // Must be verified in Retell Dashboard identity first
+            },
             transfer_option: {
                 type: "cold_transfer",
-                number: normalizedTransfer,
             },
-            description: "Transfiere la llamada a una persona si el cliente lo solicita o si hay problemas técnicos que no puedes resolver."
-        }); */
+            description: "Transfiere la llamada a una persona física humana si el cliente lo solicita expresamente (\"quiero hablar con un humano\" / \"pásame con alguien\") o si hay problemas técnicos sistemáticos que no puedes resolver."
+        });
     }
 
     const llm = await retell.llm.create({
