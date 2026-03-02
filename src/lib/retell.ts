@@ -568,28 +568,34 @@ export async function linkPhoneNumberToAgent(
     phoneNumber: string
 ): Promise<{ success: boolean; phoneNumberId?: string; error?: string }> {
     try {
-        // Normalizar el número a formato E.164
-        const normalized = phoneNumber.startsWith("+") ? phoneNumber : `+${phoneNumber.replace(/^0+/, "")}`;
+        // Normalize to E.164
+        const normalized = normalizePhone(phoneNumber) ?? (phoneNumber.startsWith("+") ? phoneNumber : `+${phoneNumber}`);
 
-        // Intentar importar el número en Retell (si no existe ya)
-        let phoneObj: any;
+        // Step 1: Find if the number already exists in Retell's inventory
+        let phoneObj: any = null;
         try {
-            // Buscar si el número ya está importado en Retell
             const existingNumbers = await (retell as any).phoneNumber.list();
-            phoneObj = existingNumbers?.find((p: any) => p.phone_number === normalized);
-        } catch {
-            // Si no hay método list, continuamos
+            if (Array.isArray(existingNumbers)) {
+                phoneObj = existingNumbers.find((p: any) =>
+                    p.phone_number === normalized ||
+                    p.phone_number === phoneNumber
+                );
+            }
+        } catch (listErr) {
+            console.warn("[Retell] Could not list phone numbers:", (listErr as any)?.message);
         }
 
         if (!phoneObj) {
-            // Importar el número como número externo (SIP/Netelip)
-            phoneObj = await (retell as any).phoneNumber.import({
-                phone_number: normalized,
-                termination_uri: `sip:${normalized.replace("+", "")}@sip.netelip.com`,
-            });
+            // Number is not yet in Retell — cannot auto-link.
+            // Admin must first add the number in the Retell dashboard manually.
+            console.warn(`[Retell] Phone ${normalized} not found in Retell inventory. Number saved in DB only.`);
+            return {
+                success: false,
+                error: `El número ${normalized} no está en el inventario de Retell. Añádelo primero en el panel de Retell → Phone Numbers antes de vincularlo.`
+            };
         }
 
-        // Asignar el número al agente
+        // Step 2: Assign the number to the agent
         await (retell as any).phoneNumber.update(phoneObj.phone_number_id || phoneObj.id, {
             inbound_agent_id: agentId,
         });
@@ -598,7 +604,7 @@ export async function linkPhoneNumberToAgent(
         return { success: true, phoneNumberId: phoneObj.phone_number_id || phoneObj.id };
     } catch (err: any) {
         console.error("[Retell] Error vinculando número:", err?.message || err);
-        // No lanzamos error — guardamos el número en BD aunque Retell falle
         return { success: false, error: err?.message || "Error desconocido" };
     }
 }
+
