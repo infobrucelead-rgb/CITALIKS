@@ -365,29 +365,27 @@ export async function bookAppointment(params: {
         );
         const calendar = google.calendar({ version: "v3", auth: oAuth2Client });
 
-        // FIX: Build datetime with explicit Madrid timezone offset to avoid UTC shift.
-        // Without a timezone suffix, new Date() interprets the string as LOCAL time on the
-        // server (which may be UTC), causing a +1h shift when displayed in Europe/Madrid.
-        // We use the Intl API to get the current UTC offset for Europe/Madrid and apply it.
-        const tzOffset = (() => {
-            const testDate = new Date(`${params.date}T${normalizedTime}:00Z`);
-            const madridStr = testDate.toLocaleString('en-US', { timeZone: 'Europe/Madrid', hour12: false, hour: '2-digit', minute: '2-digit' });
-            const utcStr = testDate.toLocaleString('en-US', { timeZone: 'UTC', hour12: false, hour: '2-digit', minute: '2-digit' });
-            const madridH = parseInt(madridStr.split(':')[0]) + (madridStr.startsWith('24') ? 24 : 0);
-            const utcH = parseInt(utcStr.split(':')[0]) + (utcStr.startsWith('24') ? 24 : 0);
-            return madridH - utcH; // e.g. +1 in winter, +2 in summer
-        })();
-        const start = new Date(`${params.date}T${normalizedTime}:00Z`);
-        start.setUTCHours(start.getUTCHours() - tzOffset); // Shift back to get correct UTC
-        const end = new Date(start.getTime() + durationMin * 60_000);
+        // FIX: Build datetime strings without Z and let Google handle the timezone explicitly.
+        // This avoids Node.js Date stringifications shifting times in the background.
+        const [hStr, mStr] = normalizedTime.split(':');
+        const startTotalMin = parseInt(hStr) * 60 + parseInt(mStr);
+        const endTotalMin = startTotalMin + durationMin;
+        const endH = String(Math.floor(endTotalMin / 60)).padStart(2, '0');
+        const endM = String(endTotalMin % 60).padStart(2, '0');
 
         const event = await calendar.events.insert({
             calendarId,
             requestBody: {
                 summary: `${params.serviceName} — ${params.callerName}`,
                 description: params.notes || "Cita registrada por Cita Liks",
-                start: { dateTime: start.toISOString() },
-                end: { dateTime: end.toISOString() },
+                start: {
+                    dateTime: `${params.date}T${normalizedTime}:00`,
+                    timeZone: 'Europe/Madrid'
+                },
+                end: {
+                    dateTime: `${params.date}T${endH}:${endM}:00`,
+                    timeZone: 'Europe/Madrid'
+                },
             },
         });
 

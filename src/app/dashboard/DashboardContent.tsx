@@ -974,7 +974,7 @@ function StaffCalendar({ staffId, staffName }: { staffId: string, staffName: str
         const durationMin = (end.getTime() - start.getTime()) / 60000;
         const height = (durationMin / 60) * 80;
         return {
-            top: `${top + 40}px`,
+            top: `${top}px`,
             height: `${Math.max(height, 20)}px`,
             zIndex: 10
         };
@@ -1038,9 +1038,9 @@ function StaffCalendar({ staffId, staffName }: { staffId: string, staffName: str
                 </div>
             </div>
 
-            <div className="relative border border-white/5 rounded-3xl overflow-hidden bg-black/20">
+            <div className="relative border border-white/5 rounded-3xl overflow-hidden bg-black/20 overflow-x-auto max-w-[100vw] custom-scrollbar">
                 {viewMode !== 'month' ? (
-                    <>
+                    <div className="min-w-[700px] lg:min-w-0">
                         <div className="grid grid-cols-[80px_1fr] border-b border-white/5 bg-white/2">
                             <div className="h-10 border-r border-white/5" />
                             <div className={`grid h-10 ${viewMode === 'day' ? 'grid-cols-1' : 'grid-cols-7'}`}>
@@ -1061,7 +1061,7 @@ function StaffCalendar({ staffId, staffName }: { staffId: string, staffName: str
                             <div className="border-r border-white/5 bg-white/[0.01]">
                                 {hours.map(h => (
                                     <div key={h} className="h-20 border-b border-white/5 flex justify-center pt-2">
-                                        <span className="text-[10px] font-mono font-bold text-white/20 tracking-tighter">
+                                        <span className="text-xs font-mono font-bold text-white/60 tracking-tighter">
                                             {h.toString().padStart(2, '0')}:00
                                         </span>
                                     </div>
@@ -1088,14 +1088,11 @@ function StaffCalendar({ staffId, staffName }: { staffId: string, staffName: str
                                             onClick={() => setSelectedEvent(event)}
                                             style={{
                                                 ...getEventStyle(event),
-                                                gridColumnStart: dayIdx + 1,
+                                                gridColumn: `${dayIdx + 1} / span 1`,
                                                 width: 'calc(100% - 4px)',
                                                 left: '2px'
                                             }}
-                                            className={`absolute p-2 rounded-lg text-[10px] font-bold border flex flex-col justify-center overflow-hidden transition-all hover:scale-[1.01] hover:brightness-125 hover:z-50 cursor-pointer shadow-lg ${event.source === 'local'
-                                                ? 'bg-blue-600 border-blue-400 text-white'
-                                                : 'bg-emerald-600 border-emerald-400 text-white'
-                                                }`}
+                                            className={`absolute p-2 rounded-lg text-[10px] font-bold border flex flex-col justify-center overflow-hidden transition-all hover:scale-[1.01] hover:brightness-125 hover:z-50 cursor-pointer shadow-lg bg-blue-600 border-blue-400 text-white`}
                                         >
                                             <div className="flex items-center gap-1 mb-0.5">
                                                 {event.source === 'local' ? <Brain size={8} /> : <Calendar size={8} />}
@@ -1109,7 +1106,7 @@ function StaffCalendar({ staffId, staffName }: { staffId: string, staffName: str
                                 })}
                             </div>
                         </div>
-                    </>
+                    </div>
                 ) : (
                     <div className="grid grid-cols-7 border-white/5 h-[600px] overflow-y-auto">
                         {Array.from({ length: 7 }).map((_, i) => (
@@ -1132,7 +1129,7 @@ function StaffCalendar({ staffId, staffName }: { staffId: string, staffName: str
                                             <div
                                                 key={idx}
                                                 onClick={() => setSelectedEvent(e)}
-                                                className={`text-[8px] p-1 rounded-md truncate cursor-pointer transition-colors ${e.source === 'local' ? 'bg-blue-600/80 text-white hover:bg-blue-500' : 'bg-emerald-600/80 text-white hover:bg-emerald-500'}`}
+                                                className="text-[8px] p-1 rounded-md truncate cursor-pointer transition-colors bg-blue-600/80 text-white hover:bg-blue-500"
                                             >
                                                 {e.summary}
                                             </div>
@@ -1157,91 +1154,89 @@ function StaffCalendar({ staffId, staffName }: { staffId: string, staffName: str
             <div className="flex flex-wrap items-center gap-6 px-4 pt-2">
                 <div className="flex items-center gap-2">
                     <div className="w-3 h-3 rounded bg-blue-600 border border-blue-400" />
-                    <span className="text-[10px] uppercase font-bold text-white/40 tracking-widest">Citas del Bot</span>
-                </div>
-                <div className="flex items-center gap-2">
-                    <div className="w-3 h-3 rounded bg-emerald-600 border border-emerald-400" />
-                    <span className="text-[10px] uppercase font-bold text-white/40 tracking-widest">Google Calendar</span>
+                    <span className="text-[10px] uppercase font-bold text-white/40 tracking-widest">Citas Registradas</span>
                 </div>
             </div>
 
-            {selectedEvent && (
-                <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-[100] flex items-center justify-center p-4">
-                    <div className="glass p-8 rounded-[2.5rem] border-white/10 w-full max-w-md animate-in fade-in zoom-in duration-300 shadow-2xl relative">
-                        <button
-                            onClick={() => setSelectedEvent(null)}
-                            className="absolute top-6 right-6 p-2 hover:bg-white/10 rounded-full transition-colors text-white/40 hover:text-white"
-                        >
-                            <X size={20} />
-                        </button>
+            {
+                selectedEvent && (
+                    <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-[100] flex items-center justify-center p-4">
+                        <div className="glass p-8 rounded-[2.5rem] border-white/10 w-full max-w-md animate-in fade-in zoom-in duration-300 shadow-2xl relative">
+                            <button
+                                onClick={() => setSelectedEvent(null)}
+                                className="absolute top-6 right-6 p-2 hover:bg-white/10 rounded-full transition-colors text-white/40 hover:text-white"
+                            >
+                                <X size={20} />
+                            </button>
 
-                        <div className="flex items-center gap-4 mb-8">
-                            <div className={`p-4 rounded-2xl ${selectedEvent.source === 'local' ? 'bg-blue-600/20 text-blue-400' : 'bg-emerald-500/20 text-emerald-400'}`}>
-                                {selectedEvent.source === 'local' ? <Brain size={24} /> : <Calendar size={24} />}
-                            </div>
-                            <div>
-                                <h4 className="text-xl font-bold text-white mb-1">{selectedEvent.summary}</h4>
-                                <p className="text-xs text-white/40 uppercase font-black tracking-widest">
-                                    {selectedEvent.source === 'local' ? 'Cita del Bot' : 'Google Calendar'}
-                                </p>
-                            </div>
-                        </div>
-
-                        <div className="space-y-6">
-                            <div className="grid grid-cols-2 gap-4">
-                                <div className="p-4 rounded-2xl bg-white/5 border border-white/5">
-                                    <p className="text-[10px] text-white/20 uppercase font-bold mb-1 tracking-widest">Fecha</p>
-                                    <p className="text-sm font-bold text-white/80">
-                                        {new Date(selectedEvent.start.dateTime || selectedEvent.start.date).toLocaleDateString('es-ES', { day: 'numeric', month: 'long' })}
-                                    </p>
+                            <div className="flex items-center gap-4 mb-8">
+                                <div className="p-4 rounded-2xl bg-blue-600/20 text-blue-400">
+                                    {selectedEvent.source === 'local' ? <Brain size={24} /> : <Calendar size={24} />}
                                 </div>
-                                <div className="p-4 rounded-2xl bg-white/5 border border-white/5">
-                                    <p className="text-[10px] text-white/20 uppercase font-bold mb-1 tracking-widest">Hora</p>
-                                    <p className="text-sm font-bold text-white/80">
-                                        {new Date(selectedEvent.start.dateTime || selectedEvent.start.date).toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' })}
+                                <div>
+                                    <h4 className="text-xl font-bold text-white mb-1">{selectedEvent.summary}</h4>
+                                    <p className="text-xs text-white/40 uppercase font-black tracking-widest">
+                                        {selectedEvent.source === 'local' ? 'Cita Local' : 'Google Calendar'}
                                     </p>
                                 </div>
                             </div>
 
-                            {selectedEvent.metadata && (
-                                <div className="p-5 rounded-[1.5rem] bg-white/5 border border-white/5 space-y-4">
-                                    <div>
-                                        <p className="text-[10px] text-white/20 uppercase font-bold mb-1 tracking-widest">Cliente</p>
-                                        <div className="flex items-center gap-2">
-                                            <Users size={14} className="text-blue-400" />
-                                            <p className="text-sm font-bold text-white/90">{selectedEvent.metadata.callerName}</p>
-                                        </div>
+                            <div className="space-y-6">
+                                <div className="grid grid-cols-2 gap-4">
+                                    <div className="p-4 rounded-2xl bg-white/5 border border-white/5">
+                                        <p className="text-[10px] text-white/20 uppercase font-bold mb-1 tracking-widest">Fecha</p>
+                                        <p className="text-sm font-bold text-white/80">
+                                            {new Date(selectedEvent.start.dateTime || selectedEvent.start.date).toLocaleDateString('es-ES', { day: 'numeric', month: 'long' })}
+                                        </p>
                                     </div>
+                                    <div className="p-4 rounded-2xl bg-white/5 border border-white/5">
+                                        <p className="text-[10px] text-white/20 uppercase font-bold mb-1 tracking-widest">Hora</p>
+                                        <p className="text-sm font-bold text-white/80">
+                                            {new Date(selectedEvent.start.dateTime || selectedEvent.start.date).toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' })}
+                                        </p>
+                                    </div>
+                                </div>
 
-                                    {selectedEvent.metadata.callerPhone && (
+                                {selectedEvent.metadata && (
+                                    <div className="p-5 rounded-[1.5rem] bg-white/5 border border-white/5 space-y-4">
                                         <div>
-                                            <p className="text-[10px] text-white/20 uppercase font-bold mb-1 tracking-widest">Teléfono</p>
+                                            <p className="text-[10px] text-white/20 uppercase font-bold mb-1 tracking-widest">Cliente</p>
                                             <div className="flex items-center gap-2">
-                                                <Phone size={14} className="text-blue-400" />
-                                                <p className="text-sm font-mono font-bold text-white/90">{selectedEvent.metadata.callerPhone}</p>
+                                                <Users size={14} className="text-blue-400" />
+                                                <p className="text-sm font-bold text-white/90">{selectedEvent.metadata.callerName}</p>
                                             </div>
                                         </div>
-                                    )}
 
-                                    {selectedEvent.metadata.notes && (
-                                        <div>
-                                            <p className="text-[10px] text-white/20 uppercase font-bold mb-1 tracking-widest">Notas</p>
-                                            <p className="text-sm text-white/60 italic">"{selectedEvent.metadata.notes}"</p>
-                                        </div>
-                                    )}
-                                </div>
-                            )}
+                                        {selectedEvent.metadata.callerPhone && (
+                                            <div>
+                                                <p className="text-[10px] text-white/20 uppercase font-bold mb-1 tracking-widest">Teléfono</p>
+                                                <div className="flex items-center gap-2">
+                                                    <Phone size={14} className="text-blue-400" />
+                                                    <p className="text-sm font-mono font-bold text-white/90">{selectedEvent.metadata.callerPhone}</p>
+                                                </div>
+                                            </div>
+                                        )}
 
-                            {!selectedEvent.metadata && (
-                                <div className="p-5 text-center bg-white/5 rounded-2xl border border-dashed border-white/10">
-                                    <p className="text-xs text-white/20 uppercase font-bold tracking-widest">Detalles externos (Google)</p>
-                                </div>
-                            )}
+                                        {selectedEvent.metadata.notes && (
+                                            <div>
+                                                <p className="text-[10px] text-white/20 uppercase font-bold mb-1 tracking-widest">Notas</p>
+                                                <p className="text-sm text-white/60 italic">"{selectedEvent.metadata.notes}"</p>
+                                            </div>
+                                        )}
+                                    </div>
+                                )}
+
+                                {!selectedEvent.metadata && (
+                                    <div className="p-5 text-center bg-white/5 rounded-2xl border border-dashed border-white/10">
+                                        <p className="text-xs text-white/20 uppercase font-bold tracking-widest">Detalles externos (Google)</p>
+                                    </div>
+                                )}
+                            </div>
                         </div>
                     </div>
-                </div>
-            )}
-        </div>
+                )
+            }
+        </div >
     );
 }
 
