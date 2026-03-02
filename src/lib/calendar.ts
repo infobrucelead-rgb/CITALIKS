@@ -130,6 +130,14 @@ export async function checkAvailability(
         prismaOverride?: any;
     }
 ): Promise<TimeSlot[]> {
+    // 0. QUICK CHECK: Prevent searching in the past
+    // Using simple YYYY-MM-DD string comparison works because format is strictly lexically sortable
+    const todayLocal = new Date().toLocaleDateString('sv-SE'); // YYYY-MM-DD
+    if (date < todayLocal) {
+        console.warn(`[calendar/checkAvailability] Rejected past date lookup: ${date} (today is ${todayLocal})`);
+        return []; // No availability in the past
+    }
+
     const db = params?.prismaOverride || prisma;
     const staffCalendarId = params?.staffCalendarId;
     const busy: { start: string, end: string }[] = [];
@@ -139,9 +147,17 @@ export async function checkAvailability(
         const { oAuth2Client, calendarId } = await getAuthenticatedClient(clientId, db, staffCalendarId);
         const calendar = google.calendar({ version: "v3", auth: oAuth2Client });
 
-        // FIX: Use explicit UTC midnight so the query covers the full local day regardless of server timezone
-        const startOfDay = new Date(`${date}T00:00:00Z`);
-        const endOfDay = new Date(`${date}T23:59:59Z`);
+        // Use Europe/Madrid timezone boundaries for freebusy query
+        // CET is UTC+1 (winter) / UTC+2 (summer). Madrid midnight is at UTC-1 or UTC-2,
+        // so querying from UTC midnight would miss events booked at 0:00 local time.
+        const madridOffset = new Date(`${date}T12:00:00`).toLocaleString('en-US', { timeZone: 'Europe/Madrid', hour12: false, hour: '2-digit', minute: '2-digit' }) ===
+            new Date(`${date}T12:00:00`).toLocaleString('en-US', { timeZone: 'UTC', hour12: false, hour: '2-digit', minute: '2-digit' })
+            ? 0 : parseInt(new Date(`${date}T12:00:00`).toLocaleString('en-US', { timeZone: 'Europe/Madrid', hour12: false, hour: '2-digit' })) -
+            parseInt(new Date(`${date}T12:00:00`).toLocaleString('en-US', { timeZone: 'UTC', hour12: false, hour: '2-digit' }));
+        const offsetMs = madridOffset * 3600000;
+        const startOfDay = new Date(new Date(`${date}T00:00:00Z`).getTime() - offsetMs);
+        const endOfDay = new Date(new Date(`${date}T23:59:59Z`).getTime() - offsetMs);
+        console.log(`[calendar/checkAvailability] freebusy query: ${startOfDay.toISOString()} → ${endOfDay.toISOString()} (Madrid offset: +${madridOffset}h)`);
 
         const res = await calendar.freebusy.query({
             requestBody: {
@@ -219,7 +235,6 @@ export async function checkAvailability(
     // FIX: If the requested date is TODAY, skip slots that are already in the past.
     // Use local time (not UTC) to determine the current time.
     // Add a 15-minute buffer so the bot never offers a slot that starts in less than 15 min.
-    const todayLocal = new Date().toLocaleDateString('sv-SE'); // YYYY-MM-DD in local time
     if (date === todayLocal) {
         const now = new Date();
         const nowMinutes = now.getHours() * 60 + now.getMinutes() + 15; // +15 min buffer

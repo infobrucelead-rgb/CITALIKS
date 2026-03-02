@@ -173,6 +173,11 @@ export async function POST(req: NextRequest) {
                     staff_name?: string;
                 };
 
+                // Guard: date is required
+                if (!date) {
+                    result = { error: "Para consultar disponibilidad necesito que me digas el día. ¿Para qué fecha quieres la cita?" };
+                    break;
+                }
                 // Find service duration
                 const service = (safeContext.services || []).find(
                     (s: any) => !service_name || s.name.toLowerCase().includes(service_name.toLowerCase())
@@ -262,8 +267,22 @@ export async function POST(req: NextRequest) {
                     time: string;
                     notes?: string;
                     staff_name?: string;
-                    caller_phone?: string; // Optional: phone number provided verbally by the caller
+                    caller_phone?: string;
                 };
+
+                // Guard: validate required booking fields
+                if (!date || !time) {
+                    result = { error: `Para reservar necesito ${!date ? 'la fecha' : 'la hora'}. ¿Me puedes indicar ${!date ? 'qué día quieres la cita' : 'a qué hora'}?` };
+                    break;
+                }
+                if (!caller_name) {
+                    result = { error: "Para guardar la cita necesito saber a nombre de quién la pongo. ¿Me dices tu nombre?" };
+                    break;
+                }
+                if (!service_name) {
+                    result = { error: "¿Para qué servicio quieres la cita?" };
+                    break;
+                }
 
                 // Phone number resolution priority:
                 // 1. Real phone from Retell (body.call.from_number) — most reliable
@@ -454,6 +473,119 @@ export async function POST(req: NextRequest) {
                     resultJson: { cancelled, message },
                     durationMs: Date.now() - startMs,
                     webhookUrl,
+                });
+                break;
+            }
+
+
+            case "reschedule_appointment": {
+                const {
+                    caller_name,
+                    caller_phone: reschedPhone,
+                    old_date,
+                    new_date,
+                    new_time,
+                    service_name: reschedService,
+                } = args as {
+                    caller_name?: string;
+                    caller_phone?: string;
+                    old_date?: string;
+                    new_date: string;
+                    new_time: string;
+                    service_name?: string;
+                };
+
+                // Validate required fields
+                if (!new_date || !new_time) {
+                    result = { error: "Para cambiar la cita necesito la nueva fecha y la nueva hora. ¿Puedes indicarme cuándo quieres la nueva cita?" };
+                    break;
+                }
+                if (!caller_name && !reschedPhone && !callerPhoneFromRetell) {
+                    result = { error: "Para cambiar la cita necesito tu nombre o el número de teléfono con el que reservaste. ¿Puedes decirme esos datos?" };
+                    break;
+                }
+
+                const reschedResolvedPhone = callerPhoneFromRetell ?? reschedPhone ?? null;
+
+                // 1. Check availability in new slot FIRST
+                const reschedService_ = (safeContext.services || []).find(
+                    (s: any) => !reschedService || s.name.toLowerCase().includes(reschedService.toLowerCase())
+                );
+                const reschedDuration = reschedService_?.durationMin ?? 30;
+
+                const newSlots = await checkAvailability(clientId, new_date, reschedDuration, { prismaOverride: activePrisma });
+                const normalizedNewTime = new_time.substring(0, 5);
+                const newSlotFree = newSlots.some(s => s.start === normalizedNewTime);
+
+                if (!newSlotFree) {
+                    const altSlots = newSlots.slice(0, 3).map(s => s.start).join(", ");
+                    result = {
+                        rescheduled: false,
+                        message: `Lo siento, el hueco de las ${new_time} el ${formatDateES(new_date)} ya no está disponible.${altSlots ? ` Tengo libre a las ${altSlots}. ¿Te va alguno?` : " Ese día no tengo disponibilidad. ¿Probamos otro día?"}`
+                    };
+                    break;
+                }
+
+                // 2. Cancel old appointment (best effort — continue even if not found)
+                let oldCancelMessage = "";
+                if (old_date || caller_name || reschedResolvedPhone) {
+                    const { cancelled, message: cancelMsg } = await cancelAppointment({
+                        clientId,
+                        callerName: caller_name,
+                        callerPhone: reschedResolvedPhone ?? undefined,
+                        date: old_date,
+                        prismaOverride: activePrisma,
+                    });
+                    oldCancelMessage = cancelled ? " Tu cita anterior ha sido cancelada." : "";
+                    console.log(`[retell/function-call] reschedule: old cancel=${cancelled} (${cancelMsg})`);
+                }
+
+                // 3. Book new appointment
+                const { eventId: reschedId, confirmed: reschedConfirmed, error: reschedError } = await bookAppointment({
+                    clientId,
+                    callerName: caller_name || "Cliente",
+                    callerPhone: reschedResolvedPhone ?? undefined,
+                    serviceName: reschedService || "Servicio",
+                    date: new_date,
+                    time: normalizedNewTime,
+                    durationMin: reschedDuration,
+                    prismaOverride: activePrisma,
+                });
+
+                if (reschedConfirmed) {
+                    // SMS
+                    if (reschedResolvedPhone) {
+                        const smsg = buildConfirmationSms({
+                            businessName: masterClient.businessName || "Tu negocio",
+                            clientName: caller_name || "Cliente",
+                            serviceName: reschedService || "Servicio",
+                            date: formatDateES(new_date),
+                            time: normalizedNewTime,
+                        });
+                        sendSms(reschedResolvedPhone, smsg, (masterClient.businessName || "CITALIKS").slice(0, 11))
+                            .catch((err) => console.error("[retell/function-call] SMS reschedule error:", err?.message));
+                    }
+
+                    result = {
+                        rescheduled: true,
+                        message: `Listo${caller_name ? `, ${caller_name}` : ""}.${oldCancelMessage} Tu nueva cita queda para el ${formatDateES(new_date)} a las ${normalizedNewTime}. Recibirás un SMS de confirmación. ¿Algo más?`,
+                    };
+                } else {
+                    result = {
+                        rescheduled: false,
+                        message: `Pude cancelar tu cita anterior, pero no pude confirmar la nueva para las ${normalizedNewTime}. ${reschedError || "Por favor, intenta con otro horario."}`,
+                    };
+                }
+
+                await saveBotLog({
+                    clientId,
+                    functionName: "reschedule_appointment",
+                    inputArgs: args,
+                    resultJson: { rescheduled: reschedConfirmed, reschedId, reschedError },
+                    errorMsg: reschedError || undefined,
+                    durationMs: Date.now() - startMs,
+                    webhookUrl,
+                    confirmed: reschedConfirmed,
                 });
                 break;
             }
