@@ -34,6 +34,19 @@ function formatPhoneForSpeech(phone: string | null | undefined): string {
     return local;
 }
 
+/** Normalizes a phone number to E.164 for Retell. Returns null if invalid. */
+function normalizePhone(phone: string | null | undefined): string | null {
+    if (!phone) return null;
+    const digits = phone.replace(/\D/g, "");
+    // Already E.164 with country code (e.g. +34677...)
+    if (phone.startsWith("+") && digits.length >= 10) return "+" + digits;
+    // Spanish 9-digit mobile/landline
+    if (digits.length === 9) return "+34" + digits;
+    // Has country prefix 34 prepended (e.g. 34677146735)
+    if (digits.length === 11 && digits.startsWith("34")) return "+" + digits;
+    return null;
+}
+
 function generateSystemPrompt(config: AgentConfig): string {
     const { businessName, agentName, tone, services, schedules, staff } = config;
 
@@ -285,13 +298,15 @@ async function createRetellLLM(
         },
     ];
 
-    if (transferNumber) {
+    // Normalize transfer number to E.164. Skip tool if number can't be normalized.
+    const normalizedTransfer = normalizePhone(transferNumber);
+    if (normalizedTransfer) {
         tools.push({
             type: "transfer_call",
             name: "transfer_call",
             transfer_option: {
                 type: "cold_transfer",
-                number: transferNumber,
+                number: normalizedTransfer,
             },
             description: "Transfiere la llamada a una persona si el cliente lo solicita o si hay problemas técnicos que no puedes resolver."
         });
@@ -410,13 +425,15 @@ export async function updateRetellAgent(
         },
     ];
 
-    if (fullConfig.transferPhone) {
+    // Normalize transfer number to E.164. Skip tool if number can't be normalized.
+    const normalizedTransferFull = normalizePhone(fullConfig.transferPhone);
+    if (normalizedTransferFull) {
         tools.push({
             type: "transfer_call",
             name: "transfer_call",
             transfer_option: {
                 type: "cold_transfer",
-                number: fullConfig.transferPhone,
+                number: normalizedTransferFull,
             },
             description: "Transfiere la llamada a una persona si el cliente lo solicita o si hay problemas técnicos que no puedes resolver."
         });
