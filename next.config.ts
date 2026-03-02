@@ -5,6 +5,7 @@ const nextConfig: NextConfig = {
         serverActions: {
             allowedOrigins: ["localhost:3000", "localhost:3003"],
         },
+        serverComponentsExternalPackages: ['@prisma/client', 'prisma', 'stripe', 'googleapis'],
     },
 };
 
