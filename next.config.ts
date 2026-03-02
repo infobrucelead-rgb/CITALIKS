@@ -10,6 +10,7 @@ const nextConfig: NextConfig = {
         serverActions: {
             allowedOrigins: ["localhost:3000", "localhost:3003"],
         },
+        optimizePackageImports: ['googleapis', 'lucide-react', '@clerk/nextjs', 'stripe'],
     },
 };
 
