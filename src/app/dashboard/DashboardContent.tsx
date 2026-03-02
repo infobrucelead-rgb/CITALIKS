@@ -925,19 +925,32 @@ function StaffCalendar({ staffId, staffName }: { staffId: string, staffName: str
     const calendarDays = getDaysForView();
 
     useEffect(() => {
+        let isMounted = true;
         const fetchEvents = async () => {
-            setLoading(true);
             try {
                 const res = await fetch(`/api/calendar/events?staffId=${staffId}`);
                 const data = await res.json();
-                if (data.events) setEvents(data.events);
+                if (data.events && isMounted) {
+                    setEvents(data.events);
+                }
             } catch (err) {
                 console.error(err);
-            } finally {
-                setLoading(false);
             }
         };
-        fetchEvents();
+
+        // Initial fetch with loading state
+        setLoading(true);
+        fetchEvents().finally(() => {
+            if (isMounted) setLoading(false);
+        });
+
+        // Polling every 5 seconds for live updates
+        const intervalId = setInterval(fetchEvents, 5000);
+
+        return () => {
+            isMounted = false;
+            clearInterval(intervalId);
+        };
     }, [staffId, currentStart, viewMode]);
 
     const navigate = (offset: number) => {
@@ -1092,7 +1105,10 @@ function StaffCalendar({ staffId, staffName }: { staffId: string, staffName: str
                                                 width: 'calc(100% - 4px)',
                                                 left: '2px'
                                             }}
-                                            className={`absolute p-2 rounded-lg text-[10px] font-bold border flex flex-col justify-center overflow-hidden transition-all hover:scale-[1.01] hover:brightness-125 hover:z-50 cursor-pointer shadow-lg bg-blue-600 border-blue-400 text-white`}
+                                            className={`absolute p-2 rounded-lg text-[10px] font-bold border flex flex-col justify-center overflow-hidden transition-all hover:scale-[1.01] hover:brightness-125 hover:z-50 cursor-pointer shadow-lg ${event.source === 'local'
+                                                ? 'bg-emerald-600 border-emerald-400 text-white' // Bot = Verde
+                                                : 'bg-blue-600 border-blue-400 text-white'       // Google Manual = Azul
+                                                }`}
                                         >
                                             <div className="flex items-center gap-1 mb-0.5">
                                                 {event.source === 'local' ? <Brain size={8} /> : <Calendar size={8} />}
@@ -1129,7 +1145,10 @@ function StaffCalendar({ staffId, staffName }: { staffId: string, staffName: str
                                             <div
                                                 key={idx}
                                                 onClick={() => setSelectedEvent(e)}
-                                                className="text-[8px] p-1 rounded-md truncate cursor-pointer transition-colors bg-blue-600/80 text-white hover:bg-blue-500"
+                                                className={`text-[8px] p-1 rounded-md truncate cursor-pointer transition-colors ${e.source === 'local'
+                                                    ? 'bg-emerald-600/80 text-white hover:bg-emerald-500'
+                                                    : 'bg-blue-600/80 text-white hover:bg-blue-500'
+                                                    }`}
                                             >
                                                 {e.summary}
                                             </div>
@@ -1153,8 +1172,12 @@ function StaffCalendar({ staffId, staffName }: { staffId: string, staffName: str
 
             <div className="flex flex-wrap items-center gap-6 px-4 pt-2">
                 <div className="flex items-center gap-2">
+                    <div className="w-3 h-3 rounded bg-emerald-600 border border-emerald-400" />
+                    <span className="text-[10px] uppercase font-bold text-white/40 tracking-widest">Citas del Bot</span>
+                </div>
+                <div className="flex items-center gap-2">
                     <div className="w-3 h-3 rounded bg-blue-600 border border-blue-400" />
-                    <span className="text-[10px] uppercase font-bold text-white/40 tracking-widest">Citas Registradas</span>
+                    <span className="text-[10px] uppercase font-bold text-white/40 tracking-widest">Google Calendar</span>
                 </div>
             </div>
 
@@ -1170,13 +1193,13 @@ function StaffCalendar({ staffId, staffName }: { staffId: string, staffName: str
                             </button>
 
                             <div className="flex items-center gap-4 mb-8">
-                                <div className="p-4 rounded-2xl bg-blue-600/20 text-blue-400">
+                                <div className={`p-4 rounded-2xl ${selectedEvent.source === 'local' ? 'bg-emerald-500/20 text-emerald-400' : 'bg-blue-600/20 text-blue-400'}`}>
                                     {selectedEvent.source === 'local' ? <Brain size={24} /> : <Calendar size={24} />}
                                 </div>
                                 <div>
                                     <h4 className="text-xl font-bold text-white mb-1">{selectedEvent.summary}</h4>
                                     <p className="text-xs text-white/40 uppercase font-black tracking-widest">
-                                        {selectedEvent.source === 'local' ? 'Cita Local' : 'Google Calendar'}
+                                        {selectedEvent.source === 'local' ? 'Cita del Bot' : 'Google Calendar'}
                                     </p>
                                 </div>
                             </div>
