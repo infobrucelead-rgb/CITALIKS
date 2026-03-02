@@ -1,12 +1,1 @@
-{
-  "crons": [
-    {
-      "path": "/api/sms/reminders",
-      "schedule": "*/30 * * * *"
-    },
-    {
-      "path": "/api/stripe/subscription-cron",
-      "schedule": "0 8 * * *"
-    }
-  ]
-}
+{}
