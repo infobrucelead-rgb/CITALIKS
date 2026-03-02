@@ -1147,7 +1147,12 @@ function AppointmentsTable({ appointments, loading, onCancel, showClient }: { ap
                             {showClient && <td className="p-4 font-bold text-blue-400">{a.client?.businessName || a.clientId?.slice(0, 8)}</td>}
                             <td className="p-4">
                                 <p className="font-bold">{a.callerName}</p>
-                                {a.callerPhone && <p className="text-white/30 font-mono">{a.callerPhone}</p>}
+                                {a.callerPhone && (
+                                    <a href={`tel:${a.callerPhone}`} className="text-white/40 hover:text-white transition-colors font-mono flex items-center gap-1.5 w-fit mt-0.5 group" title="Llamar al cliente">
+                                        <Phone size={10} className="group-hover:scale-110 transition-transform" />
+                                        {a.callerPhone}
+                                    </a>
+                                )}
                             </td>
                             <td className="p-4 text-white/70">{a.serviceName}</td>
                             <td className="p-4 font-mono">

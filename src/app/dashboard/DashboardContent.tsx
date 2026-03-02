@@ -1233,10 +1233,10 @@ function StaffCalendar({ staffId, staffName }: { staffId: string, staffName: str
                                         {selectedEvent.metadata.callerPhone && (
                                             <div>
                                                 <p className="text-[10px] text-white/20 uppercase font-bold mb-1 tracking-widest">Teléfono</p>
-                                                <div className="flex items-center gap-2">
-                                                    <Phone size={14} className="text-blue-400" />
-                                                    <p className="text-sm font-mono font-bold text-white/90">{selectedEvent.metadata.callerPhone}</p>
-                                                </div>
+                                                <a href={`tel:${selectedEvent.metadata.callerPhone}`} className="flex items-center gap-2 hover:bg-white/5 p-1.5 -ml-1.5 rounded-xl transition-all w-fit group">
+                                                    <Phone size={14} className="text-blue-400 group-hover:scale-110 transition-transform" />
+                                                    <p className="text-sm font-mono font-bold text-blue-300 group-hover:text-blue-200 transition-colors">{selectedEvent.metadata.callerPhone}</p>
+                                                </a>
                                             </div>
                                         )}
 
