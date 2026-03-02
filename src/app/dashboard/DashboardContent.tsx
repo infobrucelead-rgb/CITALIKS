@@ -1107,7 +1107,7 @@ function StaffCalendar({ staffId, staffName }: { staffId: string, staffName: str
                                             }}
                                             className={`absolute p-2 rounded-lg text-[10px] font-bold border flex flex-col justify-center overflow-hidden transition-all hover:scale-[1.01] hover:brightness-125 hover:z-50 cursor-pointer shadow-lg ${event.source === 'local'
                                                 ? 'bg-emerald-600 border-emerald-400 text-white' // Bot = Verde
-                                                : 'bg-blue-600 border-blue-400 text-white'       // Google Manual = Azul
+                                                : 'bg-indigo-600 border-indigo-400 text-white'   // Google Manual = Azul
                                                 }`}
                                         >
                                             <div className="flex items-center gap-1 mb-0.5">
@@ -1147,7 +1147,7 @@ function StaffCalendar({ staffId, staffName }: { staffId: string, staffName: str
                                                 onClick={() => setSelectedEvent(e)}
                                                 className={`text-[8px] p-1 rounded-md truncate cursor-pointer transition-colors ${e.source === 'local'
                                                     ? 'bg-emerald-600/80 text-white hover:bg-emerald-500'
-                                                    : 'bg-blue-600/80 text-white hover:bg-blue-500'
+                                                    : 'bg-indigo-600/80 text-white hover:bg-indigo-500'
                                                     }`}
                                             >
                                                 {e.summary}
@@ -1176,7 +1176,7 @@ function StaffCalendar({ staffId, staffName }: { staffId: string, staffName: str
                     <span className="text-[10px] uppercase font-bold text-white/40 tracking-widest">Citas del Bot</span>
                 </div>
                 <div className="flex items-center gap-2">
-                    <div className="w-3 h-3 rounded bg-blue-600 border border-blue-400" />
+                    <div className="w-3 h-3 rounded bg-indigo-600 border border-indigo-400" />
                     <span className="text-[10px] uppercase font-bold text-white/40 tracking-widest">Google Calendar</span>
                 </div>
             </div>
@@ -1193,7 +1193,7 @@ function StaffCalendar({ staffId, staffName }: { staffId: string, staffName: str
                             </button>
 
                             <div className="flex items-center gap-4 mb-8">
-                                <div className={`p-4 rounded-2xl ${selectedEvent.source === 'local' ? 'bg-emerald-500/20 text-emerald-400' : 'bg-blue-600/20 text-blue-400'}`}>
+                                <div className={`p-4 rounded-2xl ${selectedEvent.source === 'local' ? 'bg-emerald-500/20 text-emerald-400' : 'bg-indigo-600/20 text-indigo-400'}`}>
                                     {selectedEvent.source === 'local' ? <Brain size={24} /> : <Calendar size={24} />}
                                 </div>
                                 <div>
