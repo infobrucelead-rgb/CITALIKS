@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@clerk/nextjs/server";
 import { prisma } from "@/lib/db";
-import { linkPhoneNumberToAgent } from "@/lib/retell";
 
 export async function PATCH(req: NextRequest) {
     const { userId } = await auth();
@@ -29,29 +28,17 @@ export async function PATCH(req: NextRequest) {
 
         console.log(`[Admin] Client ${clientId} updated fields:`, Object.keys(updates));
 
-        // Si se está asignando un número de teléfono y el cliente tiene agente de Retell,
-        // vincularlo automáticamente al agente
-        if (updates.phone && updatedClient.retellAgentId) {
-            const linkResult = await linkPhoneNumberToAgent(updatedClient.retellAgentId, updates.phone);
-            if (linkResult.success) {
-                console.log(`[Admin] Número ${updates.phone} vinculado al agente ${updatedClient.retellAgentId}`);
-            } else {
-                // No bloqueamos la respuesta, pero informamos del estado
-                console.warn(`[Admin] Número guardado en BD pero no vinculado en Retell: ${linkResult.error}`);
-                return NextResponse.json({
-                    success: true,
-                    client: updatedClient,
-                    warning: `Número guardado. Vinculación con Retell pendiente: ${linkResult.error}`
-                });
-            }
-        }
+        // Note: Phone number linking to Retell is NOT done automatically here.
+        // To link a phone number to the Retell agent, use the Retell dashboard directly
+        // or click "Actualizar Agente" which syncs the full agent config.
 
         return NextResponse.json({ success: true, client: updatedClient });
     } catch (error) {
-        console.error("[Admin] Error updating client status:", error);
-        return NextResponse.json({ error: "Error al actualizar el estado" }, { status: 500 });
+        console.error("[Admin] Error updating client:", error);
+        return NextResponse.json({ error: "Error al actualizar" }, { status: 500 });
     }
 }
+
 export async function DELETE(req: NextRequest) {
     const { userId } = await auth();
     if (!userId) return NextResponse.json({ error: "No autenticado" }, { status: 401 });
