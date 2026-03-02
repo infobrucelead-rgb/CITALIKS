@@ -10,3 +10,6 @@ tunnel.txt
 tunnel_err.txt
 ngrok.log
 ngrok_err.log
+.env.local.template
+.github/workflows/sms-reminders.yml
+tsconfig.tsbuildinfo
