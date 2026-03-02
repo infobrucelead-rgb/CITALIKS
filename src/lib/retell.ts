@@ -365,6 +365,7 @@ async function createRetellLLM(
     // Normalize transfer number to E.164. Skip tool if number can't be normalized.
     const normalizedTransfer = normalizePhone(transferNumber);
     if (normalizedTransfer) {
+        /* [TEMPORARY FIX] Retell API 400 error: tools/4 type must be bridge_transfer
         tools.push({
             type: "transfer_call",
             name: "transfer_call",
@@ -373,7 +374,7 @@ async function createRetellLLM(
                 number: normalizedTransfer,
             },
             description: "Transfiere la llamada a una persona si el cliente lo solicita o si hay problemas técnicos que no puedes resolver."
-        });
+        }); */
     }
 
     const llm = await retell.llm.create({
@@ -513,6 +514,7 @@ export async function updateRetellAgent(
     // Normalize transfer number to E.164. Skip tool if number can't be normalized.
     const normalizedTransferFull = normalizePhone(fullConfig.transferPhone);
     if (normalizedTransferFull) {
+        /* [TEMPORARY FIX] Retell API 400 error: tools/4 type must be bridge_transfer
         tools.push({
             type: "transfer_call",
             name: "transfer_call",
@@ -521,7 +523,7 @@ export async function updateRetellAgent(
                 number: normalizedTransferFull,
             },
             description: "Transfiere la llamada a una persona si el cliente lo solicita o si hay problemas técnicos que no puedes resolver."
-        });
+        }); */
     }
 
     // Update LLM with new prompt and tools
