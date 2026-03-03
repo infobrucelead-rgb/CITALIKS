@@ -102,7 +102,9 @@ export async function POST(req: NextRequest) {
         body.call?.caller_number ??
         null;
 
-    console.log(`[retell/function-call] Resolved function_name='${function_name}' clientId='${clientId}' callerPhone='${callerPhoneFromRetell ?? 'unknown'}'`);
+    const retellCallId: string | null = body.call?.call_id ?? null;
+
+    console.log(`[retell/function-call] Resolved function_name='${function_name}' clientId='${clientId}' callId='${retellCallId}' callerPhone='${callerPhoneFromRetell ?? 'unknown'}'`);
 
     if (!clientId) {
         await saveBotLog({
@@ -332,6 +334,7 @@ export async function POST(req: NextRequest) {
                         await activePrisma.callLog.create({
                             data: {
                                 clientId,
+                                retellCallId,
                                 callerNumber: resolvedPhone ?? "desconocido",
                                 actionTaken: "booked",
                                 appointmentId: eventId,
@@ -435,6 +438,7 @@ export async function POST(req: NextRequest) {
                         await activePrisma.callLog.create({
                             data: {
                                 clientId,
+                                retellCallId,
                                 callerNumber: callerPhoneFromRetell ?? args.caller_number ?? "desconocido",
                                 actionTaken: "cancelled",
                                 summary: `Cita cancelada de ${caller_name} el ${date}`,

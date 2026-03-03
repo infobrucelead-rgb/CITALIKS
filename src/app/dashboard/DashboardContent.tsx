@@ -172,6 +172,13 @@ function Header({ title, subtitle, status, actions }: { title: string, subtitle:
 }
 
 function OverviewTab({ client }: { client: any }) {
+    const logs = client.callLogs || [];
+    const totalCalls = logs.length;
+    const booked = logs.filter((l: any) => l.actionTaken === 'booked').length;
+    const totalDurationSec = logs.reduce((acc: number, log: any) => acc + (log.durationSec || 0), 0);
+    const totalDurationMin = Math.round(totalDurationSec / 60);
+    const avgDurationSec = totalCalls > 0 ? Math.round(totalDurationSec / totalCalls) : 0;
+
     return (
         <>
             <Header
@@ -181,10 +188,10 @@ function OverviewTab({ client }: { client: any }) {
             />
 
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6 mb-8 md:mb-10">
-                <StatCard title="Total llamadas" value={client.callLogs?.length || 0} trend="+0%" icon={<Phone className="text-blue-400" />} />
-                <StatCard title="Tiempo Total" value={"0 min"} trend="" icon={<Calendar className="text-emerald-400" />} />
-                <StatCard title="Reservas" value={client.callLogs?.filter((l: any) => l.actionTaken === 'booked').length || 0} trend="+0%" icon={<Users className="text-emerald-400" />} />
-                <StatCard title="Duración media" value={"0s"} trend="" icon={<Activity className="text-yellow-400" />} />
+                <StatCard title="Total llamadas" value={totalCalls} trend="" icon={<Phone className="text-blue-400" />} />
+                <StatCard title="Tiempo Total" value={`${totalDurationMin} min`} trend="" icon={<Calendar className="text-emerald-400" />} />
+                <StatCard title="Reservas" value={booked} trend="" icon={<Users className="text-emerald-400" />} />
+                <StatCard title="Duración media" value={`${avgDurationSec}s`} trend="" icon={<Activity className="text-yellow-400" />} />
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-10">
@@ -1480,6 +1487,7 @@ function CallsList({ logs }: { logs: any[] }) {
                         <th className="p-5 font-bold text-white/40 uppercase text-[10px] tracking-widest">Fecha & Hora</th>
                         <th className="p-5 font-bold text-white/40 uppercase text-[10px] tracking-widest">Cliente</th>
                         <th className="p-5 font-bold text-white/40 uppercase text-[10px] tracking-widest">Resultado</th>
+                        <th className="p-5 font-bold text-white/40 uppercase text-[10px] tracking-widest">Duración</th>
                         <th className="p-5 font-bold text-white/40 uppercase text-[10px] tracking-widest text-right">Detalles</th>
                     </tr>
                 </thead>
@@ -1506,6 +1514,11 @@ function CallsList({ logs }: { logs: any[] }) {
                                         'bg-white/5 text-white/40 border border-white/5'
                                     }`}>
                                     {log.actionTaken || 'CONSULTA'}
+                                </span>
+                            </td>
+                            <td className="p-5">
+                                <span className="font-mono text-white/60">
+                                    {log.durationSec ? `${Math.floor(log.durationSec / 60)}:${(log.durationSec % 60).toString().padStart(2, '0')}` : '—'}
                                 </span>
                             </td>
                             <td className="p-5 text-right">

@@ -920,7 +920,7 @@ export default function AdminDashboardContent({ clients: initialClients }: { cli
                                                 <MiniStat label="Total Llamadas" value={reportData.summary.totalCalls} color="blue" />
                                                 <MiniStat label="Tiempo Total" value={`${Math.round(reportData.summary.totalDurationSec / 60)} min`} color="violet" />
                                                 <MiniStat label="Reservas" value={reportData.summary.bookedCount} color="emerald" />
-                                                <MiniStat label="Duración Media" value={`${reportData.summary.averageDurationSec}s`} color="amber" />
+                                                <MiniStat label="Duración Media" value={`${Math.floor(reportData.summary.averageDurationSec / 60)}:${(reportData.summary.averageDurationSec % 60).toString().padStart(2, '0')}`} color="amber" />
                                             </div>
 
                                             {reportData.logs?.length > 0 && (
@@ -944,7 +944,9 @@ export default function AdminDashboardContent({ clients: initialClients }: { cli
                                                                         </span>
                                                                     </td>
                                                                     <td className="p-4 text-white/70">{log.summary || "—"}</td>
-                                                                    <td className="p-4 text-right text-white/40">{log.durationSec ? `${log.durationSec}s` : "—"}</td>
+                                                                    <td className="p-4 text-right text-white/40">
+                                                                        {log.durationSec ? `${Math.floor(log.durationSec / 60)}:${(log.durationSec % 60).toString().padStart(2, '0')}` : "—"}
+                                                                    </td>
                                                                 </tr>
                                                             ))}
                                                         </tbody>
