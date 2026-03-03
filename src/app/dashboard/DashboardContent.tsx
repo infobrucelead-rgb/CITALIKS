@@ -180,10 +180,11 @@ function OverviewTab({ client }: { client: any }) {
                 status={client.onboardingDone}
             />
 
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
-                <StatCard title="Llamadas totales" value={client.callLogs?.length || 0} trend="+0%" icon={<Phone className="text-blue-400" />} />
-                <StatCard title="Citas agendadas" value={client.callLogs?.filter((l: any) => l.actionTaken === 'booked').length || 0} trend="+0%" icon={<Calendar className="text-blue-400" />} />
-                <StatCard title="Equipo activo" value={client.staff?.length || 0} trend="OK" icon={<Users className="text-emerald-400" />} />
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6 mb-8 md:mb-10">
+                <StatCard title="Total llamadas" value={client.callLogs?.length || 0} trend="+0%" icon={<Phone className="text-blue-400" />} />
+                <StatCard title="Tiempo Total" value={"0 min"} trend="" icon={<Calendar className="text-emerald-400" />} />
+                <StatCard title="Reservas" value={client.callLogs?.filter((l: any) => l.actionTaken === 'booked').length || 0} trend="+0%" icon={<Users className="text-emerald-400" />} />
+                <StatCard title="Duración media" value={"0s"} trend="" icon={<Activity className="text-yellow-400" />} />
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-10">
@@ -1468,8 +1469,8 @@ function CallsList({ logs }: { logs: any[] }) {
     }
 
     return (
-        <div className="glass rounded-[2rem] overflow-hidden border-white/5 shadow-2xl">
-            <table className="w-full text-left text-sm">
+        <div className="glass rounded-[2rem] overflow-hidden border-white/5 shadow-2xl overflow-x-auto custom-scrollbar">
+            <table className="w-full text-left text-sm min-w-[600px]">
                 <thead>
                     <tr className="border-b border-white/5 bg-white/2">
                         <th className="p-5 font-bold text-white/40 uppercase text-[10px] tracking-widest">Fecha & Hora</th>

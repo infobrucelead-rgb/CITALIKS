@@ -1127,8 +1127,8 @@ function AppointmentsTable({ appointments, loading, onCancel, showClient }: { ap
         return <div className="h-40 flex items-center justify-center text-white/20 italic text-sm">No hay citas para mostrar</div>;
     }
     return (
-        <div className="rounded-2xl border border-white/5 overflow-hidden">
-            <table className="w-full text-xs text-left">
+        <div className="rounded-2xl border border-white/5 overflow-hidden overflow-x-auto custom-scrollbar">
+            <table className="w-full text-xs text-left min-w-[800px]">
                 <thead>
                     <tr className="bg-white/[0.03] border-b border-white/5">
                         {showClient && <th className="p-4 font-black text-white/30 uppercase tracking-widest text-[9px]">Negocio</th>}
