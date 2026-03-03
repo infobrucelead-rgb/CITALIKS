@@ -31,7 +31,7 @@ async function diagnose() {
 
         console.log(`Actualizando agente ${client.retellAgentId} para ${client.businessName}...`);
 
-        const appUrl = process.env.NEXT_PUBLIC_APP_URL || "https://api.citaliks.com";
+        const appUrl = process.env.NEXT_PUBLIC_APP_URL || "https://www.citaliks.com";
 
         await updateRetellAgent(client.retellAgentId, {
             clientId: client.id,

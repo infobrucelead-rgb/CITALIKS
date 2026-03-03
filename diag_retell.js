@@ -33,7 +33,7 @@ async function diagnose() {
 
         console.log(`Actualizando agente ${client.retellAgentId} para ${client.businessName}...`);
 
-        const appUrl = process.env.NEXT_PUBLIC_APP_URL || "https://api.citaliks.com";
+        const appUrl = process.env.NEXT_PUBLIC_APP_URL || "https://www.citaliks.com";
 
         // We can't easily require a .ts file if it's using ESM. 
         // Let's just inline the logic from updateRetellAgent here for diagnosis.

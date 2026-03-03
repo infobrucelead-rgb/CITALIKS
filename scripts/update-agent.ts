@@ -21,7 +21,7 @@ async function run() {
         tone: client.agentTone || "profesional",
         services: client.services as any,
         schedules: client.schedules as any,
-        webhookUrl: "https://api.citaliks.com" // Placeholder for dev
+        webhookUrl: "https://www.citaliks.com" // Placeholder for dev
     });
     console.log("Agent updated successfully");
 }
