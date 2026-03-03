@@ -92,7 +92,30 @@ export async function POST(req: NextRequest) {
     }
 
     const function_name: string = parsedFunctionName || "unknown";
-    const clientId = args?.client_id as string;
+    let clientId = args?.client_id as string;
+
+    // FALLBACK: If clientId is missing (common in phone calls if dynamic variables fail),
+    // try to resolve it using the phone number called (to_number)
+    // body.call.to_number is provided by Retell in the webhook requestBODY
+    if (!clientId && body.call?.to_number) {
+        const toPhone = body.call.to_number as string;
+        console.log(`[retell/function-call] ClientId missing in args. Attempting resolution via to_number: ${toPhone}`);
+
+        const resolvedClient = await prisma.client.findFirst({
+            where: {
+                OR: [
+                    { phone: toPhone },
+                    { phone: { endsWith: toPhone.replace("+34", "") } }
+                ]
+            },
+            select: { id: true, businessName: true }
+        });
+
+        if (resolvedClient) {
+            clientId = resolvedClient.id;
+            console.log(`[retell/function-call] Resolved clientId: ${clientId} (${resolvedClient.businessName})`);
+        }
+    }
 
     // Extract caller phone number from the Retell call object.
     // Retell exposes it as body.call.from_number for inbound calls.

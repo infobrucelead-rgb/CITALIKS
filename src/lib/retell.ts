@@ -271,7 +271,7 @@ async function createRetellLLM(
                         description: "Nombre del profesional específico solicitado (opcional)",
                     },
                 },
-                required: ["client_id", "date"],
+                required: ["date"],
             },
         },
         {
@@ -317,7 +317,7 @@ async function createRetellLLM(
                         description: "Número de teléfono alternativo si el cliente quiere usar uno diferente al detectado automáticamente",
                     },
                 },
-                required: ["client_id", "caller_name", "service_name", "date", "time"],
+                required: ["caller_name", "service_name", "date", "time"],
             },
         },
         {
@@ -336,7 +336,7 @@ async function createRetellLLM(
                     date: { type: "string" as const, description: "Fecha de la cita a cancelar (YYYY-MM-DD, opcional para acotar la búsqueda)" },
                     time: { type: "string" as const, description: "Hora de la cita a cancelar (HH:MM, opcional)" },
                 },
-                required: ["client_id"],
+                required: [],
             },
         },
         {
@@ -357,7 +357,7 @@ async function createRetellLLM(
                     new_time: { type: "string" as const, description: "Nueva hora HH:MM" },
                     service_name: { type: "string" as const, description: "Nombre del servicio (mismo que la cita original)" },
                 },
-                required: ["client_id", "new_date", "new_time"],
+                required: ["new_date", "new_time"],
             },
         },
     ];
@@ -446,7 +446,7 @@ export async function updateRetellAgent(
                     service_name: { type: "string" as const, description: "Nombre del servicio solicitado" },
                     staff_name: { type: "string" as const, description: "Nombre del profesional específico solicitado (opcional)" },
                 },
-                required: ["client_id", "date"],
+                required: ["date"],
             },
         },
         {
@@ -468,7 +468,7 @@ export async function updateRetellAgent(
                     notes: { type: "string" as const, description: "Notas adicionales opcionales" },
                     caller_phone: { type: "string" as const, description: "Número de teléfono alternativo si el cliente quiere usar uno diferente al detectado automáticamente" },
                 },
-                required: ["client_id", "caller_name", "service_name", "date", "time"],
+                required: ["caller_name", "service_name", "date", "time"],
             },
         },
         {
@@ -487,7 +487,7 @@ export async function updateRetellAgent(
                     date: { type: "string" as const, description: "Fecha de la cita a cancelar (YYYY-MM-DD, opcional para acotar la búsqueda)" },
                     time: { type: "string" as const, description: "Hora de la cita a cancelar (HH:MM, opcional)" },
                 },
-                required: ["client_id"],
+                required: [],
             },
         },
         {
@@ -508,7 +508,7 @@ export async function updateRetellAgent(
                     new_time: { type: "string" as const, description: "Nueva hora HH:MM" },
                     service_name: { type: "string" as const, description: "Nombre del servicio (mismo que la cita original)" },
                 },
-                required: ["client_id", "new_date", "new_time"],
+                required: ["new_date", "new_time"],
             },
         },
     ];
@@ -571,7 +571,8 @@ export async function deleteRetellAgent(agentId: string): Promise<void> {
  */
 export async function linkPhoneNumberToAgent(
     agentId: string,
-    phoneNumber: string
+    phoneNumber: string,
+    clientId: string
 ): Promise<{ success: boolean; phoneNumberId?: string; error?: string }> {
     try {
         // Normalize to E.164
@@ -601,9 +602,12 @@ export async function linkPhoneNumberToAgent(
             };
         }
 
-        // Step 2: Assign the number to the agent
+        // Step 2: Assign the number to the agent and set dynamic variables
         await (retell as any).phoneNumber.update(phoneObj.phone_number_id || phoneObj.id, {
             inbound_agent_id: agentId,
+            retell_llm_dynamic_variables: {
+                client_id: clientId,
+            }
         });
 
         console.log(`[Retell] Número ${normalized} vinculado al agente ${agentId}`);

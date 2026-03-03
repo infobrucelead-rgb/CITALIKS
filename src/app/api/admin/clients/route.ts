@@ -32,7 +32,7 @@ export async function PATCH(req: NextRequest) {
         // Si se está asignando un número de teléfono y el cliente tiene agente de Retell,
         // vincularlo automáticamente al agente
         if (updates.phone && updatedClient.retellAgentId) {
-            const linkResult = await linkPhoneNumberToAgent(updatedClient.retellAgentId, updates.phone);
+            const linkResult = await linkPhoneNumberToAgent(updatedClient.retellAgentId, updates.phone, updatedClient.id);
             if (linkResult.success) {
                 console.log(`[Admin] Número ${updates.phone} vinculado al agente ${updatedClient.retellAgentId}`);
             } else {
