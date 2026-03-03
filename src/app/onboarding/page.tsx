@@ -3,6 +3,7 @@
 import { useState, useEffect, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
+import { UserButton } from "@clerk/nextjs";
 import Step1Business from "./steps/Step1Business";
 import Step2Services from "./steps/Step2Services";
 import Step3Schedule from "./steps/Step3Schedule";
@@ -130,13 +131,18 @@ function OnboardingContent() {
     return (
         <div className="min-h-screen bg-gradient-animated flex flex-col">
             {/* Header */}
-            <div className="px-8 py-6 flex items-center gap-3">
-                <Link href="/" className="flex items-center gap-2 hover:opacity-80 transition-opacity">
-                    <img src="/logo.png" alt="CitaLiks Logo" className="w-10 h-10 object-contain drop-shadow-lg" />
-                    <span className="text-white font-bold text-lg">Cita<span className="gradient-text">Liks</span></span>
-                </Link>
-                <div className="w-px h-6 bg-white/20 mx-2" />
-                <span className="text-white/40 text-sm">Configurando tu asistente</span>
+            <div className="px-8 py-6 flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                    <a href="/" className="flex items-center gap-2 hover:opacity-80 transition-opacity" title="Volver al Inicio">
+                        <img src="/logo.png" alt="CitaLiks Logo" className="w-10 h-10 object-contain drop-shadow-lg" />
+                        <span className="text-white font-bold text-lg">Cita<span className="gradient-text">Liks</span></span>
+                    </a>
+                    <div className="w-px h-6 bg-white/20 mx-2" />
+                    <span className="text-white/40 text-sm">Configurando tu asistente</span>
+                </div>
+                <div>
+                    <UserButton />
+                </div>
             </div>
 
             {/* Progress */}
