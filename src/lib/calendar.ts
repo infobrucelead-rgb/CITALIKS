@@ -377,7 +377,7 @@ export async function bookAppointment(params: {
             calendarId,
             requestBody: {
                 summary: `${params.serviceName} — ${params.callerName}`,
-                description: params.notes || "Cita registrada por Cita Liks",
+                description: params.notes || "Cita registrada por CitaLiks",
                 start: {
                     dateTime: `${params.date}T${normalizedTime}:00`,
                     timeZone: 'Europe/Madrid'

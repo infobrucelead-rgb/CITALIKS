@@ -183,7 +183,7 @@ function OverviewTab({ client }: { client: any }) {
         <>
             <Header
                 title={`¡Hola ${client.agentName?.split(' ')[0] || "Asistente"}!`}
-                subtitle="Aquí tienes el resumen de Cita Liks para hoy."
+                subtitle="Aquí tienes el resumen de CitaLiks para hoy."
                 status={client.onboardingDone}
             />
 
@@ -250,7 +250,7 @@ function OverviewTab({ client }: { client: any }) {
                             <div className="p-4 rounded-2xl bg-blue-500/10 border border-blue-500/20 text-center relative overflow-hidden group">
                                 <div className="absolute inset-0 bg-blue-600/5 translate-y-full group-hover:translate-y-0 transition-transform"></div>
                                 <span className="relative z-10 text-xl font-mono font-bold text-blue-300">{client.phone || "+34 900 000 000"}</span>
-                                <p className="relative z-10 text-[9px] text-blue-300/60 mt-1 uppercase tracking-wider">Línea activa de Cita Liks</p>
+                                <p className="relative z-10 text-[9px] text-blue-300/60 mt-1 uppercase tracking-wider">Línea activa de CitaLiks</p>
                             </div>
                         </div>
                     </div>
