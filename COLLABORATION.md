@@ -87,3 +87,34 @@ Si un deploy a producción introduce un bug crítico, se puede revertir a cualqu
 - Solicitar verificación de la app en Google Cloud Console (eliminar aviso "app no verificada")
 - Configurar Stripe en producción: webhook + productos + precios
 - Contratar módulo SMS en Netelip para activar recordatorios
+
+---
+
+## 🚨 TAREA URGENTE PARA MANUS — 03 Mar 2026
+
+### Bug activo: Reservas por teléfono no funcionan
+
+El bot no puede agendar citas cuando alguien llama al **+34810101297**. Dice "problema técnico" y no agenda nada. El web chat funciona perfectamente.
+
+**Diagnóstico de Antigravity:** El problema era que las URLs de las herramientas del agente Retell apuntaban al túnel ngrok local. Se han actualizado a `https://citaliks.vercel.app` y se ha desplegado el fix (commit `ecdf13e`), pero el bot sigue fallando.
+
+**Sospecha principal:** Las variables de entorno de Vercel pueden no estar configuradas correctamente (especialmente `DATABASE_URL` y `RETELL_API_KEY`).
+
+### Pasos concretos para Manus
+
+1. **Verifica las env vars en Vercel** → Dashboard Vercel → CITALIKS → Settings → Environment Variables. Asegúrate de que están todas las del `.env.example`.
+
+2. **Prueba el endpoint de producción** con curl o Postman:
+```bash
+curl -X POST https://citaliks.vercel.app/api/retell/function-call?name=check_availability \
+  -H "Content-Type: application/json" \
+  -d '{"call":{"call_id":"test","call_type":"phone_call","to_number":"+34810101297","from_number":"677146735"},"args":{"date":"2026-03-05"}}'
+```
+Debe devolver `{"available_slots": [...]}`. Si devuelve error, ese es el problema.
+
+3. **Revisa los logs de Vercel** → Dashboard → Functions → Logs, filtra por los endpoints `/api/retell/function-call`.
+
+4. **Verifica en el dashboard de Retell** (app.retell.ai) que el agente `agent_0b57229b14ce99e87505e1a635` tiene los tools apuntando a `https://citaliks.vercel.app/...` y NO a ngrok.
+
+Ver detalle completo en `CHANGELOG.md` → sección "BUG CRÍTICO ACTIVO — 03 Mar 2026".
+

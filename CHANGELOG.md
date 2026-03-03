@@ -304,3 +304,45 @@ CREATE UNIQUE INDEX IF NOT EXISTS "prospects_stripeSessionId_key" ON "prospects"
 ---
 
 *Última actualización: 01 Mar 2026 — Manus*
+
+---
+
+## 🚨 BUG CRÍTICO ACTIVO — 03 Mar 2026 — Antigravity
+
+### Reservas por teléfono: el bot dice "problema técnico" y no agenda
+
+**Prioridad: ALTA** — El canal telefónico es el core del producto.
+
+#### Síntoma exacto
+El usuario llama al **+34810101297** (número de Neural360). El bot saluda correctamente, entiende el servicio y la fecha, dice "déjame mirar la agenda..." y luego responde "Ha habido un pequeño problema técnico". No agenda nada.
+
+El web chat funciona perfectamente.
+
+#### Diagnóstico realizado por Antigravity
+
+1. **Las herramientas NO se invocan en llamadas de teléfono.** El `transcript_object` de Retell para todas las llamadas de teléfono muestra **0 entradas de tipo `tool_call_invocation`**. El bot intenta consultar la agenda pero Retell no llega a llamar al endpoint.
+
+2. **Causa raíz encontrada:** Las URLs de las herramientas del agente de Retell apuntaban al **túnel ngrok local** (`philanthropistic-verbosely-lu.ngrok-free.dev`) en lugar del servidor de producción. Las llamadas del web chat funcionaban porque el navegador pasaba el "browser interstitial" de ngrok; las de teléfono (que Retell hace server-to-server) recibían HTML de ngrok y morían.
+
+3. **Fixes aplicados (commit `ecdf13e`, 03 Mar 2026):**
+   - Cambiadas las URLs de las herramientas de Retell de ngrok a `https://citaliks.vercel.app`
+   - Añadido fallback en `src/app/api/retell/function-call/route.ts`: si el bot no manda `client_id`, el servidor lo deduce buscando el cliente por el `to_number` de la llamada (`+34810101297` → cliente CitaLiks)
+   - Eliminado `client_id` como campo requerido en el schema del LLM de Retell (era un `required` que bloqueaba la invocación cuando las variables dinámicas no llegaban)
+   - Timeouts de las herramientas en Retell aumentados a 20 segundos
+
+4. **El problema PERSISTE tras el fix.** Tras el deploy en Vercel, el bot sigue sin agendar. **No sabemos si Vercel tiene las variables de entorno correctas configuradas.**
+
+#### Lo que necesita Manus investigar
+
+- [ ] **Verificar variables de entorno en Vercel:** Abrir el dashboard de Vercel → proyecto CITALIKS → Settings → Environment Variables y confirmar que existe `DATABASE_URL`, `RETELL_API_KEY`, y todas las variables del `.env.example` con valores de producción.
+- [ ] **Probar el endpoint de producción directamente:** `POST https://citaliks.vercel.app/api/retell/function-call?name=check_availability` con body `{"call":{"call_id":"test","call_type":"phone_call","to_number":"+34810101297","from_number":"677146735"},"args":{"date":"2026-03-05"}}`. Debe devolver JSON con `available_slots`.
+- [ ] **Revisar logs de Vercel** (Dashboard → Functions → Logs) para ver qué error devuelve el endpoint cuando Retell lo llama durante una llamada real.
+- [ ] **Comprobar en Retell** (dashboard de Retell → agente `agent_0b57229b14ce99e87505e1a635` → Tools) que las URLs están actualizadas a `https://citaliks.vercel.app/...`.
+
+#### Archivos clave implicados
+- `src/app/api/retell/function-call/route.ts` — Handler principal de las herramientas del bot
+- `src/lib/retell.ts` — Configuración y actualización del agente en Retell
+- `src/lib/calendar.ts` — Lógica de disponibilidad y booking
+
+*Última actualización: 03 Mar 2026 — Antigravity*
+
