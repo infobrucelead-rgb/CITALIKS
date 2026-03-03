@@ -427,7 +427,7 @@ export async function updateRetellAgent(
     // For development, we prefer the provided webhookUrl if it's not localhost.
     let baseUrl = fullConfig.webhookUrl;
     if (fullConfig.webhookUrl.includes("localhost")) {
-        baseUrl = process.env.RETELL_WEBHOOK_URL || "https://api.citaliks.com";
+        baseUrl = process.env.RETELL_WEBHOOK_URL || "https://www.citaliks.com";
     }
 
     const tools: any[] = [
