@@ -51,7 +51,7 @@ export async function syncBotWithBusinessData(clerkUserId: string) {
                 name: s.name,
                 googleCalendarId: s.googleCalendarId
             })),
-            webhookUrl: process.env.NEXT_PUBLIC_APP_URL || "https://api.citaliks.com"
+            webhookUrl: process.env.NEXT_PUBLIC_APP_URL || "https://www.citaliks.com"
         });
     } catch (error) {
         console.error("[BotSync] Error syncing bot:", error);

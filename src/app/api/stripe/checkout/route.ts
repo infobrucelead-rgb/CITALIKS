@@ -55,7 +55,7 @@ export async function POST(req: NextRequest) {
             });
         }
 
-        const appUrl = process.env.NEXT_PUBLIC_APP_URL || "https://app.citaliks.com";
+        const appUrl = process.env.NEXT_PUBLIC_APP_URL || "https://www.citaliks.com";
         const priceId = getPriceId(plan);
         // Only add setup fee for monthly plan
         const setupPriceId = plan === "monthly" ? process.env.STRIPE_PRICE_SETUP : undefined;

@@ -240,7 +240,7 @@ async function createRetellLLM(
     // a specifically configured RETELL_WEBHOOK_URL.
     let baseUrl = webhookUrl;
     if (webhookUrl.includes("localhost")) {
-        baseUrl = process.env.RETELL_WEBHOOK_URL || "https://api.citaliks.com";
+        baseUrl = process.env.RETELL_WEBHOOK_URL || "https://www.citaliks.com";
     }
 
     const tools: any[] = [

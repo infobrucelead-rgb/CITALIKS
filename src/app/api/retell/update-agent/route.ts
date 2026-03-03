@@ -22,7 +22,7 @@ export async function GET(req: NextRequest) {
             tone: client.agentTone || "profesional",
             services: client.services as any,
             schedules: client.schedules as any,
-            webhookUrl: "https://api.citaliks.com"
+            webhookUrl: "https://www.citaliks.com"
         });
 
         return NextResponse.json({ success: true, message: "Agent prompt updated with current date" });

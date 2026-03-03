@@ -73,7 +73,7 @@ export async function POST(req: NextRequest) {
 
                     } else if (prospectEmail) {
                         // NEW prospect — send onboarding email
-                        const appUrl = process.env.NEXT_PUBLIC_APP_URL || "https://app.citaliks.com";
+                        const appUrl = process.env.NEXT_PUBLIC_APP_URL || "https://www.citaliks.com";
 
                         // Update prospect status in DB
                         await prisma.prospect.upsert({
@@ -225,7 +225,7 @@ export async function POST(req: NextRequest) {
 // ── Email templates ───────────────────────────────────────────────────────────
 
 async function sendSubscriptionEmail(client: any, type: "activated" | "past_due" | "canceled" | "payment_failed" | "renewal_reminder", plan?: string) {
-    const appUrl = process.env.NEXT_PUBLIC_APP_URL || "https://app.citaliks.com";
+    const appUrl = process.env.NEXT_PUBLIC_APP_URL || "https://www.citaliks.com";
     const businessName = client.businessName || "tu negocio";
 
     const templates: Record<string, { subject: string; html: string }> = {

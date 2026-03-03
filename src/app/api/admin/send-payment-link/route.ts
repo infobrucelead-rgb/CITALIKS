@@ -26,7 +26,7 @@ export async function POST(req: NextRequest) {
   }
 
   try {
-    const appUrl = process.env.NEXT_PUBLIC_APP_URL || "https://app.citaliks.com";
+    const appUrl = process.env.NEXT_PUBLIC_APP_URL || "https://www.citaliks.com";
     const priceId = getPriceId(plan);
 
     // Setup fee ONLY for monthly plan as per rules

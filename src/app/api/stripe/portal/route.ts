@@ -34,7 +34,7 @@ export async function POST(req: NextRequest) {
             return NextResponse.json({ error: "Este cliente no tiene una suscripción activa en Stripe" }, { status: 400 });
         }
 
-        const appUrl = process.env.NEXT_PUBLIC_APP_URL || "https://app.citaliks.com";
+        const appUrl = process.env.NEXT_PUBLIC_APP_URL || "https://www.citaliks.com";
         const portalUrl = await createBillingPortalSession({
             customerId: client.stripeCustomerId,
             returnUrl: `${appUrl}/dashboard`,

@@ -1,5 +1,5 @@
-
 const { PrismaClient } = require('@prisma/client');
+require('dotenv').config({ path: '.env.local' });
 const prisma = new PrismaClient();
 async function main() {
     try {
@@ -8,9 +8,9 @@ async function main() {
         clients.forEach(c => {
             console.log(`- ID: ${c.id}`);
             console.log(`  Email: ${c.email}`);
-            console.log(`  Role: ${c.role}`);
             console.log(`  Business: ${c.businessName}`);
-            console.log(`  DB URL: ${c.databaseUrl ? 'YES' : 'NO'}`);
+            console.log(`  Agent ID: ${c.retellAgentId}`);
+            console.log(`  Phone: ${c.phone}`);
             console.log('---');
         });
     } catch (e) {

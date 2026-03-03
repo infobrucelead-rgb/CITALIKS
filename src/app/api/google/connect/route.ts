@@ -40,7 +40,7 @@ export async function GET(req: NextRequest) {
         const appUrl = process.env.NEXT_PUBLIC_APP_URL || req.nextUrl.origin;
 
         if (appUrl.includes("ngrok") || req.nextUrl.origin.includes("ngrok")) {
-            redirectUri = process.env.GOOGLE_REDIRECT_URI || "http://localhost:3003/api/google/callback";
+            redirectUri = process.env.GOOGLE_REDIRECT_URI || "https://www.citaliks.com/api/google/callback";
         } else {
             redirectUri = `${appUrl}/api/google/callback`;
         }

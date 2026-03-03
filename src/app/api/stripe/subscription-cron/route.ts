@@ -22,7 +22,7 @@ export async function POST(req: NextRequest) {
 
     const now = new Date();
     const in7Days = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000);
-    const appUrl = process.env.NEXT_PUBLIC_APP_URL || "https://app.citaliks.com";
+    const appUrl = process.env.NEXT_PUBLIC_APP_URL || "https://www.citaliks.com";
 
     const results = {
         reminders_sent: 0,

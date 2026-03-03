@@ -33,7 +33,7 @@ export async function POST(req: NextRequest) {
         if (!client) return NextResponse.json({ error: "Cliente no encontrado" }, { status: 404 });
         if (!client.retellAgentId) return NextResponse.json({ error: "Este cliente no tiene agente de Retell configurado" }, { status: 400 });
 
-        const appUrl = process.env.NEXT_PUBLIC_APP_URL || "https://api.citaliks.com";
+        const appUrl = process.env.NEXT_PUBLIC_APP_URL || "https://www.citaliks.com";
 
         await updateRetellAgent(client.retellAgentId, {
             clientId: client.id,
@@ -57,15 +57,11 @@ export async function POST(req: NextRequest) {
     } catch (error: any) {
         console.error("[Admin/UpdateAgent] Error:", error);
 
-        // Log error to file for diagnosis
-        const logPath = path.join(process.cwd(), "update_error.log");
-        const errorDetails = {
-            timestamp: new Date().toISOString(),
+        console.error("[Admin/UpdateAgent] Error Details:", {
             message: error.message,
             stack: error.stack,
             response: error.response?.data || error.response || "No response data"
-        };
-        fs.appendFileSync(logPath, JSON.stringify(errorDetails, null, 2) + "\n---\n");
+        });
 
         return NextResponse.json({ error: "Error al actualizar el agente", message: error.message }, { status: 500 });
     }
