@@ -15,7 +15,27 @@ export default function RootLayout({
     children: React.ReactNode;
 }) {
     return (
-        <ClerkProvider localization={esES}>
+        <ClerkProvider
+            localization={{
+                ...esES,
+                signIn: {
+                    ...esES.signIn,
+                    start: {
+                        ...esES.signIn?.start,
+                        title: "Entrar",
+                        subtitle: "para continuar a CitaLiks",
+                    },
+                },
+                signUp: {
+                    ...esES.signUp,
+                    start: {
+                        ...esES.signUp?.start,
+                        title: "Crear cuenta",
+                        subtitle: "para continuar a CitaLiks",
+                    },
+                },
+            }}
+        >
             <html lang="es" suppressHydrationWarning>
                 <body suppressHydrationWarning>{children}</body>
             </html>
