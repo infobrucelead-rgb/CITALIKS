@@ -7,8 +7,8 @@ import {
 } from "@/lib/calendar";
 import { sendSms, buildConfirmationSms, buildCancellationSms } from "@/lib/sms";
 
-import fs from 'fs';
-import path from 'path';
+// import fs from 'fs';
+// import path from 'path';
 
 // ── helpers ───────────────────────────────────────────────────────────────────
 
@@ -58,18 +58,18 @@ async function saveBotLog(data: {
 
 export async function POST(req: NextRequest) {
     const startMs = Date.now();
-    const logPath = path.join(process.cwd(), 'retell_debug.log');
     const rawBody = await req.text();
     const webhookUrl = req.url || "unknown";
 
-    // FIX: Do NOT log full headers (may contain auth tokens) — only log method and URL
-    fs.appendFileSync(logPath, `\n[${new Date().toISOString()}] REQUEST_START: ${webhookUrl}\nRAW: ${rawBody}\n`);
+    // FIX: Do NOT write to local filesystem in production (Vercel is read-only)
+    console.log(`[${new Date().toISOString()}] REQUEST_START: ${webhookUrl}`);
+    console.log(`RAW BODY: ${rawBody}`);
 
     let body: any;
     try {
         body = JSON.parse(rawBody);
     } catch {
-        fs.appendFileSync(logPath, `[${new Date().toISOString()}] ERROR: Invalid JSON\n`);
+        console.error(`[${new Date().toISOString()}] ERROR: Invalid JSON`);
         return NextResponse.json({ error: "Invalid JSON" }, { status: 400 });
     }
 
@@ -406,7 +406,6 @@ export async function POST(req: NextRequest) {
                 } else {
                     const msg = `BOOKING_FAILED: ${bookingError} for ${caller_name} at ${time}`;
                     console.error(`[retell/function-call] ${msg}`);
-                    fs.appendFileSync(logPath, `[${new Date().toISOString()}] ${msg}\n`);
                 }
 
                 // Show only last 3 digits for privacy and conversational agility
@@ -633,7 +632,7 @@ export async function POST(req: NextRequest) {
         }
 
         console.log("[retell/function-call] Result:", JSON.stringify(result));
-        fs.appendFileSync(logPath, `[${new Date().toISOString()}] RESULT: ${JSON.stringify(result)}\n`);
+        console.log(`[${new Date().toISOString()}] RESULT: ${JSON.stringify(result)}`);
 
         if (tenantPrisma) {
             tenantPrisma.$disconnect().catch(() => { });
@@ -645,7 +644,7 @@ export async function POST(req: NextRequest) {
         const errMsg = error.message || "Error desconocido";
         const stack = error.stack || "No stack trace";
         console.error("[retell/function-call] Unhandled error:", error);
-        fs.appendFileSync(logPath, `[${new Date().toISOString()}] UNHANDLED_ERROR: ${errMsg}\nSTACK: ${stack}\n`);
+        console.error(`[${new Date().toISOString()}] UNHANDLED_ERROR: ${errMsg}\nSTACK: ${stack}`);
 
         await saveBotLog({
             clientId,
