@@ -1012,8 +1012,8 @@ function StaffCalendar({ staffId, staffName }: { staffId: string, staffName: str
                     </div>
                 </div>
 
-                <div className="flex items-center gap-4">
-                    <div className="flex p-1 bg-white/5 rounded-xl border border-white/5">
+                <div className="flex items-center gap-2 w-full md:w-auto justify-between md:justify-end overflow-x-auto pb-2 md:pb-0 custom-scrollbar">
+                    <div className="flex p-1 bg-white/5 rounded-xl border border-white/5 shrink-0">
                         {(["day", "week", "month"] as const).map(v => (
                             <button
                                 key={v}
@@ -1025,11 +1025,11 @@ function StaffCalendar({ staffId, staffName }: { staffId: string, staffName: str
                         ))}
                     </div>
 
-                    <div className="flex items-center gap-2 bg-white/5 p-1 rounded-xl border border-white/5">
+                    <div className="flex items-center gap-1 bg-white/5 p-1 rounded-xl border border-white/5 shrink-0">
                         <button onClick={() => navigate(-1)} className="p-2 hover:bg-white/10 rounded-lg transition-colors text-white/60 hover:text-white">
                             <ChevronRight size={18} className="rotate-180" />
                         </button>
-                        <div className="relative">
+                        <div className="relative min-w-[3.5rem] flex justify-center">
                             <input
                                 type="date"
                                 ref={dateInputRef}
@@ -1038,10 +1038,10 @@ function StaffCalendar({ staffId, staffName }: { staffId: string, staffName: str
                             />
                             <span
                                 onClick={() => dateInputRef.current?.showPicker()}
-                                className="text-xs font-bold px-3 uppercase tracking-widest text-white/60 hover:text-blue-400 cursor-pointer transition-colors"
+                                className="text-xs font-bold px-1 md:px-3 text-center whitespace-nowrap uppercase tracking-widest text-white/60 hover:text-blue-400 cursor-pointer transition-colors"
                             >
                                 {viewMode === 'month'
-                                    ? currentStart.toLocaleDateString('es-ES', { month: 'short', year: 'numeric' })
+                                    ? currentStart.toLocaleDateString('es-ES', { month: 'short', year: '2-digit' })
                                     : currentStart.toLocaleDateString('es-ES', { day: 'numeric', month: 'short' })}
                             </span>
                         </div>
@@ -1059,11 +1059,14 @@ function StaffCalendar({ staffId, staffName }: { staffId: string, staffName: str
                             <div className="h-10 border-r border-white/5" />
                             <div className={`grid h-10 ${viewMode === 'day' ? 'grid-cols-1' : 'grid-cols-7'}`}>
                                 {calendarDays.map((day, i) => (
-                                    <div key={i} className={`flex items-center justify-center gap-2 border-r border-white/5 last:border-0 ${isSameDay(day, new Date()) ? 'bg-blue-600/10' : ''}`}>
-                                        <span className={`text-[10px] font-black uppercase tracking-tighter ${isSameDay(day, new Date()) ? 'text-blue-400' : 'text-white/40'}`}>
+                                    <div key={i} className={`flex flex-col md:flex-row items-center justify-center gap-1 md:gap-2 border-r border-white/5 last:border-0 ${isSameDay(day, new Date()) ? 'bg-blue-600/10' : ''}`}>
+                                        <span className={`hidden md:inline text-[10px] font-black uppercase tracking-tighter ${isSameDay(day, new Date()) ? 'text-blue-400' : 'text-white/40'}`}>
                                             {DAY_NAMES[day.getDay() === 0 ? 6 : day.getDay() - 1]}
                                         </span>
-                                        <span className={`text-xs font-bold ${isSameDay(day, new Date()) ? 'bg-blue-600 text-white w-5 h-5 flex items-center justify-center rounded-full' : 'text-white/60'}`}>
+                                        <span className={`md:hidden text-[9px] font-black uppercase tracking-tighter ${isSameDay(day, new Date()) ? 'text-blue-400' : 'text-white/40'}`}>
+                                            {DAY_NAMES[day.getDay() === 0 ? 6 : day.getDay() - 1].substring(0, 3)}
+                                        </span>
+                                        <span className={`text-[10px] md:text-xs font-bold ${isSameDay(day, new Date()) ? 'bg-blue-600 text-white w-4 h-4 md:w-5 md:h-5 flex items-center justify-center rounded-full' : 'text-white/60'}`}>
                                             {day.getDate()}
                                         </span>
                                     </div>
@@ -1128,7 +1131,8 @@ function StaffCalendar({ staffId, staffName }: { staffId: string, staffName: str
                     <div className="grid grid-cols-7 border-white/5 h-[600px] overflow-y-auto">
                         {Array.from({ length: 7 }).map((_, i) => (
                             <div key={i} className="h-10 bg-white/5 border-r border-b border-white/5 flex items-center justify-center">
-                                <span className="text-[10px] font-black uppercase text-white/30 tracking-widest">{DAY_NAMES[i]}</span>
+                                <span className="hidden md:inline text-[10px] font-black uppercase text-white/30 tracking-widest">{DAY_NAMES[i]}</span>
+                                <span className="md:hidden text-[9px] font-black uppercase text-white/30 tracking-tighter">{DAY_NAMES[i].substring(0, 3)}</span>
                             </div>
                         ))}
                         {calendarDays.map((day, i) => {
