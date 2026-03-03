@@ -16,6 +16,25 @@ export default function RootLayout({
 }) {
     return (
         <ClerkProvider
+            appearance={{
+                elements: {
+                    formButtonPrimary: "bg-emerald-600 hover:bg-emerald-500 text-sm",
+                    card: "glass border-white/5 shadow-2xl",
+                    headerTitle: "text-white",
+                    headerSubtitle: "text-white/60",
+                    socialButtonsBlockButton: "bg-white/5 border-white/10 text-white hover:bg-white/10",
+                    socialButtonsBlockButtonText: "text-white",
+                    dividerLine: "bg-white/10",
+                    dividerText: "text-white/40",
+                    formFieldLabel: "text-white/70",
+                    formFieldInput: "bg-white/5 border-white/20 text-white",
+                    footerActionLink: "text-emerald-400 hover:text-emerald-300",
+                    identityPreviewText: "text-white",
+                    identityPreviewEditButtonIcon: "text-emerald-400",
+                    otpCodeFieldInput: "bg-white/5 border-white/20 text-white border focus:border-emerald-500",
+                    formResendCodeLink: "text-emerald-400 hover:text-emerald-300 font-bold",
+                }
+            }}
             localization={{
                 ...esES,
                 signIn: {
