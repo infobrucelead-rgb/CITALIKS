@@ -3,7 +3,7 @@
 import { useState, useEffect, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
-import { UserButton } from "@clerk/nextjs";
+import { UserButton, useClerk } from "@clerk/nextjs";
 import Step1Business from "./steps/Step1Business";
 import Step2Services from "./steps/Step2Services";
 import Step3Schedule from "./steps/Step3Schedule";
@@ -41,6 +41,7 @@ async function saveStep(step: number, data: Partial<OnboardingData>, token?: str
 
 function OnboardingContent() {
     const router = useRouter();
+    const { signOut } = useClerk();
     const [isLoading, setIsLoading] = useState(true);
     const [step, setStep] = useState(1);
     const searchParams = useSearchParams();
@@ -133,10 +134,10 @@ function OnboardingContent() {
             {/* Header */}
             <div className="px-8 py-6 flex items-center justify-between">
                 <div className="flex items-center gap-3">
-                    <a href="/" className="flex items-center gap-2 hover:opacity-80 transition-opacity" title="Volver al Inicio">
+                    <button onClick={() => signOut({ redirectUrl: '/' })} className="flex items-center gap-2 hover:opacity-80 transition-opacity" title="Cerrar la sesión actual y volver al Inicio">
                         <img src="/logo.png" alt="CitaLiks Logo" className="w-10 h-10 object-contain drop-shadow-lg" />
                         <span className="text-white font-bold text-lg">Cita<span className="gradient-text">Liks</span></span>
-                    </a>
+                    </button>
                     <div className="w-px h-6 bg-white/20 mx-2" />
                     <span className="text-white/40 text-sm">Configurando tu asistente</span>
                 </div>

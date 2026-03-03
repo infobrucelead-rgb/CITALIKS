@@ -14,30 +14,46 @@ async function makeAdmin() {
         const email = user.emailAddresses[0]?.emailAddress;
         if (!email) continue;
 
-        console.log(`Processing user: ${email} (ID: ${user.id})`);
+        const TARGET_EMAIL = "neuralads.mkt@gmail.com";
 
-        const existing = await prisma.client.findUnique({
-            where: { clerkUserId: user.id }
-        });
-
-        if (!existing) {
-            await prisma.client.create({
-                data: {
-                    clerkUserId: user.id,
-                    email: email,
-                    role: "PLATFORM_ADMIN",
-                    onboardingDone: true,     // <--- This is the key, skips onboarding!
-                    businessName: "Admin User",
-                    isActive: true
-                }
+        if (email === TARGET_EMAIL) {
+            console.log(`Promoting target user: ${email} (ID: ${user.id})`);
+            const existing = await prisma.client.findUnique({
+                where: { clerkUserId: user.id }
             });
-            console.log(`Created new Admin client in DB for ${email}`);
+
+            if (!existing) {
+                await prisma.client.create({
+                    data: {
+                        clerkUserId: user.id,
+                        email: email,
+                        role: "PLATFORM_ADMIN",
+                        onboardingDone: true,
+                        businessName: "CitaLiks Admin",
+                        isActive: true
+                    }
+                });
+                console.log(`Created new Admin client in DB for ${email}`);
+            } else {
+                await prisma.client.update({
+                    where: { clerkUserId: user.id },
+                    data: { role: "PLATFORM_ADMIN", onboardingDone: true }
+                });
+                console.log(`Updated existing client to Admin for ${email}`);
+            }
         } else {
-            await prisma.client.update({
-                where: { clerkUserId: user.id },
-                data: { role: "PLATFORM_ADMIN", onboardingDone: true }
+            // Force non-admins out to standard role if they were previously admin
+            const existing = await prisma.client.findUnique({
+                where: { clerkUserId: user.id }
             });
-            console.log(`Updated existing client to Admin for ${email}`);
+
+            if (existing && existing.role === "PLATFORM_ADMIN") {
+                await prisma.client.update({
+                    where: { clerkUserId: user.id },
+                    data: { role: "BUSINESS" }
+                });
+                console.log(`Demoted previous admin: ${email}`);
+            }
         }
     }
 }

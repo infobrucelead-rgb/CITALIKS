@@ -1,3 +1,5 @@
+import { config } from "dotenv";
+config({ path: ".env.local" });
 import { prisma } from "../src/lib/db";
 
 async function main() {
