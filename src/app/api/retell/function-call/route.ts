@@ -263,10 +263,18 @@ export async function POST(req: NextRequest) {
                     ? ` Veo que nos llamas desde el número ${callerPhoneFromRetell}. ¿Quieres que guardemos este número para la cita o prefieres indicar otro?`
                     : '';
 
+                const now = new Date();
+                const serverTime = {
+                    date: now.toLocaleDateString("es-ES", { year: "numeric", month: "2-digit", day: "2-digit", timeZone: "Europe/Madrid" }).split("/").reverse().join("-"),
+                    time: now.toLocaleTimeString("es-ES", { hour: "2-digit", minute: "2-digit", hour12: false, timeZone: "Europe/Madrid" }),
+                    weekday: now.toLocaleDateString("es-ES", { weekday: "long", timeZone: "Europe/Madrid" })
+                };
+
                 result = {
                     available_slots: slotStrings,
                     staff_name: staff?.name || null,
                     detected_phone: callerPhoneFromRetell,
+                    server_current_time: serverTime,
                     message: slotsMessage + phoneMsg,
                 };
 
@@ -414,8 +422,15 @@ export async function POST(req: NextRequest) {
                     ? ` Hemos guardado tu teléfono acabado en ${phoneLast3} por si necesitamos contactarte.`
                     : '';
 
+                const nowBook = new Date();
+                const serverTimeBook = {
+                    date: nowBook.toLocaleDateString("es-ES", { year: "numeric", month: "2-digit", day: "2-digit", timeZone: "Europe/Madrid" }).split("/").reverse().join("-"),
+                    time: nowBook.toLocaleTimeString("es-ES", { hour: "2-digit", minute: "2-digit", hour12: false, timeZone: "Europe/Madrid" }),
+                };
+
                 result = {
                     confirmed,
+                    server_current_time: serverTimeBook,
                     message: confirmed
                         ? `Perfecto, ${caller_name}. Tu cita de ${service_name}${bookStaff ? ` con ${bookStaff.name}` : ""} queda confirmada para el ${formatDateES(date)} a las ${time}.${phoneConfirmMsg} ¡Hasta pronto!`
                         : `Lo siento, no he podido confirmar la cita. ${bookingError || "Por favor, intenta con otro horario."}`,
