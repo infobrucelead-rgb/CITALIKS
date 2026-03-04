@@ -11,6 +11,17 @@ export async function GET(req: NextRequest) {
             return NextResponse.json({ error: "No autenticado" }, { status: 401 });
         }
 
+        // Validate environment variables
+        if (!process.env.GOOGLE_CLIENT_ID || !process.env.GOOGLE_CLIENT_SECRET) {
+            console.error("Faltan variables de entorno de Google:");
+            console.error("- GOOGLE_CLIENT_ID:", !!process.env.GOOGLE_CLIENT_ID);
+            console.error("- GOOGLE_CLIENT_SECRET:", !!process.env.GOOGLE_CLIENT_SECRET);
+            return NextResponse.json({
+                error: "Configuración de Google incompleta",
+                details: "El servidor no tiene configurado el GOOGLE_CLIENT_ID. Revisa las variables de entorno en Vercel."
+            }, { status: 500 });
+        }
+
         let client = await prisma.client.findUnique({
             where: { clerkUserId: userId },
             select: { id: true },
