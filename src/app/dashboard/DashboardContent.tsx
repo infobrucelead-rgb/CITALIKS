@@ -53,9 +53,9 @@ export default function DashboardContent({ client: initialClient }: { client: an
     };
 
     return (
-        <div className="min-h-screen bg-[#0a0a0f] text-white flex relative">
-            {/* Sidebar */}
-            <aside className="fixed top-0 left-0 h-screen z-50 w-[72px] hover:w-64 border-r border-white/5 bg-[#0a0a0f] p-3 md:p-4 flex flex-col gap-6 md:gap-8 transition-all duration-300 ease-[cubic-bezier(0.4,0,0.2,1)] group overflow-x-hidden overflow-y-auto custom-scrollbar shadow-2xl md:shadow-none">
+        <div className="min-h-screen bg-[#0a0a0f] text-white flex flex-col md:flex-row relative">
+            {/* Sidebar (Desktop Only) */}
+            <aside className="hidden md:flex fixed top-0 left-0 h-screen z-50 w-[72px] hover:w-64 border-r border-white/5 bg-[#0a0a0f] p-3 md:p-4 flex flex-col gap-6 md:gap-8 transition-all duration-300 ease-[cubic-bezier(0.4,0,0.2,1)] group overflow-x-hidden overflow-y-auto custom-scrollbar shadow-2xl md:shadow-none">
                 <div className="flex items-center gap-3 px-1 mt-2">
                     <div className="w-10 h-10 shrink-0 rounded-2xl flex items-center justify-center overflow-hidden">
                         <img src="/logo.png" alt="CitaLiks Logo" className="w-full h-full object-contain" />
@@ -126,9 +126,12 @@ export default function DashboardContent({ client: initialClient }: { client: an
             </aside>
 
             {/* Main Content */}
-            <main className="flex-1 overflow-auto p-4 md:p-10 ml-[72px]">
+            <main className="flex-1 overflow-auto p-4 md:p-10 md:ml-[72px] pb-24 md:pb-10">
                 {renderContent()}
             </main>
+
+            {/* Mobile Bottom Navigation */}
+            <MobileNav activeTab={activeTab} setActiveTab={setActiveTab} />
         </div>
     );
 }
@@ -188,10 +191,10 @@ function OverviewTab({ client }: { client: any }) {
             />
 
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6 mb-8 md:mb-10">
-                <StatCard title="Total llamadas" value={totalCalls} trend="" icon={<Phone className="text-blue-400" />} />
-                <StatCard title="Tiempo Total" value={`${totalDurationMin} min`} trend="" icon={<Calendar className="text-emerald-400" />} />
-                <StatCard title="Reservas" value={booked} trend="" icon={<Users className="text-emerald-400" />} />
-                <StatCard title="Duración media" value={`${avgDurationSec}s`} trend="" icon={<Activity className="text-yellow-400" />} />
+                <StatCard title="Llamadas" value={totalCalls} icon={<Phone className="text-blue-400" />} />
+                <StatCard title="Minutos" value={totalDurationMin} icon={<Calendar className="text-emerald-400" />} />
+                <StatCard title="Reservas" value={booked} icon={<Users className="text-emerald-400" />} />
+                <StatCard title="Media" value={`${avgDurationSec}s`} icon={<Activity className="text-yellow-400" />} />
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-10">
@@ -1480,77 +1483,136 @@ function CallsList({ logs }: { logs: any[] }) {
     }
 
     return (
-        <div className="glass rounded-[2rem] overflow-hidden border-white/5 shadow-2xl overflow-x-auto custom-scrollbar">
-            <table className="w-full text-left text-sm min-w-[600px]">
-                <thead>
-                    <tr className="border-b border-white/5 bg-white/2">
-                        <th className="p-5 font-bold text-white/40 uppercase text-[10px] tracking-widest">Fecha & Hora</th>
-                        <th className="p-5 font-bold text-white/40 uppercase text-[10px] tracking-widest">Cliente</th>
-                        <th className="p-5 font-bold text-white/40 uppercase text-[10px] tracking-widest">Resultado</th>
-                        <th className="p-5 font-bold text-white/40 uppercase text-[10px] tracking-widest">Duración</th>
-                        <th className="p-5 font-bold text-white/40 uppercase text-[10px] tracking-widest text-right">Detalles</th>
-                    </tr>
-                </thead>
-                <tbody className="divide-y divide-white/5">
-                    {logs.map((log: any) => (
-                        <tr key={log.id} className="hover:bg-white/[0.02] transition-colors group">
-                            <td className="p-5">
-                                <div className="flex flex-col">
-                                    <span className="font-bold text-white/80">{new Date(log.createdAt).toLocaleDateString()}</span>
-                                    <span className="text-[10px] text-white/30 uppercase mt-0.5">{new Date(log.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
-                                </div>
-                            </td>
-                            <td className="p-5">
-                                <div className="flex items-center gap-3">
-                                    <div className="w-8 h-8 rounded-lg bg-white/5 flex items-center justify-center text-white/20">
-                                        <Phone size={14} />
-                                    </div>
-                                    <span className="font-mono font-bold tracking-tight">{log.callerNumber || 'Desconocido'}</span>
-                                </div>
-                            </td>
-                            <td className="p-5">
-                                <span className={`px-3 py-1 rounded-lg text-[9px] font-black uppercase tracking-widest ${log.actionTaken === 'booked' ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/20' :
-                                    log.actionTaken === 'cancelled' ? 'bg-red-500/10 text-red-400 border border-red-500/10' :
-                                        'bg-white/5 text-white/40 border border-white/5'
-                                    }`}>
-                                    {log.actionTaken || 'CONSULTA'}
-                                </span>
-                            </td>
-                            <td className="p-5">
-                                <span className="font-mono text-white/60">
-                                    {log.durationSec ? `${Math.floor(log.durationSec / 60)}:${(log.durationSec % 60).toString().padStart(2, '0')}` : '—'}
-                                </span>
-                            </td>
-                            <td className="p-5 text-right">
-                                <button className="p-2 text-white/20 hover:text-white hover:bg-white/5 rounded-xl transition-all group-hover:translate-x-1">
-                                    <ChevronRight size={18} />
-                                </button>
-                            </td>
+        <div className="space-y-4 md:space-y-0">
+            {/* Desktop Table View */}
+            <div className="hidden md:block glass rounded-[2rem] overflow-hidden border-white/5 shadow-2xl">
+                <table className="w-full text-left text-sm">
+                    <thead>
+                        <tr className="border-b border-white/5 bg-white/2">
+                            <th className="p-5 font-bold text-white/40 uppercase text-[10px] tracking-widest">Fecha & Hora</th>
+                            <th className="p-5 font-bold text-white/40 uppercase text-[10px] tracking-widest">Cliente</th>
+                            <th className="p-5 font-bold text-white/40 uppercase text-[10px] tracking-widest">Resultado</th>
+                            <th className="p-5 font-bold text-white/40 uppercase text-[10px] tracking-widest">Duración</th>
+                            <th className="p-5 font-bold text-white/40 uppercase text-[10px] tracking-widest text-right">Detalles</th>
                         </tr>
-                    ))}
-                </tbody>
-            </table>
+                    </thead>
+                    <tbody className="divide-y divide-white/5">
+                        {logs.map((log: any) => (
+                            <tr key={log.id} className="hover:bg-white/[0.02] transition-colors group">
+                                <td className="p-5">
+                                    <div className="flex flex-col">
+                                        <span className="font-bold text-white/80">{new Date(log.createdAt).toLocaleDateString()}</span>
+                                        <span className="text-[10px] text-white/30 uppercase mt-0.5">{new Date(log.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
+                                    </div>
+                                </td>
+                                <td className="p-5">
+                                    <div className="flex items-center gap-3">
+                                        <div className="w-8 h-8 rounded-lg bg-white/5 flex items-center justify-center text-white/20">
+                                            <Phone size={14} />
+                                        </div>
+                                        <span className="font-mono font-bold tracking-tight">{log.callerNumber || 'Desconocido'}</span>
+                                    </div>
+                                </td>
+                                <td className="p-5">
+                                    <span className={`px-3 py-1 rounded-lg text-[9px] font-black uppercase tracking-widest ${log.actionTaken === 'booked' ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/20' :
+                                        log.actionTaken === 'cancelled' ? 'bg-red-500/10 text-red-400 border border-red-500/10' :
+                                            'bg-white/5 text-white/40 border border-white/5'
+                                        }`}>
+                                        {log.actionTaken || 'CONSULTA'}
+                                    </span>
+                                </td>
+                                <td className="p-5">
+                                    <span className="font-mono text-white/60">
+                                        {log.durationSec ? `${Math.floor(log.durationSec / 60)}:${(log.durationSec % 60).toString().padStart(2, '0')}` : '—'}
+                                    </span>
+                                </td>
+                                <td className="p-5 text-right">
+                                    <button className="p-2 text-white/20 hover:text-white hover:bg-white/5 rounded-xl transition-all group-hover:translate-x-1">
+                                        <ChevronRight size={18} />
+                                    </button>
+                                </td>
+                            </tr>
+                        ))}
+                    </tbody>
+                </table>
+            </div>
+
+            {/* Mobile Card View */}
+            <div className="md:hidden space-y-3">
+                {logs.map((log: any) => (
+                    <div key={log.id} className="glass p-4 rounded-2xl border-white/5 bg-white/[0.02] flex items-center justify-between">
+                        <div className="flex items-center gap-4">
+                            <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${log.actionTaken === 'booked' ? 'bg-emerald-500/20 text-emerald-400' : 'bg-white/5 text-white/20'}`}>
+                                <Phone size={20} />
+                            </div>
+                            <div>
+                                <p className="font-bold text-sm tracking-tight">{log.callerNumber || 'Desconocido'}</p>
+                                <p className="text-[10px] text-white/30 uppercase mt-0.5">
+                                    {new Date(log.createdAt).toLocaleDateString()} • {new Date(log.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                                </p>
+                            </div>
+                        </div>
+                        <div className="flex flex-col items-end gap-1">
+                            <span className={`px-2 py-0.5 rounded-lg text-[8px] font-black uppercase tracking-widest ${log.actionTaken === 'booked' ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/20' :
+                                log.actionTaken === 'cancelled' ? 'bg-red-500/10 text-red-400 border border-red-500/10' :
+                                    'bg-white/5 text-white/40 border border-white/5'
+                                }`}>
+                                {log.actionTaken || 'INFO'}
+                            </span>
+                            <span className="text-[10px] font-mono text-white/40 italic">
+                                {log.durationSec ? `${Math.floor(log.durationSec / 60)}:${(log.durationSec % 60).toString().padStart(2, '0')}` : '—'}
+                            </span>
+                        </div>
+                    </div>
+                ))}
+            </div>
         </div>
     );
 }
 
-function StatCard({ title, value, trend, icon }: { title: string, value: any, trend: string, icon: any }) {
+function StatCard({ title, value, icon }: { title: string, value: any, icon: any }) {
     return (
-        <div className="glass rounded-[2rem] p-7 border-white/5 relative overflow-hidden group hover:-translate-y-1 transition-all duration-300">
-            <div className="absolute -right-4 -top-4 w-24 h-24 bg-white/2 rounded-full blur-2xl group-hover:bg-blue-600/10 transition-colors"></div>
-            <div className="flex justify-between items-start mb-6 relative z-10">
-                <div className="p-3 rounded-2xl bg-white/5 group-hover:scale-110 group-hover:bg-blue-600/20 transition-all duration-500">
-                    {React.cloneElement(icon as React.ReactElement, { size: 24 })}
-                </div>
-                <div className={`flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-black tracking-widest ${trend.startsWith('+') || trend === 'OK' ? 'bg-emerald-500/10 text-emerald-400' : 'bg-red-500/10 text-red-400'
-                    }`}>
-                    {trend}
+        <div className="glass rounded-2xl md:rounded-[2rem] p-4 md:p-7 border-white/5 relative overflow-hidden group hover:-translate-y-1 transition-all duration-300">
+            <div className="absolute -right-4 -top-4 w-16 h-16 md:w-24 md:h-24 bg-white/2 rounded-full blur-2xl group-hover:bg-blue-600/10 transition-colors"></div>
+            <div className="flex justify-between items-start mb-3 md:mb-6 relative z-10">
+                <div className="p-2 md:p-3 rounded-xl md:rounded-2xl bg-white/5 group-hover:scale-110 group-hover:bg-blue-600/20 transition-all duration-500 text-blue-400/60 group-hover:text-blue-400">
+                    {React.cloneElement(icon as React.ReactElement, { size: 20 })}
                 </div>
             </div>
             <div className="relative z-10">
-                <h3 className="text-white/40 text-[10px] uppercase font-black tracking-[0.15em] mb-2">{title}</h3>
-                <p className="text-4xl font-black tracking-tight">{value}</p>
+                <h3 className="text-white/40 text-[8px] md:text-[10px] uppercase font-black tracking-[0.15em] mb-1 md:mb-2 truncate">{title}</h3>
+                <p className="text-xl md:text-4xl font-black tracking-tight">{value}</p>
             </div>
         </div>
+    );
+}
+
+function MobileNav({ activeTab, setActiveTab }: { activeTab: TabType, setActiveTab: (t: TabType) => void }) {
+    const tabs = [
+        { id: "overview", label: "Inicio", icon: <LayoutDashboard size={20} /> },
+        { id: "calls", label: "Llamadas", icon: <Phone size={20} /> },
+        { id: "team", label: "Equipo", icon: <Users size={20} /> },
+        { id: "services", label: "Agenda", icon: <Calendar size={20} /> },
+        { id: "config", label: "Más", icon: <Settings size={20} /> },
+    ];
+
+    return (
+        <nav className="md:hidden fixed bottom-0 left-0 right-0 z-50 bg-[#0a0a0f]/80 backdrop-blur-xl border-t border-white/5 px-4 pb-safe-offset-2 pt-2 h-20 shadow-[0_-10px_40px_rgba(0,0,0,0.5)]">
+            <div className="flex justify-between items-center h-full max-w-lg mx-auto">
+                {tabs.map((tab) => (
+                    <button
+                        key={tab.id}
+                        onClick={() => setActiveTab(tab.id as TabType)}
+                        className={`flex flex-col items-center justify-center gap-1.5 flex-1 transition-all ${activeTab === tab.id ? "text-blue-500" : "text-white/30"
+                            }`}
+                    >
+                        <div className={`p-2 rounded-xl transition-all ${activeTab === tab.id ? "bg-blue-500/10" : ""}`}>
+                            {tab.icon}
+                        </div>
+                        <span className="text-[10px] font-bold uppercase tracking-tighter">{tab.label}</span>
+                    </button>
+                ))}
+            </div>
+        </nav>
     );
 }

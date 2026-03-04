@@ -405,11 +405,11 @@ export default function AdminDashboardContent({ clients: initialClients }: { cli
                 </header>
 
                 {/* Metrics */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 mb-8">
-                    <MetricCard title="Clientes Totales" value={clients.length} sub={`${activeCount} activos`} icon={<Users size={20} className="text-blue-400" />} color="blue" />
-                    <MetricCard title="Llamadas Totales" value={totalCalls} sub="todas las cuentas" icon={<Phone size={20} className="text-emerald-400" />} color="emerald" />
-                    <MetricCard title="Agentes Retell" value={withAgent} sub={`${clients.length - withAgent} sin agente`} icon={<Bot size={20} className="text-violet-400" />} color="violet" />
-                    <MetricCard title="Base de Datos" value="Multi-Tenant" sub="arquitectura activa" icon={<Database size={20} className="text-amber-400" />} color="amber" />
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+                    <MetricCard title="Clientes" value={clients.length} sub={`${activeCount} activos`} icon={<Users size={20} className="text-blue-400" />} color="blue" />
+                    <MetricCard title="Llamadas" value={totalCalls} sub="total cuentas" icon={<Phone size={20} className="text-emerald-400" />} color="emerald" />
+                    <MetricCard title="Agentes" value={withAgent} sub={`${clients.length - withAgent} libres`} icon={<Bot size={20} className="text-violet-400" />} color="violet" />
+                    <MetricCard title="Tenant" value="Active" sub="multi-db" icon={<Database size={20} className="text-amber-400" />} color="amber" />
                 </div>
 
                 {/* Tabs */}
@@ -440,7 +440,8 @@ export default function AdminDashboardContent({ clients: initialClients }: { cli
                         </div>
 
                         {/* Table */}
-                        <div className="rounded-[1.5rem] overflow-x-auto border border-white/5 bg-white/[0.02] custom-scrollbar">
+                        {/* Desktop Table */}
+                        <div className="hidden md:block rounded-[1.5rem] overflow-x-auto border border-white/5 bg-white/[0.02] custom-scrollbar">
                             <table className="w-full text-left text-sm min-w-[800px]">
                                 <thead>
                                     <tr className="border-b border-white/5 bg-white/[0.02]">
@@ -489,7 +490,7 @@ export default function AdminDashboardContent({ clients: initialClients }: { cli
                                                     <InfraTag active={!!client.retellAgentId} label={client.retellAgentId ? "Agent Linked" : "No Agent"} />
                                                 </div>
                                             </td>
-                                            <td className="p-5">
+                                            <td className="p-5 text-right">
                                                 <div className="flex items-center justify-end gap-2">
                                                     <button onClick={() => handleToggleStatus(client.id, client.isActive)}
                                                         className={`px-3 py-1 rounded-lg text-[10px] font-black uppercase border transition-all ${client.isActive ? "bg-emerald-500/10 border-emerald-500/20 text-emerald-400 hover:bg-emerald-500/20" : "bg-red-500/10 border-red-500/20 text-red-400 hover:bg-red-500/20"}`}>
@@ -508,6 +509,46 @@ export default function AdminDashboardContent({ clients: initialClients }: { cli
                                     ))}
                                 </tbody>
                             </table>
+                        </div>
+
+                        {/* Mobile List View */}
+                        <div className="md:hidden space-y-3">
+                            {paginatedClients.length === 0 ? (
+                                <div className="p-10 text-center text-white/20 italic">No se encontraron negocios</div>
+                            ) : paginatedClients.map(client => (
+                                <div key={client.id} className="glass p-4 rounded-2xl border-white/5 bg-white/[0.02] space-y-4">
+                                    <div className="flex items-center justify-between">
+                                        <div className="flex items-center gap-3">
+                                            <div className={`w-10 h-10 rounded-xl flex items-center justify-center font-black text-sm border ${client.isActive ? "bg-blue-600/20 text-blue-400 border-blue-600/20" : "bg-white/5 text-white/30 border-white/10"}`}>
+                                                {(client.businessName || "B")[0].toUpperCase()}
+                                            </div>
+                                            <div>
+                                                <p className="font-bold text-sm">{client.businessName || "Sin nombre"}</p>
+                                                <p className="text-[10px] text-white/30 truncate max-w-[150px]">{client.email}</p>
+                                            </div>
+                                        </div>
+                                        <div className="flex flex-col items-end gap-1">
+                                            <span className={`px-2 py-0.5 rounded-lg text-[8px] font-black uppercase tracking-widest ${client.isActive ? "bg-emerald-500/10 text-emerald-400 border border-emerald-500/20" : "bg-red-500/10 text-red-400 border border-red-500/20"}`}>
+                                                {client.isActive ? "ACTIVO" : "OFF"}
+                                            </span>
+                                        </div>
+                                    </div>
+                                    <div className="flex items-center justify-between bg-white/[0.02] p-3 rounded-xl border border-white/5">
+                                        <Stat label="Calls" value={client._count?.callLogs || 0} />
+                                        <Stat label="Team" value={client._count?.staff || 0} />
+                                        <Stat label="Svcs" value={client._count?.services || 0} />
+                                    </div>
+                                    <div className="flex items-center justify-between gap-2 pt-2">
+                                        <button onClick={() => { setSelectedClient(client); setClientDetailTab("info"); setReportData(null); setAppointments([]); }}
+                                            className="flex-1 py-2 rounded-xl bg-blue-600/10 text-blue-400 text-[10px] font-black uppercase border border-blue-600/20">
+                                            Ver Detalles
+                                        </button>
+                                        <button onClick={() => handleDeleteClient(client.id)} className="p-2 text-white/20 hover:text-red-400 hover:bg-red-400/10 rounded-xl bg-white/5 border border-white/5">
+                                            <Trash2 size={16} />
+                                        </button>
+                                    </div>
+                                </div>
+                            ))}
                         </div>
 
                         {/* Pagination */}
@@ -538,7 +579,8 @@ export default function AdminDashboardContent({ clients: initialClients }: { cli
                                 <RefreshCw size={16} className={loadingProspects ? "animate-spin" : ""} />
                             </button>
                         </div>
-                        <div className="rounded-[1.5rem] overflow-x-auto border border-white/5 bg-white/[0.02] custom-scrollbar">
+                        {/* Desktop Table */}
+                        <div className="hidden md:block rounded-[1.5rem] overflow-x-auto border border-white/5 bg-white/[0.02] custom-scrollbar">
                             <table className="w-full text-left text-sm min-w-[700px]">
                                 <thead>
                                     <tr className="border-b border-white/5 bg-white/[0.02]">
@@ -591,6 +633,43 @@ export default function AdminDashboardContent({ clients: initialClients }: { cli
                                 </tbody>
                             </table>
                         </div>
+
+                        {/* Mobile Card List */}
+                        <div className="md:hidden space-y-3">
+                            {prospects.length === 0 ? (
+                                <div className="p-10 text-center text-white/20 italic">No hay prospectos</div>
+                            ) : prospects.map(prospect => (
+                                <div key={prospect.id} className="glass p-4 rounded-2xl border-white/5 bg-white/[0.02] space-y-3">
+                                    <div className="flex justify-between items-start">
+                                        <div>
+                                            <p className="font-bold text-sm tracking-tight">{prospect.name}</p>
+                                            <p className="text-[10px] text-white/30 font-mono truncate max-w-[200px]">{prospect.email}</p>
+                                        </div>
+                                        <span className={`px-2 py-0.5 rounded-lg text-[8px] font-black uppercase tracking-widest ${prospect.status === "paid" ? "bg-emerald-500/10 text-emerald-400 border border-emerald-500/20" : "bg-white/5 text-white/40 border border-white/10"}`}>
+                                            {prospect.status === "paid" ? "OK" : "BYE"}
+                                        </span>
+                                    </div>
+                                    <div className="flex items-center justify-between pt-2 border-t border-white/5">
+                                        <span className="px-2 py-1 rounded-md bg-blue-600/10 border border-blue-600/20 text-blue-400 text-[10px] font-black uppercase">
+                                            {prospect.plan}
+                                        </span>
+                                        <button onClick={() => {
+                                            setInviteForm({
+                                                email: prospect.email,
+                                                name: prospect.name,
+                                                phone: prospect.phone || "",
+                                                plan: prospect.plan || "biannual",
+                                                notes: prospect.notes || "",
+                                                type: "stripe"
+                                            });
+                                            setIsInviteModalOpen(true);
+                                        }} className="p-2 text-blue-400 bg-blue-400/10 rounded-xl">
+                                            <Mail size={16} />
+                                        </button>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
                     </div>
                 )}
 
@@ -603,7 +682,8 @@ export default function AdminDashboardContent({ clients: initialClients }: { cli
                                 <RefreshCw size={16} />
                             </button>
                         </div>
-                        <div className="rounded-[1.5rem] overflow-x-auto border border-white/5 bg-white/[0.02] custom-scrollbar">
+                        {/* Desktop Table View */}
+                        <div className="hidden md:block rounded-[1.5rem] overflow-x-auto border border-white/5 bg-white/[0.02] custom-scrollbar">
                             <table className="w-full text-left text-sm min-w-[600px]">
                                 <thead>
                                     <tr className="border-b border-white/5 bg-white/[0.02]">
@@ -636,6 +716,31 @@ export default function AdminDashboardContent({ clients: initialClients }: { cli
                                     ))}
                                 </tbody>
                             </table>
+                        </div>
+
+                        {/* Mobile Card View */}
+                        <div className="md:hidden space-y-3">
+                            {invitations.length === 0 ? (
+                                <div className="p-10 text-center text-white/20 italic">No hay invitaciones</div>
+                            ) : invitations.map(inv => (
+                                <div key={inv.id} className="glass p-4 rounded-2xl border-white/5 bg-white/[0.02] space-y-3">
+                                    <div className="flex justify-between items-start">
+                                        <div>
+                                            <p className="font-bold text-sm tracking-tight truncate max-w-[200px]">{inv.email}</p>
+                                            <p className="text-[10px] text-violet-400 font-bold uppercase tracking-widest">{inv.businessName || "—"}</p>
+                                        </div>
+                                        <span className={`px-2 py-0.5 rounded-lg text-[8px] font-black uppercase tracking-widest ${inv.status === "ACCEPTED" ? "bg-emerald-500/10 text-emerald-400 border border-emerald-500/20" : "bg-amber-500/10 text-amber-400 border border-amber-500/20"}`}>
+                                            {inv.status === "PENDING" ? "WAIT" : "YES"}
+                                        </span>
+                                    </div>
+                                    <div className="flex items-center justify-between pt-2 border-t border-white/5">
+                                        <span className="text-[10px] text-white/30 font-mono">{new Date(inv.createdAt).toLocaleDateString("es-ES")}</span>
+                                        <button onClick={() => handleDeleteInvitation(inv.id)} className="p-2 text-red-400 bg-red-400/10 rounded-xl">
+                                            <Trash2 size={16} />
+                                        </button>
+                                    </div>
+                                </div>
+                            ))}
                         </div>
                     </div>
                 )}
@@ -799,8 +904,8 @@ export default function AdminDashboardContent({ clients: initialClients }: { cli
 
             {/* ── Client Detail Modal ──────────────────────────────────────── */}
             {selectedClient && (
-                <div className="fixed inset-0 bg-black/80 backdrop-blur-xl z-50 flex items-center justify-center p-4">
-                    <div className="bg-[#0f0f18] w-full max-w-5xl max-h-[92vh] rounded-[2rem] border border-white/5 shadow-2xl flex flex-col overflow-hidden">
+                <div className="fixed inset-0 bg-black/80 backdrop-blur-xl z-50 flex items-center justify-center p-0 sm:p-4">
+                    <div className="bg-[#0f0f18] w-full sm:max-w-5xl h-full sm:h-auto sm:max-h-[92vh] rounded-none sm:rounded-[2rem] border-white/5 shadow-2xl flex flex-col overflow-hidden">
                         {/* Modal Header */}
                         <div className="p-6 border-b border-white/5 flex justify-between items-center bg-white/[0.02] shrink-0">
                             <div className="flex items-center gap-4">
@@ -924,33 +1029,58 @@ export default function AdminDashboardContent({ clients: initialClients }: { cli
                                             </div>
 
                                             {reportData.logs?.length > 0 && (
-                                                <div className="rounded-2xl border border-white/5 overflow-hidden">
-                                                    <table className="w-full text-xs text-left">
-                                                        <thead>
-                                                            <tr className="bg-white/[0.03] border-b border-white/5">
-                                                                <th className="p-4 font-black text-white/30 uppercase tracking-widest text-[9px]">Fecha</th>
-                                                                <th className="p-4 font-black text-white/30 uppercase tracking-widest text-[9px]">Acción</th>
-                                                                <th className="p-4 font-black text-white/30 uppercase tracking-widest text-[9px]">Resumen</th>
-                                                                <th className="p-4 font-black text-white/30 uppercase tracking-widest text-[9px] text-right">Duración</th>
-                                                            </tr>
-                                                        </thead>
-                                                        <tbody className="divide-y divide-white/5">
-                                                            {reportData.logs.slice(0, 15).map((log: any) => (
-                                                                <tr key={log.id} className="hover:bg-white/[0.02]">
-                                                                    <td className="p-4 text-white/40 font-mono">{new Date(log.createdAt).toLocaleDateString("es-ES")}</td>
-                                                                    <td className="p-4">
-                                                                        <span className={`px-2 py-0.5 rounded-md text-[9px] font-black uppercase ${log.actionTaken === "booked" ? "bg-emerald-500/20 text-emerald-400" : log.actionTaken === "cancelled" ? "bg-red-500/20 text-red-400" : "bg-blue-500/20 text-blue-400"}`}>
-                                                                            {log.actionTaken || "info"}
-                                                                        </span>
-                                                                    </td>
-                                                                    <td className="p-4 text-white/70">{log.summary || "—"}</td>
-                                                                    <td className="p-4 text-right text-white/40">
-                                                                        {log.durationSec ? `${Math.floor(log.durationSec / 60)}:${(log.durationSec % 60).toString().padStart(2, '0')}` : "—"}
-                                                                    </td>
+                                                <div className="space-y-3">
+                                                    {/* Desktop Table */}
+                                                    <div className="hidden md:block rounded-2xl border border-white/5 overflow-hidden">
+                                                        <table className="w-full text-xs text-left">
+                                                            <thead>
+                                                                <tr className="bg-white/[0.03] border-b border-white/5">
+                                                                    <th className="p-4 font-black text-white/30 uppercase tracking-widest text-[9px]">Fecha</th>
+                                                                    <th className="p-4 font-black text-white/30 uppercase tracking-widest text-[9px]">Acción</th>
+                                                                    <th className="p-4 font-black text-white/30 uppercase tracking-widest text-[9px]">Resumen</th>
+                                                                    <th className="p-4 font-black text-white/30 uppercase tracking-widest text-[9px] text-right">Duración</th>
                                                                 </tr>
-                                                            ))}
-                                                        </tbody>
-                                                    </table>
+                                                            </thead>
+                                                            <tbody className="divide-y divide-white/5">
+                                                                {reportData.logs.slice(0, 15).map((log: any) => (
+                                                                    <tr key={log.id} className="hover:bg-white/[0.02]">
+                                                                        <td className="p-4 text-white/40 font-mono">{new Date(log.createdAt).toLocaleDateString("es-ES")}</td>
+                                                                        <td className="p-4">
+                                                                            <span className={`px-2 py-0.5 rounded-md text-[9px] font-black uppercase ${log.actionTaken === "booked" ? "bg-emerald-500/20 text-emerald-400" : log.actionTaken === "cancelled" ? "bg-red-500/20 text-red-400" : "bg-blue-500/20 text-blue-400"}`}>
+                                                                                {log.actionTaken || "info"}
+                                                                            </span>
+                                                                        </td>
+                                                                        <td className="p-4 text-white/70">{log.summary || "—"}</td>
+                                                                        <td className="p-4 text-right text-white/40">
+                                                                            {log.durationSec ? `${Math.floor(log.durationSec / 60)}:${(log.durationSec % 60).toString().padStart(2, '0')}` : "—"}
+                                                                        </td>
+                                                                    </tr>
+                                                                ))}
+                                                            </tbody>
+                                                        </table>
+                                                    </div>
+
+                                                    {/* Mobile Card List */}
+                                                    <div className="md:hidden space-y-3">
+                                                        {reportData.logs.slice(0, 10).map((log: any) => (
+                                                            <div key={log.id} className="bg-white/[0.02] border border-white/5 p-4 rounded-xl flex flex-col gap-2">
+                                                                <div className="flex justify-between items-center">
+                                                                    <span className="text-[10px] text-white/30 font-mono">{new Date(log.createdAt).toLocaleDateString("es-ES")}</span>
+                                                                    <span className={`px-2 py-0.5 rounded-md text-[8px] font-black uppercase ${log.actionTaken === "booked" ? "bg-emerald-500/20 text-emerald-400" : log.actionTaken === "cancelled" ? "bg-red-500/20 text-red-400" : "bg-blue-500/20 text-blue-400"}`}>
+                                                                        {log.actionTaken || "info"}
+                                                                    </span>
+                                                                </div>
+                                                                <p className="text-xs text-white/70 leading-relaxed">{log.summary || "Sin resumen"}</p>
+                                                                {log.durationSec && (
+                                                                    <div className="pt-2 border-t border-white/5 flex justify-end">
+                                                                        <span className="text-[10px] text-white/30 font-mono">
+                                                                            {Math.floor(log.durationSec / 60)}:{(log.durationSec % 60).toString().padStart(2, '0')} min
+                                                                        </span>
+                                                                    </div>
+                                                                )}
+                                                            </div>
+                                                        ))}
+                                                    </div>
                                                 </div>
                                             )}
                                         </>
@@ -1129,61 +1259,95 @@ function AppointmentsTable({ appointments, loading, onCancel, showClient }: { ap
         return <div className="h-40 flex items-center justify-center text-white/20 italic text-sm">No hay citas para mostrar</div>;
     }
     return (
-        <div className="rounded-2xl border border-white/5 overflow-hidden overflow-x-auto custom-scrollbar">
-            <table className="w-full text-xs text-left min-w-[800px]">
-                <thead>
-                    <tr className="bg-white/[0.03] border-b border-white/5">
-                        {showClient && <th className="p-4 font-black text-white/30 uppercase tracking-widest text-[9px]">Negocio</th>}
-                        <th className="p-4 font-black text-white/30 uppercase tracking-widest text-[9px]">Cliente</th>
-                        <th className="p-4 font-black text-white/30 uppercase tracking-widest text-[9px]">Servicio</th>
-                        <th className="p-4 font-black text-white/30 uppercase tracking-widest text-[9px]">Fecha / Hora</th>
-                        <th className="p-4 font-black text-white/30 uppercase tracking-widest text-[9px]">Profesional</th>
-                        <th className="p-4 font-black text-white/30 uppercase tracking-widest text-[9px] text-center">SMS</th>
-                        <th className="p-4 font-black text-white/30 uppercase tracking-widest text-[9px] text-center">Estado</th>
-                        <th className="p-4 font-black text-white/30 uppercase tracking-widest text-[9px] text-right">Acciones</th>
-                    </tr>
-                </thead>
-                <tbody className="divide-y divide-white/5">
-                    {appointments.map((a: any) => (
-                        <tr key={a.id} className="hover:bg-white/[0.02] transition-colors">
-                            {showClient && <td className="p-4 font-bold text-blue-400">{a.client?.businessName || a.clientId?.slice(0, 8)}</td>}
-                            <td className="p-4">
-                                <p className="font-bold">{a.callerName}</p>
-                                {a.callerPhone && (
-                                    <a href={`tel:${a.callerPhone}`} className="text-white/40 hover:text-white transition-colors font-mono flex items-center gap-1.5 w-fit mt-0.5 group" title="Llamar al cliente">
-                                        <Phone size={10} className="group-hover:scale-110 transition-transform" />
-                                        {a.callerPhone}
-                                    </a>
-                                )}
-                            </td>
-                            <td className="p-4 text-white/70">{a.serviceName}</td>
-                            <td className="p-4 font-mono">
-                                <p>{a.date}</p>
-                                <p className="text-white/40">{a.time}</p>
-                            </td>
-                            <td className="p-4 text-white/50">{a.staffName || "—"}</td>
-                            <td className="p-4 text-center">
-                                <div className="flex items-center justify-center gap-1">
-                                    <span title="Confirmación" className={`w-2 h-2 rounded-full ${a.smsConfirmationSent ? "bg-emerald-400" : "bg-white/10"}`} />
-                                    <span title="Recordatorio" className={`w-2 h-2 rounded-full ${a.smsReminderSent ? "bg-blue-400" : "bg-white/10"}`} />
-                                </div>
-                            </td>
-                            <td className="p-4 text-center">
-                                <span className={`px-2 py-0.5 rounded-md text-[9px] font-black uppercase ${a.status === "CONFIRMED" ? "bg-emerald-500/20 text-emerald-400" : "bg-red-500/20 text-red-400"}`}>
-                                    {a.status === "CONFIRMED" ? "Confirmada" : "Cancelada"}
-                                </span>
-                            </td>
-                            <td className="p-4 text-right">
-                                {a.status === "CONFIRMED" && (
-                                    <button onClick={() => onCancel(a.id)} className="p-1.5 text-white/20 hover:text-red-400 hover:bg-red-400/10 rounded-lg transition-all" title="Cancelar cita">
-                                        <CalendarX size={14} />
-                                    </button>
-                                )}
-                            </td>
+        <div className="space-y-4">
+            {/* Desktop Table View */}
+            <div className="hidden md:block rounded-2xl border border-white/5 overflow-hidden overflow-x-auto custom-scrollbar">
+                <table className="w-full text-xs text-left min-w-[800px]">
+                    <thead>
+                        <tr className="bg-white/[0.03] border-b border-white/5">
+                            {showClient && <th className="p-4 font-black text-white/30 uppercase tracking-widest text-[9px]">Negocio</th>}
+                            <th className="p-4 font-black text-white/30 uppercase tracking-widest text-[9px]">Cliente</th>
+                            <th className="p-4 font-black text-white/30 uppercase tracking-widest text-[9px]">Servicio</th>
+                            <th className="p-4 font-black text-white/30 uppercase tracking-widest text-[9px]">Fecha / Hora</th>
+                            <th className="p-4 font-black text-white/30 uppercase tracking-widest text-[9px]">Profesional</th>
+                            <th className="p-4 font-black text-white/30 uppercase tracking-widest text-[9px] text-center">SMS</th>
+                            <th className="p-4 font-black text-white/30 uppercase tracking-widest text-[9px] text-center">Estado</th>
+                            <th className="p-4 font-black text-white/30 uppercase tracking-widest text-[9px] text-right">Acciones</th>
                         </tr>
-                    ))}
-                </tbody>
-            </table>
+                    </thead>
+                    <tbody className="divide-y divide-white/5">
+                        {appointments.map((a: any) => (
+                            <tr key={a.id} className="hover:bg-white/[0.02] transition-colors">
+                                {showClient && <td className="p-4 font-bold text-blue-400">{a.client?.businessName || a.clientId?.slice(0, 8)}</td>}
+                                <td className="p-4">
+                                    <p className="font-bold">{a.callerName}</p>
+                                    {a.callerPhone && (
+                                        <a href={`tel:${a.callerPhone}`} className="text-white/40 hover:text-white transition-colors font-mono flex items-center gap-1.5 w-fit mt-0.5 group" title="Llamar al cliente">
+                                            <Phone size={10} className="group-hover:scale-110 transition-transform" />
+                                            {a.callerPhone}
+                                        </a>
+                                    )}
+                                </td>
+                                <td className="p-4 text-white/70">{a.serviceName}</td>
+                                <td className="p-4 font-mono">
+                                    <p>{a.date}</p>
+                                    <p className="text-white/40">{a.time}</p>
+                                </td>
+                                <td className="p-4 text-white/50">{a.staffName || "—"}</td>
+                                <td className="p-4 text-center">
+                                    <div className="flex items-center justify-center gap-1">
+                                        <span title="Confirmación" className={`w-2 h-2 rounded-full ${a.smsConfirmationSent ? "bg-emerald-400" : "bg-white/10"}`} />
+                                        <span title="Recordatorio" className={`w-2 h-2 rounded-full ${a.smsReminderSent ? "bg-blue-400" : "bg-white/10"}`} />
+                                    </div>
+                                </td>
+                                <td className="p-4 text-center">
+                                    <span className={`px-2 py-0.5 rounded-md text-[9px] font-black uppercase ${a.status === "CONFIRMED" ? "bg-emerald-500/20 text-emerald-400" : "bg-red-500/20 text-red-400"}`}>
+                                        {a.status === "CONFIRMED" ? "Confirmada" : "Cancelada"}
+                                    </span>
+                                </td>
+                                <td className="p-4 text-right">
+                                    {a.status === "CONFIRMED" && (
+                                        <button onClick={() => onCancel(a.id)} className="p-1.5 text-white/20 hover:text-red-400 hover:bg-red-400/10 rounded-lg transition-all" title="Cancelar cita">
+                                            <CalendarX size={14} />
+                                        </button>
+                                    )}
+                                </td>
+                            </tr>
+                        ))}
+                    </tbody>
+                </table>
+            </div>
+
+            {/* Mobile Card View */}
+            <div className="md:hidden space-y-3">
+                {appointments.map((a: any) => (
+                    <div key={a.id} className="glass p-4 rounded-2xl border-white/5 bg-white/[0.02] space-y-3">
+                        <div className="flex justify-between items-start">
+                            <div>
+                                <p className="font-bold text-sm tracking-tight">{a.callerName}</p>
+                                {showClient && <p className="text-[10px] text-blue-400 font-bold uppercase tracking-tighter">{a.client?.businessName || 'Negocio'}</p>}
+                                <p className="text-[10px] text-white/30 font-mono mt-0.5">{a.date} • {a.time}</p>
+                            </div>
+                            <span className={`px-2 py-0.5 rounded-lg text-[8px] font-black uppercase tracking-widest ${a.status === "CONFIRMED" ? "bg-emerald-500/20 text-emerald-400 border border-emerald-500/20" : "bg-red-500/10 text-red-400 border border-red-500/10"}`}>
+                                {a.status === "CONFIRMED" ? "OK" : "BYE"}
+                            </span>
+                        </div>
+                        <div className="flex items-center justify-between pt-2 border-t border-white/5">
+                            <div className="flex items-center gap-2">
+                                <div className="w-8 h-8 rounded-lg bg-white/5 flex items-center justify-center text-white/40">
+                                    <Settings size={14} />
+                                </div>
+                                <span className="text-[10px] text-white/60 font-bold">{a.serviceName}</span>
+                            </div>
+                            {a.status === "CONFIRMED" && (
+                                <button onClick={() => onCancel(a.id)} className="p-2 text-red-400 bg-red-400/10 rounded-xl">
+                                    <X size={16} />
+                                </button>
+                            )}
+                        </div>
+                    </div>
+                ))}
+            </div>
         </div>
     );
 }
