@@ -13,7 +13,7 @@ const isPublicApiRoute = createRouteMatcher([
     "/api/admin/(.*)",
 ]);
 
-export default clerkMiddleware(async (auth, req) => {
+const proxyHandler = clerkMiddleware(async (auth, req) => {
     // Rutas de Retell, Stripe webhooks y crons: no requieren auth de Clerk
     if (isPublicApiRoute(req)) {
         return;
@@ -23,6 +23,9 @@ export default clerkMiddleware(async (auth, req) => {
         await auth.protect();
     }
 });
+
+export default proxyHandler;
+export { proxyHandler as proxy };
 
 export const config = {
     matcher: [
