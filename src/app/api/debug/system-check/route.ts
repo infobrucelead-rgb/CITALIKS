@@ -2,8 +2,23 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma, getTenantPrisma } from "@/lib/db";
 import { retell } from "@/lib/retell";
 
+/**
+ * GET /api/debug/system-check
+ *
+ * Protected by APP_SECRET query param. Not accessible without it.
+ * Example: /api/debug/system-check?clientId=xxx&secret=<APP_SECRET>
+ */
 export async function GET(req: NextRequest) {
+    // ─── Security: Require APP_SECRET ──────────────────────────────────────────
     const url = new URL(req.url);
+    const secret = url.searchParams.get("secret");
+    const appSecret = process.env.APP_SECRET;
+
+    if (!appSecret || secret !== appSecret) {
+        return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+    }
+    // ───────────────────────────────────────────────────────────────────────────
+
     const clientId = url.searchParams.get("clientId");
 
     if (!clientId) {
@@ -19,7 +34,6 @@ export async function GET(req: NextRequest) {
     };
 
     try {
-        // 1. Check Master DB
         const masterClient = await prisma.client.findUnique({
             where: { id: clientId },
             include: { services: true, schedules: true, staff: true }
@@ -42,7 +56,6 @@ export async function GET(req: NextRequest) {
                 }
             };
 
-            // 2. Check Retell Agent
             if (masterClient.retellAgentId) {
                 try {
                     const agent = await retell.agent.retrieve(masterClient.retellAgentId);
@@ -59,7 +72,6 @@ export async function GET(req: NextRequest) {
                 }
             }
 
-            // 3. Check Tenant DB if applicable
             if (masterClient.databaseUrl) {
                 try {
                     const tenantPrisma = getTenantPrisma(masterClient.databaseUrl);
@@ -71,12 +83,6 @@ export async function GET(req: NextRequest) {
                     report.tenantDb = {
                         status: "OK",
                         foundClient: !!tenantClient,
-                        models: {
-                            client: !!tenantPrisma.client,
-                            appointment: !!tenantPrisma.appointment || !!tenantPrisma.Appointment,
-                            staff: !!tenantPrisma.staff,
-                            service: !!tenantPrisma.service
-                        },
                         servicesCount: tenantClient?.services?.length || 0,
                         schedulesCount: tenantClient?.schedules?.length || 0
                     };

@@ -1,11 +1,24 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getGoogleAuthUrl } from "@/lib/calendar";
 
+/**
+ * GET /api/diag
+ * 
+ * Protected by APP_SECRET. Use: /api/diag?secret=<APP_SECRET>
+ */
 export async function GET(req: NextRequest) {
+    // ─── Security: Require APP_SECRET ──────────────────────────────────────────
+    const secret = req.nextUrl.searchParams.get("secret");
+    const appSecret = process.env.APP_SECRET;
+
+    if (!appSecret || secret !== appSecret) {
+        return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+    }
+    // ───────────────────────────────────────────────────────────────────────────
+
     const dynamicRedirectUri = `${req.nextUrl.origin}/api/google/callback`;
     const envRedirectUri = process.env.GOOGLE_REDIRECT_URI;
 
-    // Extract redirect_uri from a generated Google auth URL
     const extractRedirectUri = (url: string) => {
         try { return new URL(url).searchParams.get("redirect_uri"); }
         catch { return url; }
