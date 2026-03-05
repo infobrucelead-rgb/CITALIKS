@@ -42,7 +42,14 @@ export async function POST(req: NextRequest) {
                 googleCalendarId: body.googleCalendarId || "primary",
             }
         });
-        return NextResponse.json({ staff });
+
+        // Trigger bot update
+        await syncBotWithBusinessData(userId);
+
+        return NextResponse.json({
+            staff,
+            message: "Tu asistente ha actualizado el profesional correctamente"
+        });
     } finally {
         if (client.databaseUrl) await (targetPrisma as any).$disconnect();
     }
@@ -69,7 +76,14 @@ export async function PATCH(req: NextRequest) {
                 isActive: data.isActive
             }
         });
-        return NextResponse.json({ staff });
+
+        // Trigger bot update
+        await syncBotWithBusinessData(userId);
+
+        return NextResponse.json({
+            staff,
+            message: "Tu asistente ha actualizado el profesional correctamente"
+        });
     } finally {
         if (client.databaseUrl) await (targetPrisma as any).$disconnect();
     }
@@ -96,7 +110,10 @@ export async function DELETE(req: NextRequest) {
         // Trigger bot update
         await syncBotWithBusinessData(userId);
 
-        return NextResponse.json({ success: true });
+        return NextResponse.json({
+            success: true,
+            message: "Tu asistente ha actualizado el profesional correctamente"
+        });
     } finally {
         if (client.databaseUrl) await (targetPrisma as any).$disconnect();
     }

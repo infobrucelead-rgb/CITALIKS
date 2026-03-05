@@ -44,7 +44,14 @@ export async function POST(req: NextRequest) {
                 staffId: body.staffId || null,
             }
         });
-        return NextResponse.json({ service });
+
+        // Trigger bot update
+        await syncBotWithBusinessData(userId);
+
+        return NextResponse.json({
+            service,
+            message: "Tu asistente ha actualizado el servicio correctamente"
+        });
     } finally {
         if (client.databaseUrl) await (targetPrisma as any).$disconnect();
     }
@@ -77,7 +84,10 @@ export async function PATCH(req: NextRequest) {
         // Trigger bot update
         await syncBotWithBusinessData(userId);
 
-        return NextResponse.json({ service });
+        return NextResponse.json({
+            service,
+            message: "Tu asistente ha actualizado el servicio correctamente"
+        });
     } finally {
         if (client.databaseUrl) await (targetPrisma as any).$disconnect();
     }
@@ -104,7 +114,10 @@ export async function DELETE(req: NextRequest) {
         // Trigger bot update
         await syncBotWithBusinessData(userId);
 
-        return NextResponse.json({ success: true });
+        return NextResponse.json({
+            success: true,
+            message: "Tu asistente ha actualizado el servicio correctamente"
+        });
     } finally {
         if (client.databaseUrl) await (targetPrisma as any).$disconnect();
     }

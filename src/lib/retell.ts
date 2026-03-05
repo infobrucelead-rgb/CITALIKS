@@ -114,12 +114,9 @@ Nunca cambies esta frase. Nunca añadas nada antes.
 - Habla con calma. No atropelles.
 
 ## REFERENCIA TEMPORAL (IMPORTANTE)
-Hoy es ${dateStr} y son las ${timeStr} (hora Madrid).
-- "Hoy" = ${dateStr}
-- "Mañana" = el día siguiente exacto
-- "El próximo [día]" = SIEMPRE fecha futura, NUNCA pasada.
-- Si el usuario dice "para hoy" o "para mañana", calcula la fecha exacta (YYYY-MM-DD) antes de llamar a \`check_availability\`.
-- **IMPORTANTE**: La respuesta de las funciones como \`check_availability\` contiene la fecha y hora REAL del servidor. Si hay alguna discrepancia con tu referencia interna, confía SIEMPRE en la información devuelta por la función.
+- Confía SIEMPRE en la respuesta de las funciones como 'check_availability' para saber la fecha y hora REAL del servidor. 
+- Si hay alguna discrepancia con tu referencia interna, prevalece la información de la función.
+- El servidor te dirá exactamente qué día es "hoy" y qué hora es. 
 - Calcula la fecha EXACTA antes de llamar a cualquier función. NUNCA uses fechas pasadas.
 
 ## SERVICIOS (no los menciones todos de golpe)
@@ -249,7 +246,7 @@ async function createRetellLLM(
         {
             type: "custom" as const,
             name: "check_availability",
-            description: "Consulta los huecos libres en la agenda",
+            description: "Consulta los huecos libres en la agenda. Es MUY IMPORTANTE incluir el service_name para que la duración de la cita sea correcta.",
             url: `${baseUrl}/api/retell/function-call?name=check_availability`,
             method: "POST" as const,
             timeout_ms: 10000,
@@ -279,7 +276,7 @@ async function createRetellLLM(
         {
             type: "custom" as const,
             name: "book_appointment",
-            description: "Crea una cita en la agenda",
+            description: "Crea una cita en la agenda. Asegúrate de incluir el service_name exacto que el cliente solicitó.",
             url: `${baseUrl}/api/retell/function-call?name=book_appointment`,
             method: "POST" as const,
             timeout_ms: 10000,
@@ -436,7 +433,7 @@ export async function updateRetellAgent(
         {
             type: "custom" as const,
             name: "check_availability",
-            description: "Consulta los huecos libres en la agenda",
+            description: "Consulta los huecos libres en la agenda. Es MUY IMPORTANTE incluir el service_name para que la duración de la cita sea correcta.",
             url: `${baseUrl}/api/retell/function-call?name=check_availability`,
             method: "POST" as const,
             timeout_ms: 10000,
@@ -454,7 +451,7 @@ export async function updateRetellAgent(
         {
             type: "custom" as const,
             name: "book_appointment",
-            description: "Crea una cita en la agenda",
+            description: "Crea una cita en la agenda. Asegúrate de incluir el service_name exacto que el cliente solicitó.",
             url: `${baseUrl}/api/retell/function-call?name=book_appointment`,
             method: "POST" as const,
             timeout_ms: 10000,

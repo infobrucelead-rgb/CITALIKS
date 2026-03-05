@@ -61,7 +61,10 @@ export async function POST(req: NextRequest) {
         // Trigger bot update
         await syncBotWithBusinessData(userId);
 
-        return NextResponse.json({ schedule: result });
+        return NextResponse.json({
+            schedule: result,
+            message: "Tu asistente ha actualizado el horario correctamente"
+        });
     } catch (err: any) {
         console.error("[Schedules API] Error saving schedule:", err.message);
         return NextResponse.json({ error: "Error al guardar el horario" }, { status: 500 });

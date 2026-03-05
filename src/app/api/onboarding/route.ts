@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@clerk/nextjs/server";
 import { prisma, getTenantPrisma } from "@/lib/db";
+import { syncBotWithBusinessData } from "@/lib/bot-updates";
 
 // Save onboarding step data
 export async function POST(req: NextRequest) {
@@ -114,7 +115,19 @@ export async function POST(req: NextRequest) {
         });
     }
 
-    return NextResponse.json({ success: true, clientId: client.id });
+    // Trigger bot update if agent is already provisioned
+    await syncBotWithBusinessData(userId);
+
+    const stepMessages: Record<number, string> = {
+        2: "Tu asistente ha actualizado el servicio correctamente",
+        3: "Tu asistente ha actualizado el horario correctamente"
+    };
+
+    return NextResponse.json({
+        success: true,
+        clientId: client.id,
+        message: stepMessages[step]
+    });
 }
 
 // Get current onboarding state

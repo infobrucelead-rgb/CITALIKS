@@ -128,6 +128,7 @@ export async function checkAvailability(
     params?: {
         staffCalendarId?: string;
         prismaOverride?: any;
+        stepMin?: number; // The interval between offered start times (def: 30)
     }
 ): Promise<TimeSlot[]> {
     // 0. QUICK CHECK: Prevent searching in the past
@@ -229,6 +230,11 @@ export async function checkAvailability(
     const slots: TimeSlot[] = [];
     const [openH, openM] = schedule.openTime.split(':').map(Number);
     const [closeH, closeM] = schedule.closeTime.split(':').map(Number);
+
+    // stepMin is the interval between start times of offered slots
+    // durationMin is the length of the service booked
+    const stepMin = params?.stepMin || 30;
+
     let currentMin = openH * 60 + openM;
     const endMin = closeH * 60 + closeM;
 
@@ -239,9 +245,9 @@ export async function checkAvailability(
         const now = new Date();
         const nowMinutes = now.getHours() * 60 + now.getMinutes() + 15; // +15 min buffer
         if (nowMinutes > currentMin) {
-            // Round up to the next slot boundary
-            const slotsToSkip = Math.ceil((nowMinutes - currentMin) / durationMin);
-            currentMin += slotsToSkip * durationMin;
+            // Round up to the next step boundary
+            const slotsToSkip = Math.ceil((nowMinutes - currentMin) / stepMin);
+            currentMin += slotsToSkip * stepMin;
             console.log(`[calendar/checkAvailability] Today: skipping past slots, starting from ${String(Math.floor(currentMin / 60)).padStart(2, '0')}:${String(currentMin % 60).padStart(2, '0')} (now+15min buffer)`);
         }
     }
@@ -289,7 +295,8 @@ export async function checkAvailability(
             slots.push({ start: slotStartStr, end: slotEndStr });
         }
 
-        currentMin = slotEndMin;
+        // Increment by stepMin instead of durationMin to offer more flexible start times
+        currentMin += stepMin;
     }
 
     console.log(`[calendar/checkAvailability] Generated ${slots.length} free slots for ${date}`);

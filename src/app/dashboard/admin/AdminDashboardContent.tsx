@@ -398,8 +398,8 @@ export default function AdminDashboardContent({ clients: initialClients }: { cli
                         </div>
                     </div>
                     <div className="flex flex-col sm:flex-row items-center gap-3 w-full md:w-auto justify-center md:justify-end">
-                        <button onClick={() => setIsInviteModalOpen(true)} className="w-full md:w-auto justify-center px-5 py-3 md:py-2.5 rounded-xl bg-blue-600 shadow-lg shadow-blue-600/20 hover:bg-blue-500 transition-all flex items-center gap-2 font-bold text-sm">
-                            <Plus size={16} /> <span className="hidden sm:inline">Enviar Invitación / Enlace</span><span className="sm:hidden">Invitación VIP / Pago</span>
+                        <button onClick={() => setIsInviteModalOpen(true)} className="w-full md:w-auto px-5 py-3 md:py-2.5 rounded-xl bg-blue-600 shadow-lg shadow-blue-600/20 hover:bg-blue-500 transition-all flex items-center justify-center gap-2 font-bold text-sm">
+                            <Plus size={16} /> <span>Invitación VIP / Pago</span>
                         </button>
                     </div>
                 </header>
@@ -413,11 +413,11 @@ export default function AdminDashboardContent({ clients: initialClients }: { cli
                 </div>
 
                 {/* Tabs */}
-                <div className="flex gap-1 mb-6 bg-white/[0.03] p-1 rounded-2xl w-full md:w-fit border border-white/5 overflow-x-auto sticky top-0 md:static z-10 custom-scrollbar">
+                <div className="flex gap-1 mb-6 bg-white/[0.03] p-1 rounded-2xl w-full md:w-fit border border-white/5 overflow-x-auto sticky top-0 md:static z-20 backdrop-blur-md custom-scrollbar shrink-0">
                     {(["clients", "prospects", "invitations", "appointments"] as TabType[]).map(tab => (
                         <button key={tab} onClick={() => setActiveTab(tab)}
-                            className={`px-4 sm:px-5 py-2 rounded-xl text-xs sm:text-sm whitespace-nowrap font-bold transition-all ${activeTab === tab ? "bg-blue-600 text-white shadow-lg shadow-blue-600/20" : "text-white/40 hover:text-white"}`}>
-                            {tab === "clients" ? "Negocios Activos" : tab === "prospects" ? "Leads / Pagos" : tab === "invitations" ? "Invitaciones" : "Citas Globales"}
+                            className={`px-4 sm:px-5 py-2.5 rounded-xl text-[11px] sm:text-sm whitespace-nowrap font-bold transition-all ${activeTab === tab ? "bg-blue-600 text-white shadow-lg shadow-blue-600/20" : "text-white/40 hover:text-white"}`}>
+                            {tab === "clients" ? "Negocios" : tab === "prospects" ? "Leads" : tab === "invitations" ? "Invitaciones" : "Citas"}
                         </button>
                     ))}
                 </div>
@@ -533,18 +533,30 @@ export default function AdminDashboardContent({ clients: initialClients }: { cli
                                             </span>
                                         </div>
                                     </div>
-                                    <div className="flex items-center justify-between bg-white/[0.02] p-3 rounded-xl border border-white/5">
-                                        <Stat label="Calls" value={client._count?.callLogs || 0} />
-                                        <Stat label="Team" value={client._count?.staff || 0} />
-                                        <Stat label="Svcs" value={client._count?.services || 0} />
+                                    <div className="flex items-center justify-between text-[11px] bg-white/[0.02] p-4 rounded-xl border border-white/5">
+                                        <div className="flex flex-col items-center">
+                                            <span className="text-[9px] uppercase font-black text-white/20 tracking-tighter">Calls</span>
+                                            <span className="font-bold text-blue-400">{client._count?.callLogs || 0}</span>
+                                        </div>
+                                        <div className="w-px h-6 bg-white/5"></div>
+                                        <div className="flex flex-col items-center">
+                                            <span className="text-[9px] uppercase font-black text-white/20 tracking-tighter">Team</span>
+                                            <span className="font-bold text-white/80">{client._count?.staff || 0}</span>
+                                        </div>
+                                        <div className="w-px h-6 bg-white/5"></div>
+                                        <div className="flex flex-col items-center">
+                                            <span className="text-[9px] uppercase font-black text-white/20 tracking-tighter">Svcs</span>
+                                            <span className="font-bold text-white/80">{client._count?.services || 0}</span>
+                                        </div>
                                     </div>
-                                    <div className="flex items-center justify-between gap-2 pt-2">
+                                    <div className="flex items-center justify-between gap-2">
                                         <button onClick={() => { setSelectedClient(client); setClientDetailTab("info"); setReportData(null); setAppointments([]); }}
-                                            className="flex-1 py-2 rounded-xl bg-blue-600/10 text-blue-400 text-[10px] font-black uppercase border border-blue-600/20">
+                                            className="flex-1 py-3 rounded-xl bg-blue-600/10 text-blue-400 text-[11px] font-black uppercase border border-blue-600/20 tracking-wider">
                                             Ver Detalles
                                         </button>
-                                        <button onClick={() => handleDeleteClient(client.id)} className="p-2 text-white/20 hover:text-red-400 hover:bg-red-400/10 rounded-xl bg-white/5 border border-white/5">
-                                            <Trash2 size={16} />
+                                        <button onClick={() => handleToggleStatus(client.id, client.isActive)}
+                                            className={`flex-1 py-3 rounded-xl text-[11px] font-black uppercase border transition-all ${client.isActive ? "bg-emerald-500/10 border-emerald-500/20 text-emerald-400" : "bg-red-500/10 border-red-500/20 text-red-400"}`}>
+                                            {client.isActive ? "Activo" : "Off"}
                                         </button>
                                     </div>
                                 </div>
@@ -882,17 +894,17 @@ export default function AdminDashboardContent({ clients: initialClients }: { cli
                                 />
                             </div>
 
-                            <div className="pt-4 flex gap-3">
+                            <div className="pt-4 flex flex-col sm:flex-row gap-3">
                                 <button
                                     onClick={() => setIsInviteModalOpen(false)}
-                                    className="flex-1 bg-white/5 hover:bg-white/10 text-white font-bold py-4 rounded-2xl transition-all"
+                                    className="order-2 sm:order-1 flex-1 bg-white/5 hover:bg-white/10 text-white font-bold py-4 rounded-2xl transition-all border border-white/5"
                                 >
                                     Cancelar
                                 </button>
                                 <button
                                     onClick={handleSendInviteLink}
                                     disabled={sendingInvite}
-                                    className="flex-1 bg-blue-600 hover:bg-blue-500 disabled:opacity-50 text-white font-bold py-4 rounded-2xl shadow-xl shadow-blue-600/20 transition-all flex items-center justify-center gap-2"
+                                    className="order-1 sm:order-2 flex-[2] bg-blue-600 hover:bg-blue-500 disabled:opacity-50 text-white font-bold py-4 rounded-2xl shadow-xl shadow-blue-600/20 transition-all flex items-center justify-center gap-2"
                                 >
                                     {sendingInvite ? <RefreshCw size={18} className="animate-spin" /> : <><Zap size={18} /> Enviar Propuesta</>}
                                 </button>
@@ -917,14 +929,17 @@ export default function AdminDashboardContent({ clients: initialClients }: { cli
                                     <p className="text-white/30 font-mono text-[10px]">{selectedClient.id}</p>
                                 </div>
                             </div>
-                            <div className="flex items-center gap-3">
+                            <div className="flex flex-col sm:flex-row items-end sm:items-center gap-2 sm:gap-3">
                                 <button onClick={() => handleUpdateAgent(selectedClient.id)} disabled={updatingAgent || !selectedClient.retellAgentId}
-                                    className="px-4 py-2 rounded-xl bg-violet-600/20 border border-violet-600/20 text-violet-400 hover:bg-violet-600/30 transition-all flex items-center gap-2 text-sm font-bold disabled:opacity-30">
+                                    className="w-full sm:w-auto px-4 py-2.5 rounded-xl bg-violet-600 shadow-lg shadow-violet-600/20 border border-violet-500 hover:bg-violet-500 transition-all flex items-center justify-center gap-2 text-[11px] font-black uppercase tracking-wider disabled:opacity-30">
                                     {updatingAgent ? <RefreshCw size={14} className="animate-spin" /> : <Bot size={14} />}
-                                    Actualizar Agente
+                                    Actualizar
                                 </button>
-                                <button onClick={() => setSelectedClient(null)} className="p-3 rounded-xl bg-white/5 hover:bg-white/10 transition-colors">
+                                <button onClick={() => setSelectedClient(null)} className="p-2.5 rounded-xl bg-white/5 hover:bg-white/10 transition-colors border border-white/10 hidden sm:block">
                                     <X size={20} />
+                                </button>
+                                <button onClick={() => setSelectedClient(null)} className="sm:hidden absolute top-4 right-4 p-2 bg-white/5 rounded-full">
+                                    <X size={18} />
                                 </button>
                             </div>
                         </div>

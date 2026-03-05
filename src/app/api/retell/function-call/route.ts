@@ -203,11 +203,20 @@ export async function POST(req: NextRequest) {
                     result = { error: "Para consultar disponibilidad necesito que me digas el día. ¿Para qué fecha quieres la cita?" };
                     break;
                 }
-                // Find service duration
-                const service = (safeContext.services || []).find(
-                    (s: any) => !service_name || s.name.toLowerCase().includes(service_name.toLowerCase())
+                // Find service duration with flexible matching
+                // 1. Try exact match (case insensitive)
+                // 2. Try partial match
+                // 3. Fallback to 30 min
+                const serviceList = (safeContext.services || []);
+                const service = serviceList.find((s: any) =>
+                    service_name && s.name.toLowerCase() === service_name.toLowerCase()
+                ) || serviceList.find((s: any) =>
+                    service_name && s.name.toLowerCase().includes(service_name.toLowerCase())
                 );
+
                 const durationMin = service?.durationMin ?? 30;
+                // Offer slots every 30 mins even if service is longer (e.g. 45 min)
+                const stepMin = 30;
 
                 // FIX: Assign a real staff member always.
                 // If the caller specified a name, try to match it.
@@ -245,7 +254,8 @@ export async function POST(req: NextRequest) {
                     durationMin,
                     {
                         staffCalendarId: staff?.googleCalendarId,
-                        prismaOverride: activePrisma
+                        prismaOverride: activePrisma,
+                        stepMin: stepMin
                     }
                 );
 
@@ -330,8 +340,12 @@ export async function POST(req: NextRequest) {
 
                 console.log(`[retell/function-call] Phone resolution: retell=${callerPhoneFromRetell} verbal=${caller_phone} resolved=${resolvedPhone}`);
 
-                const service = (safeContext.services || []).find(
-                    (s: any) => !service_name || s.name.toLowerCase().includes(service_name.toLowerCase())
+                // Find service with flexible matching
+                const serviceListBook = (safeContext.services || []);
+                const service = serviceListBook.find((s: any) =>
+                    service_name && s.name.toLowerCase() === service_name.toLowerCase()
+                ) || serviceListBook.find((s: any) =>
+                    service_name && s.name.toLowerCase().includes(service_name.toLowerCase())
                 );
 
                 // FIX: Always assign a real staff member.

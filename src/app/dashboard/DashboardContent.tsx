@@ -131,7 +131,7 @@ export default function DashboardContent({ client: initialClient }: { client: an
             </main>
 
             {/* Mobile Bottom Navigation */}
-            <MobileNav activeTab={activeTab} setActiveTab={setActiveTab} />
+            <MobileNav activeTab={activeTab} setActiveTab={setActiveTab} client={client} />
         </div>
     );
 }
@@ -1587,29 +1587,36 @@ function StatCard({ title, value, icon }: { title: string, value: any, icon: any
     );
 }
 
-function MobileNav({ activeTab, setActiveTab }: { activeTab: TabType, setActiveTab: (t: TabType) => void }) {
+function MobileNav({ activeTab, setActiveTab, client }: { activeTab: TabType, setActiveTab: (t: TabType) => void, client: any }) {
     const tabs = [
         { id: "overview", label: "Inicio", icon: <LayoutDashboard size={20} /> },
         { id: "calls", label: "Llamadas", icon: <Phone size={20} /> },
         { id: "team", label: "Equipo", icon: <Users size={20} /> },
         { id: "services", label: "Agenda", icon: <Calendar size={20} /> },
+        ...(client.role === "PLATFORM_ADMIN" ? [{ id: "admin_link", label: "Admin", icon: <ShieldCheck size={20} className="text-amber-400" /> }] : []),
         { id: "config", label: "Más", icon: <Settings size={20} /> },
     ];
 
     return (
         <nav className="md:hidden fixed bottom-0 left-0 right-0 z-50 bg-[#0a0a0f]/80 backdrop-blur-xl border-t border-white/5 px-4 pb-safe-offset-2 pt-2 h-20 shadow-[0_-10px_40px_rgba(0,0,0,0.5)]">
-            <div className="flex justify-between items-center h-full max-w-lg mx-auto">
+            <div className="flex justify-between items-center h-full max-w-lg mx-auto gap-1">
                 {tabs.map((tab) => (
                     <button
                         key={tab.id}
-                        onClick={() => setActiveTab(tab.id as TabType)}
+                        onClick={() => {
+                            if (tab.id === "admin_link") {
+                                window.location.href = "/dashboard/admin";
+                            } else {
+                                setActiveTab(tab.id as TabType);
+                            }
+                        }}
                         className={`flex flex-col items-center justify-center gap-1.5 flex-1 transition-all ${activeTab === tab.id ? "text-blue-500" : "text-white/30"
                             }`}
                     >
                         <div className={`p-2 rounded-xl transition-all ${activeTab === tab.id ? "bg-blue-500/10" : ""}`}>
                             {tab.icon}
                         </div>
-                        <span className="text-[10px] font-bold uppercase tracking-tighter">{tab.label}</span>
+                        <span className="text-[10px] font-bold uppercase tracking-tighter truncate w-full text-center">{tab.label}</span>
                     </button>
                 ))}
             </div>
