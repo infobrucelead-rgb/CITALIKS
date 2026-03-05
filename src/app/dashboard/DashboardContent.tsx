@@ -1226,9 +1226,9 @@ function StaffCalendar({ staffId, staffName }: { staffId: string, staffName: str
                                             <div className="flex-1 min-w-0 py-1">
                                                 <h4 className="text-sm font-bold text-white truncate">{e.summary || '(Sin título)'}</h4>
                                                 <div className="flex items-center gap-2 mt-1">
-                                                    <span className="text-[10px] text-white/50 font-mono">{date.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' })}</span>
-                                                    <div className={`w-1 h-1 rounded-full ${e.source === 'local' ? 'bg-emerald-500' : 'bg-indigo-500'}`} />
-                                                    <span className="text-[9px] uppercase tracking-widest text-white/40">{e.source === 'local' ? 'Cita automática' : 'Google Calendar'}</span>
+                                                    <span className="text-[10px] text-white/50 font-mono shrink-0">{date.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' })}</span>
+                                                    <div className={`w-1 h-1 rounded-full shrink-0 ${e.source === 'local' ? 'bg-emerald-500' : 'bg-indigo-500'}`} />
+                                                    <span className="text-[9px] uppercase tracking-widest text-white/40 truncate">{e.source === 'local' ? 'Cita automática' : 'Google Calendar'}</span>
                                                 </div>
                                             </div>
                                         </div>
@@ -1588,7 +1588,7 @@ function CallsList({ logs }: { logs: any[] }) {
                                         log.actionTaken === 'cancelled' ? 'bg-red-500/10 text-red-400 border border-red-500/10' :
                                             'bg-white/5 text-white/40 border border-white/5'
                                         }`}>
-                                        {log.actionTaken || 'CONSULTA'}
+                                        {log.actionTaken === 'booked' ? 'AGENDADA' : log.actionTaken === 'cancelled' ? 'CANCELADA' : (log.actionTaken?.toUpperCase() || 'CONSULTA')}
                                     </span>
                                 </td>
                                 <td className="p-5">
@@ -1627,7 +1627,7 @@ function CallsList({ logs }: { logs: any[] }) {
                                 log.actionTaken === 'cancelled' ? 'bg-red-500/10 text-red-400 border border-red-500/10' :
                                     'bg-white/5 text-white/40 border border-white/5'
                                 }`}>
-                                {log.actionTaken || 'INFO'}
+                                {log.actionTaken === 'booked' ? 'AGENDADA' : log.actionTaken === 'cancelled' ? 'CANCELADA' : (log.actionTaken?.toUpperCase() || 'INFO')}
                             </span>
                             <span className="text-[10px] font-mono text-white/40 italic">
                                 {log.durationSec ? `${Math.floor(log.durationSec / 60)}:${(log.durationSec % 60).toString().padStart(2, '0')}` : '—'}

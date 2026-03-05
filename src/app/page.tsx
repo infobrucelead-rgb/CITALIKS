@@ -9,8 +9,8 @@ export default async function HomePage() {
     return (
         <main className="min-h-screen bg-gradient-animated text-white overflow-hidden">
             {/* Nav */}
-            <nav className="flex items-center justify-between px-8 py-6 max-w-7xl mx-auto">
-                <Link href="/" className="flex items-center gap-2 hover:opacity-80 transition-opacity">
+            <nav className="flex flex-wrap flex-col sm:flex-row items-center justify-center sm:justify-between gap-4 px-8 py-6 max-w-7xl mx-auto">
+                <Link href="/" className="flex items-center gap-2 hover:opacity-80 transition-opacity shrink-0">
                     <img src="/logo.png" alt="CitaLiks Logo" className="w-10 h-10 object-contain drop-shadow-lg" />
                     <span className="text-xl font-bold">Cita <span className="gradient-text">Liks</span></span>
                 </Link>
