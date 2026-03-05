@@ -6,7 +6,7 @@ import {
     Trash2, Search, UserPlus, Image as ImageIcon,
     ExternalLink, Brain, Loader2, Edit2, ChevronRight, ChevronDown, DollarSign, X
 } from "lucide-react";
-import { useClerk } from "@clerk/nextjs";
+import { useClerk, UserButton } from "@clerk/nextjs";
 import { DAY_NAMES, formatDuration, formatPrice } from "@/lib/utils";
 
 type TabType = "overview" | "calls" | "services" | "config" | "team" | "admin";
@@ -169,6 +169,13 @@ function Header({ title, subtitle, status, actions }: { title: string, subtitle:
                         Agente {status ? "Activo" : "Pausado"}
                     </div>
                 )}
+                <div className="pl-2 border-l border-white/10 ml-2 hidden md:block">
+                    <UserButton appearance={{ elements: { userButtonAvatarBox: "w-10 h-10" } }} />
+                </div>
+            </div>
+            {/* UserButton for mobile under the header */}
+            <div className="md:hidden mt-2">
+                <UserButton appearance={{ elements: { userButtonAvatarBox: "w-10 h-10" } }} />
             </div>
         </header>
     );
@@ -1022,39 +1029,41 @@ function StaffCalendar({ staffId, staffName }: { staffId: string, staffName: str
                     </div>
                 </div>
 
-                <div className="flex items-center gap-2 w-full md:w-auto justify-between md:justify-end overflow-visible pb-2 md:pb-0">
-                    {/* Desktop View Selector */}
-                    <div className="hidden md:flex p-1 bg-white/5 rounded-xl border border-white/5 shrink-0">
-                        {(["day", "week", "month"] as const).map(v => (
-                            <button
-                                key={v}
-                                onClick={() => setViewMode(v)}
-                                className={`px-4 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-tighter transition-all ${viewMode === v ? "bg-blue-600 text-white shadow-lg" : "text-white/40 hover:text-white"}`}
+                <div className="flex flex-col md:flex-row items-center gap-3 w-full md:w-auto overflow-visible pb-2 md:pb-0">
+                    <div className="flex items-center justify-center md:justify-end gap-2 w-full md:w-auto">
+                        {/* Desktop View Selector */}
+                        <div className="hidden md:flex p-1 bg-white/5 rounded-xl border border-white/5 shrink-0">
+                            {(["day", "week", "month"] as const).map(v => (
+                                <button
+                                    key={v}
+                                    onClick={() => setViewMode(v)}
+                                    className={`px-4 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-tighter transition-all ${viewMode === v ? "bg-blue-600 text-white shadow-lg" : "text-white/40 hover:text-white"}`}
+                                >
+                                    {v === 'day' ? 'Día' : v === 'week' ? 'Sem' : 'Mes'}
+                                </button>
+                            ))}
+                        </div>
+
+                        {/* Mobile View Selector */}
+                        <div className="md:hidden relative shrink-0 z-20 w-full max-w-[200px]">
+                            <select
+                                value={viewMode}
+                                onChange={(e) => setViewMode(e.target.value as any)}
+                                className="appearance-none w-full text-center bg-white/5 border border-white/5 rounded-xl pl-4 pr-10 py-2.5 text-[11px] font-black uppercase tracking-widest text-white focus:outline-none focus:border-blue-500 shadow-xl"
                             >
-                                {v === 'day' ? 'Día' : v === 'week' ? 'Sem' : 'Mes'}
-                            </button>
-                        ))}
+                                <option value="day" className="bg-gray-900 text-white">Vista Diaria</option>
+                                <option value="week" className="bg-gray-900 text-white">Vista Semanal</option>
+                                <option value="month" className="bg-gray-900 text-white">Vista Mensual</option>
+                            </select>
+                            <ChevronRight size={14} className="absolute right-3 top-1/2 -translate-y-1/2 rotate-90 text-white/40 pointer-events-none" />
+                        </div>
                     </div>
 
-                    {/* Mobile View Selector */}
-                    <div className="md:hidden relative shrink-0 z-20">
-                        <select
-                            value={viewMode}
-                            onChange={(e) => setViewMode(e.target.value as any)}
-                            className="appearance-none bg-white/5 border border-white/5 rounded-xl pl-4 pr-10 py-2.5 text-[11px] font-black uppercase tracking-widest text-white focus:outline-none focus:border-blue-500 shadow-xl"
-                        >
-                            <option value="day" className="bg-gray-900 text-white">Vista Diaria</option>
-                            <option value="week" className="bg-gray-900 text-white">Vista Semanal</option>
-                            <option value="month" className="bg-gray-900 text-white">Vista Mensual</option>
-                        </select>
-                        <ChevronRight size={14} className="absolute right-3 top-1/2 -translate-y-1/2 rotate-90 text-white/40 pointer-events-none" />
-                    </div>
-
-                    <div className="flex items-center gap-1 bg-white/5 p-1 rounded-xl border border-white/5 shrink-0">
+                    <div className="flex items-center justify-between md:justify-center gap-1 bg-white/5 p-1 rounded-xl border border-white/5 shrink-0 w-full md:w-auto max-w-[200px] md:max-w-none">
                         <button onClick={() => navigate(-1)} className="p-2 hover:bg-white/10 rounded-lg transition-colors text-white/60 hover:text-white">
                             <ChevronRight size={18} className="rotate-180" />
                         </button>
-                        <div className="relative min-w-[3.5rem] flex justify-center">
+                        <div className="relative min-w-[3.5rem] flex-1 flex justify-center">
                             <input
                                 type="date"
                                 ref={dateInputRef}
