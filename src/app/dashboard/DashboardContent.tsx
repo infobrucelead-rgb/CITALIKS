@@ -696,15 +696,15 @@ function ServicesTab({ client, onUpdate, selectedStaff, setSelectedStaff }: { cl
                                     />
                                 </div>
                             </div>
-                            <div className="flex gap-3 pt-4">
+                            <div className="flex gap-2 md:gap-3 pt-4">
                                 <button
                                     onClick={() => setEditingService(null)}
-                                    className="flex-1 px-6 py-4 rounded-2xl bg-white/5 text-sm font-bold hover:bg-white/10 transition-all">
+                                    className="flex-1 px-4 py-3 md:px-6 md:py-4 rounded-xl md:rounded-2xl bg-white/5 text-xs md:text-sm font-bold hover:bg-white/10 transition-all">
                                     Cancelar
                                 </button>
                                 <button
                                     onClick={handleEdit}
-                                    className="flex-1 px-6 py-4 rounded-2xl bg-blue-600 text-sm font-bold shadow-xl shadow-blue-600/20 hover:bg-violet-700 transition-all">
+                                    className="flex-1 px-4 py-3 md:px-6 md:py-4 rounded-xl md:rounded-2xl bg-blue-600 text-xs md:text-sm font-bold shadow-xl shadow-blue-600/20 hover:bg-violet-700 transition-all">
                                     Guardar Cambios
                                 </button>
                             </div>
@@ -1022,8 +1022,9 @@ function StaffCalendar({ staffId, staffName }: { staffId: string, staffName: str
                     </div>
                 </div>
 
-                <div className="flex items-center gap-2 w-full md:w-auto justify-between md:justify-end overflow-x-auto pb-2 md:pb-0 custom-scrollbar">
-                    <div className="flex p-1 bg-white/5 rounded-xl border border-white/5 shrink-0">
+                <div className="flex items-center gap-2 w-full md:w-auto justify-between md:justify-end overflow-visible pb-2 md:pb-0">
+                    {/* Desktop View Selector */}
+                    <div className="hidden md:flex p-1 bg-white/5 rounded-xl border border-white/5 shrink-0">
                         {(["day", "week", "month"] as const).map(v => (
                             <button
                                 key={v}
@@ -1033,6 +1034,20 @@ function StaffCalendar({ staffId, staffName }: { staffId: string, staffName: str
                                 {v === 'day' ? 'Día' : v === 'week' ? 'Sem' : 'Mes'}
                             </button>
                         ))}
+                    </div>
+
+                    {/* Mobile View Selector */}
+                    <div className="md:hidden relative shrink-0 z-20">
+                        <select
+                            value={viewMode}
+                            onChange={(e) => setViewMode(e.target.value as any)}
+                            className="appearance-none bg-white/5 border border-white/5 rounded-xl pl-4 pr-10 py-2.5 text-[11px] font-black uppercase tracking-widest text-white focus:outline-none focus:border-blue-500 shadow-xl"
+                        >
+                            <option value="day" className="bg-gray-900 text-white">Vista Diaria</option>
+                            <option value="week" className="bg-gray-900 text-white">Vista Semanal</option>
+                            <option value="month" className="bg-gray-900 text-white">Vista Mensual</option>
+                        </select>
+                        <ChevronRight size={14} className="absolute right-3 top-1/2 -translate-y-1/2 rotate-90 text-white/40 pointer-events-none" />
                     </div>
 
                     <div className="flex items-center gap-1 bg-white/5 p-1 rounded-xl border border-white/5 shrink-0">
@@ -1138,44 +1153,90 @@ function StaffCalendar({ staffId, staffName }: { staffId: string, staffName: str
                         </div>
                     </div>
                 ) : (
-                    <div className="grid grid-cols-7 border-white/5 h-[600px] overflow-y-auto">
-                        {Array.from({ length: 7 }).map((_, i) => (
-                            <div key={i} className="h-10 bg-white/5 border-r border-b border-white/5 flex items-center justify-center">
-                                <span className="hidden md:inline text-[10px] font-black uppercase text-white/30 tracking-widest">{DAY_NAMES[i]}</span>
-                                <span className="md:hidden text-[9px] font-black uppercase text-white/30 tracking-tighter">{DAY_NAMES[i].substring(0, 3)}</span>
-                            </div>
-                        ))}
-                        {calendarDays.map((day, i) => {
-                            const dayEvents = events.filter(e => isSameDay(new Date(e.start.dateTime || e.start.date), day));
-                            const isToday = isSameDay(day, new Date());
-                            const isCurrentMonth = day.getMonth() === currentStart.getMonth();
-
-                            return (
-                                <div key={i} className={`min-h-[100px] border-r border-b border-white/5 p-2 relative overflow-hidden group ${!isCurrentMonth ? 'opacity-20' : ''}`}>
-                                    <span className={`text-xs font-bold absolute top-2 right-3 ${isToday ? 'bg-blue-600 text-white w-5 h-5 flex items-center justify-center rounded-full' : 'text-white/40'}`}>
-                                        {day.getDate()}
-                                    </span>
-                                    <div className="mt-6 space-y-1">
-                                        {dayEvents.slice(0, 3).map((e, idx) => (
-                                            <div
-                                                key={idx}
-                                                onClick={() => setSelectedEvent(e)}
-                                                className={`text-[8px] p-1 rounded-md truncate cursor-pointer transition-colors ${e.source === 'local'
-                                                    ? 'bg-emerald-600/80 text-white hover:bg-emerald-500'
-                                                    : 'bg-indigo-600/80 text-white hover:bg-indigo-500'
-                                                    }`}
-                                            >
-                                                {e.summary}
-                                            </div>
-                                        ))}
-                                        {dayEvents.length > 3 && (
-                                            <p className="text-[8px] text-white/20 font-bold ml-1">+{dayEvents.length - 3} más</p>
-                                        )}
-                                    </div>
+                    <>
+                        {/* Desktop Monthly Grid */}
+                        <div className="hidden md:grid grid-cols-7 border-white/5 h-[600px] overflow-y-auto">
+                            {Array.from({ length: 7 }).map((_, i) => (
+                                <div key={i} className="h-10 bg-white/5 border-r border-b border-white/5 flex items-center justify-center">
+                                    <span className="text-[10px] font-black uppercase text-white/30 tracking-widest">{DAY_NAMES[i]}</span>
                                 </div>
-                            );
-                        })}
-                    </div>
+                            ))}
+                            {calendarDays.map((day, i) => {
+                                const dayEvents = events.filter(e => isSameDay(new Date(e.start.dateTime || e.start.date), day));
+                                const isToday = isSameDay(day, new Date());
+                                const isCurrentMonth = day.getMonth() === currentStart.getMonth();
+
+                                return (
+                                    <div key={i} className={`min-h-[100px] border-r border-b border-white/5 p-2 relative overflow-hidden group ${!isCurrentMonth ? 'opacity-20' : ''}`}>
+                                        <span className={`text-xs font-bold absolute top-2 right-3 ${isToday ? 'bg-blue-600 text-white w-5 h-5 flex items-center justify-center rounded-full' : 'text-white/40'}`}>
+                                            {day.getDate()}
+                                        </span>
+                                        <div className="mt-6 space-y-1">
+                                            {dayEvents.slice(0, 3).map((e, idx) => (
+                                                <div
+                                                    key={idx}
+                                                    onClick={() => setSelectedEvent(e)}
+                                                    className={`text-[8px] p-1 rounded-md truncate cursor-pointer transition-colors ${e.source === 'local'
+                                                        ? 'bg-emerald-600/80 text-white hover:bg-emerald-500'
+                                                        : 'bg-indigo-600/80 text-white hover:bg-indigo-500'
+                                                        }`}
+                                                >
+                                                    {e.summary}
+                                                </div>
+                                            ))}
+                                            {dayEvents.length > 3 && (
+                                                <p className="text-[8px] text-white/20 font-bold ml-1">+{dayEvents.length - 3} más</p>
+                                            )}
+                                        </div>
+                                    </div>
+                                );
+                            })}
+                        </div>
+
+                        {/* Mobile Monthly List */}
+                        <div className="md:hidden flex flex-col gap-2 h-[500px] overflow-y-auto p-4 bg-black/10">
+                            <h4 className="text-[10px] uppercase font-bold tracking-widest text-white/40 mb-2">Citas del Mes</h4>
+                            {events
+                                .filter(e => {
+                                    const eventDate = new Date(e.start.dateTime || e.start.date);
+                                    return eventDate.getMonth() === currentStart.getMonth() && eventDate.getFullYear() === currentStart.getFullYear();
+                                })
+                                .sort((a, b) => new Date(a.start.dateTime || a.start.date).getTime() - new Date(b.start.dateTime || b.start.date).getTime())
+                                .map((e, idx) => {
+                                    const date = new Date(e.start.dateTime || e.start.date);
+                                    return (
+                                        <div
+                                            key={idx}
+                                            onClick={() => setSelectedEvent(e)}
+                                            className={`flex items-stretch p-3 rounded-2xl border cursor-pointer active:scale-95 transition-all shadow-md ${e.source === 'local' ? 'bg-emerald-950/20 border-emerald-900/50' : 'bg-indigo-950/20 border-indigo-900/50'}`}
+                                        >
+                                            <div className="flex flex-col items-center justify-center w-14 shrink-0 border-r border-white/5 pr-3 mr-3">
+                                                <span className="text-xl font-black text-white">{date.getDate()}</span>
+                                                <span className={`text-[9px] uppercase font-black ${e.source === 'local' ? 'text-emerald-400' : 'text-indigo-400'}`}>{DAY_NAMES[date.getDay() === 0 ? 6 : date.getDay() - 1].substring(0, 3)}</span>
+                                            </div>
+                                            <div className="flex-1 min-w-0 py-1">
+                                                <h4 className="text-sm font-bold text-white truncate">{e.summary || '(Sin título)'}</h4>
+                                                <div className="flex items-center gap-2 mt-1">
+                                                    <span className="text-[10px] text-white/50 font-mono">{date.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' })}</span>
+                                                    <div className={`w-1 h-1 rounded-full ${e.source === 'local' ? 'bg-emerald-500' : 'bg-indigo-500'}`} />
+                                                    <span className="text-[9px] uppercase tracking-widest text-white/40">{e.source === 'local' ? 'Cita automática' : 'Google Calendar'}</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    )
+                                })
+                            }
+                            {events.filter(e => {
+                                const eventDate = new Date(e.start.dateTime || e.start.date);
+                                return eventDate.getMonth() === currentStart.getMonth() && eventDate.getFullYear() === currentStart.getFullYear();
+                            }).length === 0 && (
+                                    <div className="flex flex-col items-center justify-center h-48 text-center text-white/20">
+                                        <Calendar size={32} className="mb-3 opacity-30" />
+                                        <p className="text-sm font-bold">No hay citas este mes</p>
+                                    </div>
+                                )}
+                        </div>
+                    </>
                 )}
 
                 {loading && (
