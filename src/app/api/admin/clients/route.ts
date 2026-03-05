@@ -3,6 +3,8 @@ import { auth } from "@clerk/nextjs/server";
 import { prisma } from "@/lib/db";
 import { linkPhoneNumberToAgent } from "@/lib/retell";
 
+export const dynamic = "force-dynamic";
+
 export async function PATCH(req: NextRequest) {
     const { userId } = await auth();
     if (!userId) return NextResponse.json({ error: "No autenticado" }, { status: 401 });
