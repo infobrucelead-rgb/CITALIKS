@@ -561,6 +561,7 @@ export async function updateRetellAgent(
     const voiceConfig = VOICE_MAPPING[voicePref] || VOICE_MAPPING["male"];
 
     const agentOptionsUpdate: any = {
+        agent_name: `${fullConfig.businessName} — ${fullConfig.agentName}`,
         voice_id: voiceConfig.id,
         voice_speed: 1.0,
         voice_temperature: 0.7,
