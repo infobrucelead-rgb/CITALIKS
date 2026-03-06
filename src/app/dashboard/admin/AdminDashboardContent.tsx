@@ -517,17 +517,17 @@ export default function AdminDashboardContent({ clients: initialClients }: { cli
                                 <div className="p-10 text-center text-white/20 italic">No se encontraron negocios</div>
                             ) : paginatedClients.map(client => (
                                 <div key={client.id} className="glass p-4 rounded-2xl border-white/5 bg-white/[0.02] space-y-4">
-                                    <div className="flex items-center justify-between">
-                                        <div className="flex items-center gap-3">
-                                            <div className={`w-10 h-10 rounded-xl flex items-center justify-center font-black text-sm border ${client.isActive ? "bg-blue-600/20 text-blue-400 border-blue-600/20" : "bg-white/5 text-white/30 border-white/10"}`}>
+                                    <div className="flex items-start justify-between gap-3">
+                                        <div className="flex items-center gap-3 min-w-0">
+                                            <div className={`shrink-0 w-10 h-10 rounded-xl flex items-center justify-center font-black text-sm border ${client.isActive ? "bg-blue-600/20 text-blue-400 border-blue-600/20" : "bg-white/5 text-white/30 border-white/10"}`}>
                                                 {(client.businessName || "B")[0].toUpperCase()}
                                             </div>
-                                            <div>
-                                                <p className="font-bold text-sm">{client.businessName || "Sin nombre"}</p>
-                                                <p className="text-[10px] text-white/30 truncate max-w-[150px]">{client.email}</p>
+                                            <div className="min-w-0">
+                                                <p className="font-bold text-sm truncate">{client.businessName || "Sin nombre"}</p>
+                                                <p className="text-[10px] text-white/30 truncate">{client.email}</p>
                                             </div>
                                         </div>
-                                        <div className="flex flex-col items-end gap-1">
+                                        <div className="flex shrink-0 flex-col items-end gap-1 mt-1">
                                             <span className={`px-2 py-0.5 rounded-lg text-[8px] font-black uppercase tracking-widest ${client.isActive ? "bg-emerald-500/10 text-emerald-400 border border-emerald-500/20" : "bg-red-500/10 text-red-400 border border-red-500/20"}`}>
                                                 {client.isActive ? "ACTIVO" : "OFF"}
                                             </span>
@@ -1196,20 +1196,22 @@ function EditableField({ label, icon, value, isEditing, editValue, saving, onEdi
                 <p className="text-[10px] uppercase font-black text-white/30 tracking-widest">{label}</p>
             </div>
             {isEditing ? (
-                <div className="flex gap-2 mt-1">
+                <div className="flex flex-wrap sm:flex-nowrap gap-2 mt-1">
                     <input
                         autoFocus
                         value={editValue}
                         onChange={e => onChange(e.target.value)}
                         onKeyDown={e => { if (e.key === "Enter") onSave(); if (e.key === "Escape") onCancel(); }}
-                        className="flex-1 bg-white/10 border border-blue-500/50 rounded-lg px-3 py-1.5 text-sm outline-none focus:border-blue-500"
+                        className="w-full sm:flex-1 bg-white/10 border border-blue-500/50 rounded-lg px-3 py-1.5 text-sm outline-none focus:border-blue-500 min-w-0"
                     />
-                    <button onClick={onSave} disabled={saving} className="p-2 bg-blue-600 hover:bg-blue-700 rounded-lg transition-all disabled:opacity-50">
-                        {saving ? <RefreshCw size={14} className="animate-spin" /> : <Save size={14} />}
-                    </button>
-                    <button onClick={onCancel} className="p-2 bg-white/5 hover:bg-white/10 rounded-lg transition-all">
-                        <X size={14} />
-                    </button>
+                    <div className="flex shrink-0 gap-2 ml-auto">
+                        <button onClick={onSave} disabled={saving} className="p-2 bg-blue-600 hover:bg-blue-700 rounded-lg transition-all disabled:opacity-50">
+                            {saving ? <RefreshCw size={14} className="animate-spin" /> : <Save size={14} />}
+                        </button>
+                        <button onClick={onCancel} className="p-2 bg-white/5 hover:bg-white/10 rounded-lg transition-all">
+                            <X size={14} />
+                        </button>
+                    </div>
                 </div>
             ) : (
                 <div className="flex items-center justify-between">
