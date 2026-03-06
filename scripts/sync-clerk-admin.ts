@@ -14,7 +14,7 @@ async function makeAdmin() {
         const email = user.emailAddresses[0]?.emailAddress;
         if (!email) continue;
 
-        const TARGET_EMAIL = "admin@citaliks.com";
+        const TARGET_EMAIL = "neuralads.mkt@gmail.com";
 
         if (email === TARGET_EMAIL) {
             console.log(`Promoting target user: ${email} (ID: ${user.id})`);
