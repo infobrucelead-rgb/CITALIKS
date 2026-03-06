@@ -64,6 +64,6 @@ export async function POST(req: NextRequest) {
             response: error.response?.data || error.response || "No response data"
         });
 
-        return NextResponse.json({ error: "Error al actualizar el agente", message: error.message }, { status: 500 });
+        return NextResponse.json({ error: `Error Retell: ${error.message || "Desconocido"}` }, { status: 500 });
     }
 }
