@@ -43,6 +43,42 @@ export default function Step4Agent({
                 </div>
 
                 <div>
+                    <label className="block text-sm font-medium text-white/70 mb-2">Género de la voz</label>
+                    <div className="grid grid-cols-2 gap-3">
+                        <label className={`relative flex items-center justify-center p-4 rounded-xl border cursor-pointer transition-all ${selectedVoice === "male"
+                            ? "bg-violet-500/10 border-violet-500"
+                            : "bg-white/5 border-white/10 hover:bg-white/10"
+                            }`}>
+                            <input
+                                {...register("agentVoice")}
+                                type="radio"
+                                value="male"
+                                className="hidden"
+                            />
+                            <div className="text-center">
+                                <span className="block font-semibold">Hombre</span>
+                                <span className="text-[10px] text-white/40 italic">Voz masculina</span>
+                            </div>
+                        </label>
+                        <label className={`relative flex items-center justify-center p-4 rounded-xl border cursor-pointer transition-all ${selectedVoice === "female"
+                            ? "bg-violet-500/10 border-violet-500"
+                            : "bg-white/5 border-white/10 hover:bg-white/10"
+                            }`}>
+                            <input
+                                {...register("agentVoice")}
+                                type="radio"
+                                value="female"
+                                className="hidden"
+                            />
+                            <div className="text-center">
+                                <span className="block font-semibold">Mujer</span>
+                                <span className="text-[10px] text-white/40 italic">Voz femenina</span>
+                            </div>
+                        </label>
+                    </div>
+                </div>
+
+                <div>
                     <label className="block text-sm font-medium text-white/70 mb-2">Tono de voz</label>
                     <div className="grid grid-cols-2 gap-3">
                         <label className={`relative flex items-center justify-center p-4 rounded-xl border cursor-pointer transition-all ${selectedTone === "profesional"

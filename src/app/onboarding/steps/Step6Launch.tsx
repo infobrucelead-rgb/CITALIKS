@@ -71,14 +71,16 @@ export default function Step6Launch({
                                 transfer: data.transferPhone || ""
                             }).toString();
                             window.open(`/instrucciones?${qs}`, "_blank");
-                            window.location.href = "/dashboard";
+                            setTimeout(() => {
+                                window.location.href = "/dashboard";
+                            }, 500);
                         }}
                         className="w-full py-4 rounded-xl bg-violet-600 hover:bg-violet-500 font-black transition-all text-base shadow-[0_0_30px_rgba(139,92,246,0.3)] hover:scale-[1.02] uppercase tracking-wider"
                     >
-                        Abrir Instrucciones y Finalizar
+                        Abrir Instrucciones y Finalizar ✨
                     </button>
-                    <p className="text-[10px] text-white/30 uppercase font-black tracking-widest text-center px-4">
-                        Las instrucciones se abrirán en una nueva pestaña para que no las pierdas.
+                    <p className="text-xs text-violet-400 font-bold px-4">
+                        💡 IMPORTANTE: Las instrucciones se abrirán en una nueva pestaña para que puedas leerlas tranquilamente mientras exploras tu panel.
                     </p>
                 </div>
             </div>

@@ -230,7 +230,20 @@ function OverviewTab({ client }: { client: any }) {
                             <h3 className="text-xl font-mono font-bold text-white">{client.transferPhone || "No configurado"}</h3>
                         </div>
                     </div>
-                    <p className="text-xs text-white/40 leading-relaxed">Las llamadas se desviarán a este número si el cliente lo solicita o hay una emergencia.</p>
+                    <p className="text-xs text-white/40 leading-relaxed mb-4">Las llamadas se desviarán a este número si el cliente lo solicita o hay una emergencia.</p>
+                    <button
+                        onClick={() => {
+                            const qs = new URLSearchParams({
+                                phone: client.phone || "",
+                                agent: client.agentName || "",
+                                transfer: client.transferPhone || ""
+                            }).toString();
+                            window.open(`/instrucciones?${qs}`, "_blank");
+                        }}
+                        className="w-full py-2 bg-violet-600/20 hover:bg-violet-600/40 text-violet-400 rounded-xl text-[10px] font-bold uppercase tracking-widest transition-all border border-violet-600/20 flex items-center justify-center gap-2"
+                    >
+                        <ExternalLink size={14} /> Ver Instrucciones de Desvío
+                    </button>
                 </div>
             </div>
 
@@ -1353,6 +1366,7 @@ function ConfigTab({ client, onUpdate }: { client: any, onUpdate: () => void }) 
     const [config, setConfig] = useState({
         agentName: client.agentName || "",
         agentTone: client.agentTone || "profesional",
+        agentVoice: client.agentVoice || "male",
         businessName: client.businessName || "",
         businessType: client.businessType || "",
         city: client.city || "",
@@ -1382,6 +1396,7 @@ function ConfigTab({ client, onUpdate }: { client: any, onUpdate: () => void }) 
                     data: {
                         agentName: config.agentName,
                         agentTone: config.agentTone,
+                        agentVoice: config.agentVoice,
                         transferPhone: config.transferPhone
                     }
                 })
@@ -1461,6 +1476,20 @@ function ConfigTab({ client, onUpdate }: { client: any, onUpdate: () => void }) 
                             />
                         </div>
                         <div className="opacity-60 transition-opacity">
+                            <label className="text-[10px] uppercase font-bold text-white/30 block mb-2">Género de voz</label>
+                            <div className="relative">
+                                <select
+                                    value={config.agentVoice}
+                                    disabled
+                                    className="w-full bg-white/5 border border-white/10 rounded-xl p-3 text-sm outline-none transition-all appearance-none"
+                                >
+                                    <option value="male" className="text-black">Hombre</option>
+                                    <option value="female" className="text-black">Mujer</option>
+                                </select>
+                                <Users size={16} className="absolute right-4 top-1/2 -translate-y-1/2 text-white/20 pointer-events-none" />
+                            </div>
+                        </div>
+                        <div className="opacity-60 transition-opacity">
                             <label className="text-[10px] uppercase font-bold text-white/30 block mb-2">Tono de voz</label>
                             <div className="relative">
                                 <select
@@ -1474,15 +1503,28 @@ function ConfigTab({ client, onUpdate }: { client: any, onUpdate: () => void }) 
                                 <Settings size={16} className="absolute right-4 top-1/2 -translate-y-1/2 text-white/20 pointer-events-none" />
                             </div>
                         </div>
-                        <div className="pt-4 opacity-60 transition-opacity">
+                        <div className="pt-4 opacity-100 transition-opacity">
                             <label className="text-[10px] uppercase font-bold text-white/30 block mb-2">Teléfono de desvío (Humano)</label>
                             <input
                                 value={config.transferPhone}
                                 disabled
                                 placeholder="+34 600 000 000"
-                                className="w-full bg-white/5 border border-white/10 rounded-xl p-3 text-sm outline-none transition-all font-mono"
+                                className="w-full bg-white/5 border border-white/10 rounded-xl p-3 text-sm outline-none transition-all font-mono mb-3"
                             />
-                            <p className="text-[9px] text-white/40 mt-1 italic">Estos datos configuran el motor de Inteligencia Artificial directamente.</p>
+                            <button
+                                onClick={() => {
+                                    const qs = new URLSearchParams({
+                                        phone: client.phone || "",
+                                        agent: client.agentName || "",
+                                        transfer: config.transferPhone || ""
+                                    }).toString();
+                                    window.open(`/instrucciones?${qs}`, "_blank");
+                                }}
+                                className="w-full py-3 bg-blue-600/10 hover:bg-blue-600/20 text-blue-400 border border-blue-600/20 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-2"
+                            >
+                                <Phone size={14} /> Re-abrir Instrucciones de Desvío
+                            </button>
+                            <p className="text-[9px] text-white/40 mt-2 italic">Estos datos configuran el motor de Inteligencia Artificial directamente.</p>
                         </div>
                     </div>
                 </div>
