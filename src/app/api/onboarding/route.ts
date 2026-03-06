@@ -31,7 +31,10 @@ export async function POST(req: NextRequest) {
     }
 
     // Update fields based on step
-    const updates: Record<string, unknown> = { onboardingStep: step };
+    const updates: Record<string, unknown> = {};
+    if (step > (client.onboardingStep || 0)) {
+        updates.onboardingStep = step;
+    }
 
     if (step === 1) {
         updates.businessName = data.businessName;

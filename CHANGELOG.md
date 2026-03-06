@@ -4,10 +4,40 @@
 
 ---
 
-## ESTADO ACTUAL DEL PROYECTO — 26 Feb 2026
+## ESTADO ACTUAL DEL PROYECTO — 06 Mar 2026
 
 ### Resumen ejecutivo
-CitaLiks es una plataforma SaaS multi-tenant que permite a negocios tener su propio asistente de voz con IA para gestionar citas. El sistema está en fase de producción con el primer cliente (Neural360) operativo.
+CitaLiks es una plataforma SaaS multi-tenant que permite a negocios tener su propio asistente de voz con IA para gestionar citas. El sistema está en fase de producción con el primer cliente (Neural360) operativo. Se han corregido problemas críticos de sincronización de datos entre el dashboard y el agente de Retell.
+
+---
+
+## [2026-03-06] — Sincronización Profunda y Mejoras de IA
+
+### Fixed
+- **Sincronización de Agendas:** El agente ahora recibe correctamente los horarios comerciales y del personal (staff) por separado. Se ha corregido el filtrado para que el bot no se confunda con horarios duplicados.
+- **Sincronización de Staff:** Ahora el prompt del agente incluye la lista de empleados y sus horarios específicos extraídos de la base de datos del tenant.
+- **Seguridad Prisma:** Añadido filtrado de desconexión (`$disconnect`) en los flujos de sincronización para evitar fugas de conexiones a la base de datos.
+- **Consistencia de Voz:** Se ha forzado que cada actualización del agente incluya el parámetro `voice_id` para evitar errores de validación de la API de Retell.
+
+### Added
+- **Sincronización Automática:** El `agent_name` en Retell se sincroniza automáticamente con el nombre configurado en el dashboard.
+- **Manejo de Errores Admin:** Los errores de Retell ahora se muestran con detalle en el panel de administrador para facilitar el diagnóstico.
+
+---
+
+## [2026-03-05] — Mejora en Onboarding y Gestión de Clientes
+
+### Added
+- **Voces por Género:** Implementada la selección de voz masculina/femenina durante el onboarding, mapeando a las voces personalizadas correctas en Retell.
+- **Borrado Completo de Clientes:** Nueva funcionalidad en el panel admin para eliminar un cliente por completo (Agente Retell, base de datos del tenant, usuario de Clerk y registro maestro).
+
+### Fixed
+- **Build en Vercel:** Automatizada la sincronización del schema (`prisma db push`) durante el proceso de build para evitar desajustes en producción.
+- **Robustez del Dashboard:** Corregido error de renderizado (SSR) cuando el nombre del negocio contenía caracteres especiales o era nulo.
+
+---
+
+## ESTADO ANTERIOR DEL PROYECTO — 26 Feb 2026
 
 ### Arquitectura general
 - **Frontend/Backend:** Next.js 14 (App Router) + TypeScript

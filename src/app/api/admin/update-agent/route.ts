@@ -1,9 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@clerk/nextjs/server";
 import { prisma } from "@/lib/db";
-import { updateRetellAgent } from "@/lib/retell";
-import fs from "fs";
-import path from "path";
+import { syncBotByClientId } from "@/lib/bot-updates";
 
 // ── POST: Regenerate Retell agent prompt for a client ─────────────────────
 export async function POST(req: NextRequest) {
@@ -15,55 +13,23 @@ export async function POST(req: NextRequest) {
         return NextResponse.json({ error: "No autorizado" }, { status: 403 });
     }
 
-    const { clientId } = await req.json();
-    if (!clientId) return NextResponse.json({ error: "clientId requerido" }, { status: 400 });
-
     try {
-        const client = await prisma.client.findUnique({
-            where: { id: clientId },
-            include: {
-                services: true,
-                schedules: true,
-                staff: {
-                    include: { schedules: true }
-                }
-            }
-        }) as any;
+        const { clientId } = await req.json();
+        if (!clientId) return NextResponse.json({ error: "clientId requerido" }, { status: 400 });
 
-        if (!client) return NextResponse.json({ error: "Cliente no encontrado" }, { status: 404 });
-        if (!client.retellAgentId) return NextResponse.json({ error: "Este cliente no tiene agente de Retell configurado" }, { status: 400 });
+        await syncBotByClientId(clientId);
 
-        const appUrl = process.env.NEXT_PUBLIC_APP_URL || "https://www.citaliks.com";
-
-        await updateRetellAgent(client.retellAgentId, {
-            clientId: client.id,
-            businessName: client.businessName || "Negocio",
-            agentName: client.agentName || "Asistente",
-            tone: client.agentTone || "profesional",
-            voice: client.agentVoice || "male",
-            services: client.services,
-            schedules: client.schedules,
-            staff: client.staff,
-            transferPhone: client.transferPhone,
-            webhookUrl: appUrl
-        });
-
-        console.log(`[Admin/UpdateAgent] Agent ${client.retellAgentId} updated for client ${clientId} by admin ${userId}`);
+        console.log(`[Admin/UpdateAgent] Agent sync triggered for client ${clientId} by admin ${userId}`);
 
         return NextResponse.json({
             success: true,
-            message: `Agente de ${client.businessName} actualizado correctamente`,
-            agentId: client.retellAgentId
+            message: `Agente de ${clientId} actualizado correctamente con los últimos datos de la base de datos`,
         });
     } catch (error: any) {
         console.error("[Admin/UpdateAgent] Error:", error);
 
-        console.error("[Admin/UpdateAgent] Error Details:", {
-            message: error.message,
-            stack: error.stack,
-            response: error.response?.data || error.response || "No response data"
-        });
-
-        return NextResponse.json({ error: `Error Retell: ${error.message || "Desconocido"}` }, { status: 500 });
+        return NextResponse.json({
+            error: `Error al actualizar agente: ${error.message || "Desconocido"}`
+        }, { status: 500 });
     }
 }

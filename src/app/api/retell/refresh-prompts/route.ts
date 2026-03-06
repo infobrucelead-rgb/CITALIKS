@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
-import { updateRetellAgent } from "@/lib/retell";
+import { syncBotByClientId } from "@/lib/bot-updates";
 
 export async function GET(req: NextRequest) {
     const authHeader = req.headers.get("authorization");
@@ -18,14 +18,8 @@ export async function GET(req: NextRequest) {
             where: {
                 retellAgentId: { not: null }
             },
-            include: {
-                services: true,
-                schedules: true,
-                staff: {
-                    include: { schedules: true }
-                }
-            }
-        }) as any[];
+            select: { id: true, businessName: true }
+        });
 
         const results = {
             total: clients.length,
@@ -34,27 +28,14 @@ export async function GET(req: NextRequest) {
             errors: [] as string[]
         };
 
-        const appUrl = process.env.NEXT_PUBLIC_APP_URL || "https://www.citaliks.com";
-
         for (const client of clients) {
             try {
-                await updateRetellAgent(client.retellAgentId, {
-                    clientId: client.id,
-                    businessName: client.businessName || "Negocio",
-                    agentName: client.agentName || "Asistente",
-                    tone: client.agentTone || "profesional",
-                    voice: client.agentVoice || "male",
-                    services: client.services,
-                    schedules: client.schedules,
-                    staff: client.staff,
-                    transferPhone: client.transferPhone,
-                    webhookUrl: appUrl
-                });
+                await syncBotByClientId(client.id);
                 results.success++;
             } catch (err: any) {
                 results.failed++;
-                results.errors.push(`${client.businessName}: ${err.message}`);
-                console.error(`[Cron/RefreshPrompts] Failed for ${client.businessName}:`, err.message);
+                results.errors.push(`${client.businessName || client.id}: ${err.message}`);
+                console.error(`[Cron/RefreshPrompts] Failed for ${client.businessName || client.id}:`, err.message);
             }
         }
 

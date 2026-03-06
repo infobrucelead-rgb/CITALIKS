@@ -1,8 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@clerk/nextjs/server";
-import { prisma } from "@/lib/db";
+import { prisma, getTenantPrisma } from "@/lib/db";
 import { createRetellAgent } from "@/lib/retell";
 import { netelip } from "@/lib/netelip";
+import { syncBotByClientId } from "@/lib/bot-updates";
 
 // Called at the end of onboarding to provision the Retell agent
 export async function POST(req: NextRequest) {
@@ -13,7 +14,7 @@ export async function POST(req: NextRequest) {
 
     const masterClient = await prisma.client.findUnique({
         where: { clerkUserId: userId },
-        include: { services: true, schedules: true, staff: true },
+        include: { services: true, schedules: true, staff: { include: { schedules: true } } },
     }) as any;
 
     if (!masterClient) {
@@ -24,12 +25,15 @@ export async function POST(req: NextRequest) {
 
     // Fetch from tenant DB if it exists
     if (masterClient.databaseUrl) {
-        const { getTenantPrisma } = require("@/lib/db");
         const tenantPrisma = getTenantPrisma(masterClient.databaseUrl);
         try {
             const tenantData = await tenantPrisma.client.findFirst({
                 where: { clerkUserId: userId },
-                include: { services: true, schedules: true, staff: true }
+                include: {
+                    services: true,
+                    schedules: { include: { staff: true } },
+                    staff: { include: { schedules: true } }
+                }
             });
             if (tenantData) {
                 client = { ...masterClient, ...tenantData };
@@ -52,6 +56,9 @@ export async function POST(req: NextRequest) {
     // 1. Create Retell agent if not exists
     if (!agentId) {
         try {
+            // Use business schedules (those with no staffId) for the general config
+            const businessSchedules = (client.schedules || []).filter((s: any) => !s.staffId);
+
             agentId = await createRetellAgent({
                 clientId: client.id,
                 businessName: client.businessName ?? "Mi Negocio",
@@ -59,7 +66,7 @@ export async function POST(req: NextRequest) {
                 tone: client.agentTone ?? "profesional",
                 voice: client.agentVoice ?? "male",
                 services: client.services || [],
-                schedules: client.schedules || [],
+                schedules: businessSchedules,
                 staff: client.staff || [],
                 webhookUrl,
             });
@@ -95,9 +102,16 @@ export async function POST(req: NextRequest) {
         },
     });
 
+    // 3. Final deep sync to ensure LLM prompt is perfect with all data
+    try {
+        await syncBotByClientId(client.id);
+    } catch (syncErr) {
+        console.error("Initial deep sync failed:", syncErr);
+    }
+
     return NextResponse.json({
         agentId,
         phone: phoneInfo.phoneNumber,
-        message: "Agente creado y teléfono asignado correctamente"
+        netelipNumberId: phoneInfo.numberId,
     });
 }
