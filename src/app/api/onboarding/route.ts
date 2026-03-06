@@ -100,6 +100,7 @@ export async function POST(req: NextRequest) {
     if (step === 4) {
         updates.agentName = data.agentName;
         updates.agentTone = data.agentTone;
+        updates.agentVoice = data.agentVoice;
         updates.transferPhone = data.transferPhone;
     }
 

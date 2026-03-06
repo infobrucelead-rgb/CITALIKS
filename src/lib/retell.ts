@@ -9,6 +9,7 @@ export interface AgentConfig {
     businessName: string;
     agentName: string;
     tone: string;
+    voice?: string;
     services: Array<{ name: string; durationMin: number; price?: number | null }>;
     schedules: Array<{ dayOfWeek: number; openTime: string; closeTime: string; isOpen: boolean }>;
     staff: Array<{
@@ -193,20 +194,27 @@ client_id: ${config.clientId}
 Responde SIEMPRE en español de España.`;
 }
 
+export const VOICE_MAPPING: Record<string, { id: string; model?: string }> = {
+    "male": { id: "custom_voice_e3fbb6c669bc652610c5b60c8c", model: "eleven_turbo_v2_5" },
+    "female": { id: "eleven_multilingual_v2-Isabella" } // Predeterminada de mujer
+};
+
 export async function createRetellAgent(config: AgentConfig): Promise<string> {
     const systemPrompt = generateSystemPrompt(config);
 
     try {
         const llmId = await createRetellLLM(systemPrompt, config.clientId, config.webhookUrl, config.transferPhone);
 
-        const agent = await retell.agent.create({
+        const voicePref = config.voice || "male";
+        const voiceConfig = VOICE_MAPPING[voicePref] || VOICE_MAPPING["male"];
+
+        const agentOptions: any = {
             agent_name: `${config.businessName} — ${config.agentName}`,
             response_engine: {
                 type: "retell-llm",
                 llm_id: llmId,
             },
-            voice_id: "custom_voice_e3fbb6c669bc652610c5b60c8c", // 11Labs Pablo V2
-            voice_model: "eleven_turbo_v2_5",
+            voice_id: voiceConfig.id,
             language: "es-ES",
             voice_speed: 1.0,
             voice_temperature: 0.7,
@@ -219,8 +227,13 @@ export async function createRetellAgent(config: AgentConfig): Promise<string> {
             backchannel_frequency: 0.7,
             backchannel_words: ["Claro", "Entendido", "Perfecto", "Sí", "Ajá"],
             webhook_url: `${config.webhookUrl}/api/retell/webhook`,
-        } as any);
+        };
 
+        if (voiceConfig.model) {
+            agentOptions.voice_model = voiceConfig.model;
+        }
+
+        const agent = await retell.agent.create(agentOptions);
 
         return agent.agent_id;
     } catch (err: any) {
@@ -411,6 +424,7 @@ export async function updateRetellAgent(
         businessName: config.businessName || agent.agent_name?.split(' — ')[0] || "Negocio",
         agentName: config.agentName || agent.agent_name?.split(' — ')[1] || "Asistente",
         tone: config.tone || "profesional",
+        voice: config.voice || "male",
         services: config.services || [],
         schedules: config.schedules || [],
         staff: config.staff || [],
@@ -543,10 +557,11 @@ export async function updateRetellAgent(
         ],
     } as any);
 
-    // Actualizar también la voz y configuración de audio del agente
-    await retell.agent.update(agentId, {
-        voice_id: "custom_voice_e3fbb6c669bc652610c5b60c8c", // 11Labs Pablo V2
-        voice_model: "eleven_turbo_v2_5",
+    const voicePref = fullConfig.voice || "male";
+    const voiceConfig = VOICE_MAPPING[voicePref] || VOICE_MAPPING["male"];
+
+    const agentOptionsUpdate: any = {
+        voice_id: voiceConfig.id,
         voice_speed: 1.0,
         voice_temperature: 0.7,
         responsiveness: 0.9,
@@ -556,7 +571,18 @@ export async function updateRetellAgent(
         ambient_sound: "call-center",
         normalize_for_speech: true,
         end_call_after_silence_ms: 20000,
-    } as any);
+    };
+
+    if (voiceConfig.model) {
+        agentOptionsUpdate.voice_model = voiceConfig.model;
+    } else {
+        // Enforce removal of the model explicit property if the voice doesn't use it, 
+        // though Retell SDK might ignore it if passed to null.
+        agentOptionsUpdate.voice_model = null; // or simply omitted
+    }
+
+    // Actualizar también la voz y configuración de audio del agente
+    await retell.agent.update(agentId, agentOptionsUpdate);
 
     console.log(`[Retell] Agente ${agentId} (LLM ${llmId}) actualizado con éxito.`);
 }

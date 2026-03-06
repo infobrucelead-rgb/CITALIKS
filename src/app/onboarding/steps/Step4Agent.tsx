@@ -15,11 +15,13 @@ export default function Step4Agent({
         defaultValues: {
             agentName: data.agentName || "Asistente",
             agentTone: data.agentTone || "profesional",
+            agentVoice: data.agentVoice || "male",
             transferPhone: data.transferPhone || "",
         },
     });
 
     const selectedTone = watch("agentTone");
+    const selectedVoice = watch("agentVoice");
     const agentName = watch("agentName");
 
     return (

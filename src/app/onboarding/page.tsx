@@ -28,6 +28,7 @@ export type OnboardingData = {
     schedules: Array<{ dayOfWeek: number; openTime: string; closeTime: string; isOpen: boolean }>;
     agentName: string;
     agentTone: "profesional" | "cercano";
+    agentVoice: "male" | "female";
     transferPhone?: string;
 };
 
@@ -57,6 +58,7 @@ function OnboardingContent() {
         ],
         agentName: "Asistente",
         agentTone: "profesional",
+        agentVoice: "male",
     });
 
     useEffect(() => {
@@ -88,6 +90,7 @@ function OnboardingContent() {
                         city: json.client.city ?? "",
                         agentName: json.client.agentName ?? "Asistente",
                         agentTone: json.client.agentTone ?? "profesional",
+                        agentVoice: json.client.agentVoice ?? "male",
                         transferPhone: json.client.transferPhone ?? "",
                         services: json.client.services ?? [],
                         schedules: json.client.schedules.length > 0 ? json.client.schedules : prev.schedules,

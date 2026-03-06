@@ -35,6 +35,7 @@ export async function syncBotWithBusinessData(clerkUserId: string) {
             businessName: client.businessName || "Negocio",
             agentName: client.agentName || "Asistente",
             tone: client.agentTone || "profesional",
+            voice: client.agentVoice || "male",
             services: (businessData.services || []).map((s: any) => ({
                 name: s.name,
                 durationMin: s.durationMin,

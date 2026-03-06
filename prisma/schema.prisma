@@ -26,6 +26,7 @@ model Client {
   city            String?
   agentName       String?   @default("Asistente")
   agentTone       String?   @default("profesional") 
+  agentVoice      String?   @default("male") // "male" | "female"
   phone           String?   
   transferPhone   String?   
   retellAgentId   String?   
