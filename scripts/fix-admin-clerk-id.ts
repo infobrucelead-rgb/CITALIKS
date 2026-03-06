@@ -3,7 +3,7 @@ import { PrismaClient } from "@prisma/client";
 const prisma = new PrismaClient();
 
 const NEW_CLERK_USER_ID = "user_3ATfLC3stOV9446bCGbnzZIFcqd";
-const ADMIN_EMAIL = "neuralads.mkt@gmail.com";
+const ADMIN_EMAIL = "admin@citaliks.com";
 
 async function main() {
     console.log("📋 Listando todos los clientes en la base de datos...");

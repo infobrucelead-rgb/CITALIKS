@@ -5,7 +5,7 @@ async function main() {
     console.log("Fetching neuralads...");
     try {
         const userId = 'user_2ngy4zKq9P8zJQvKqP8zJQvKqP8'; // Dummy ID, but we lookup by email first to get the real clerk ID
-        const user = await prisma.client.findFirst({ where: { email: 'neuralads.mkt@gmail.com' } });
+        const user = await prisma.client.findFirst({ where: { email: 'admin@citaliks.com' } });
         if (!user) throw new Error("No user found");
         console.log("Real clerkUserId:", user.clerkUserId);
 
