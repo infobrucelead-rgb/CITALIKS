@@ -70,16 +70,51 @@ export async function DELETE(req: NextRequest) {
     if (!clientId) return NextResponse.json({ error: "ID de cliente faltante" }, { status: 400 });
 
     try {
-        // Find client to check for dedicated DB
         const client = await prisma.client.findUnique({ where: { id: clientId } });
         if (!client) return NextResponse.json({ error: "Cliente no encontrado" }, { status: 404 });
 
-        // Deleting the client record. 
-        // Note: In a real multi-tenant setup, we might also want to drop the DB or deprovision the agent.
-        // For now, we'll delete the Master record.
+        // 1. Delete Retell Agent if exists
+        if (client.retellAgentId) {
+            try {
+                const { deleteRetellAgent } = await import("@/lib/retell");
+                await deleteRetellAgent(client.retellAgentId);
+                console.log(`[Admin] Retell Agent ${client.retellAgentId} deleted for client ${clientId}`);
+            } catch (err: any) {
+                console.error(`[Admin] Error deleting Retell Agent ${client.retellAgentId}:`, err.message);
+                // We continue even if deleting the agent fails (might already be deleted)
+            }
+        }
+
+        // 2. Wipe Tenant DB if exists
+        if (client.databaseUrl) {
+            try {
+                const { getTenantPrisma } = await import("@/lib/db");
+                const tenantPrisma = getTenantPrisma(client.databaseUrl);
+                // Prisma handles cascade deletes if we delete the client on the tenant DB
+                await tenantPrisma.client.deleteMany({
+                    where: { id: clientId }
+                });
+                console.log(`[Admin] Client ${clientId} data wiped from tenant DB.`);
+                await tenantPrisma.$disconnect();
+            } catch (err: any) {
+                console.error(`[Admin] Error wiping tenant DB for client ${clientId}:`, err.message);
+            }
+        }
+
+        // 3. Delete from Master DB
         await prisma.client.delete({
             where: { id: clientId }
         });
+
+        // 4. Delete Clerk User
+        try {
+            const { clerkClient } = await import("@clerk/nextjs/server");
+            const clerk = await clerkClient();
+            await clerk.users.deleteUser(client.clerkUserId);
+            console.log(`[Admin] Clerk User ${client.clerkUserId} deleted.`);
+        } catch (err: any) {
+            console.error(`[Admin] Error deleting Clerk user ${client.clerkUserId}:`, err.message);
+        }
 
         console.log(`[Admin] Client ${clientId} deleted by admin ${userId}`);
 
