@@ -20,6 +20,7 @@ export async function GET(req: NextRequest) {
             businessName: client.businessName || "Negocio",
             agentName: client.agentName || "Asistente",
             tone: client.agentTone || "profesional",
+            voice: client.agentVoice || "male",
             services: client.services as any,
             schedules: client.schedules as any,
             webhookUrl: "https://www.citaliks.com"

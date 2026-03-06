@@ -43,6 +43,7 @@ export async function GET(req: NextRequest) {
                     businessName: client.businessName || "Negocio",
                     agentName: client.agentName || "Asistente",
                     tone: client.agentTone || "profesional",
+                    voice: client.agentVoice || "male",
                     services: client.services,
                     schedules: client.schedules,
                     staff: client.staff,
