@@ -11,13 +11,34 @@ export async function POST(req: NextRequest) {
         return NextResponse.json({ error: "No autenticado" }, { status: 401 });
     }
 
-    const client = await prisma.client.findUnique({
+    const masterClient = await prisma.client.findUnique({
         where: { clerkUserId: userId },
         include: { services: true, schedules: true, staff: true },
     }) as any;
 
-    if (!client) {
+    if (!masterClient) {
         return NextResponse.json({ error: "Cliente no encontrado" }, { status: 404 });
+    }
+
+    let client = masterClient;
+
+    // Fetch from tenant DB if it exists
+    if (masterClient.databaseUrl) {
+        const { getTenantPrisma } = require("@/lib/db");
+        const tenantPrisma = getTenantPrisma(masterClient.databaseUrl);
+        try {
+            const tenantData = await tenantPrisma.client.findFirst({
+                where: { clerkUserId: userId },
+                include: { services: true, schedules: true, staff: true }
+            });
+            if (tenantData) {
+                client = { ...masterClient, ...tenantData };
+            }
+        } catch (err) {
+            console.error("Error fetching tenant DB in provision:", err);
+        } finally {
+            await tenantPrisma.$disconnect();
+        }
     }
 
     if (client.retellAgentId && client.phone) {

@@ -206,6 +206,7 @@ export async function createRetellAgent(config: AgentConfig): Promise<string> {
                 llm_id: llmId,
             },
             voice_id: "custom_voice_e3fbb6c669bc652610c5b60c8c", // 11Labs Pablo V2
+            voice_model: "eleven_turbo_v2_5",
             language: "es-ES",
             voice_speed: 1.0,
             voice_temperature: 0.7,
@@ -545,6 +546,7 @@ export async function updateRetellAgent(
     // Actualizar también la voz y configuración de audio del agente
     await retell.agent.update(agentId, {
         voice_id: "custom_voice_e3fbb6c669bc652610c5b60c8c", // 11Labs Pablo V2
+        voice_model: "eleven_turbo_v2_5",
         voice_speed: 1.0,
         voice_temperature: 0.7,
         responsiveness: 0.9,
