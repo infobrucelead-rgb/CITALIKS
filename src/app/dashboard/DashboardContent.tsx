@@ -454,16 +454,16 @@ function TeamTab({ client, onUpdate, onSelectStaff }: { client: any, onUpdate: (
                             )}
                         </div>
                     </div>
-                    <div className="flex gap-4 pt-2">
+                    <div className="flex flex-wrap gap-2 md:gap-4 pt-2">
                         <button
                             onClick={editingStaff ? handleUpdateStaff : handleAddStaff}
-                            className="bg-white text-black px-8 py-2 rounded-xl text-sm font-bold hover:bg-white/90 transition-all shadow-xl"
+                            className="flex-1 md:flex-none bg-white text-black px-4 md:px-8 py-3 md:py-2 rounded-xl text-xs md:text-sm font-bold hover:bg-white/90 transition-all shadow-xl"
                         >
                             {editingStaff ? 'Guardar Cambios' : 'Guardar Profesional'}
                         </button>
                         <button
                             onClick={() => { setIsAdding(false); setEditingStaff(null); }}
-                            className="text-white/40 hover:text-white px-4"
+                            className="flex-1 md:flex-none justify-center bg-white/5 md:bg-transparent text-white/40 hover:text-white px-4 py-3 md:py-2 rounded-xl md:rounded-none text-xs md:text-sm font-bold md:font-normal"
                         >
                             Cancelar
                         </button>
@@ -645,24 +645,24 @@ function ServicesTab({ client, onUpdate, selectedStaff, setSelectedStaff }: { cl
                 title={selectedStaff ? `Agenda de ${selectedStaff.name}` : "Servicios & Horarios"}
                 subtitle={selectedStaff ? "Gestiona la disponibilidad y servicios exclusivos de este profesional." : "Define qué servicios ofreces y la disponibilidad general del negocio."}
                 actions={
-                    <div className="flex gap-3">
+                    <div className="flex justify-center md:justify-end flex-wrap gap-2 md:gap-3 w-full">
                         {selectedStaff && (
                             <button
                                 onClick={() => setSelectedStaff(null)}
-                                className="bg-white/5 text-white/40 hover:text-white px-4 py-2 rounded-xl text-sm font-bold transition-all border border-white/5">
+                                className="flex-1 md:flex-none flex justify-center text-center bg-white/5 text-white/40 hover:text-white px-3 py-2 md:px-4 rounded-xl text-[10px] md:text-sm font-bold transition-all border border-white/5">
                                 Ver Todo el Negocio
                             </button>
                         )}
                         <button
                             onClick={() => setIsEditingSchedule(!isEditingSchedule)}
-                            className={`px-4 py-2 rounded-xl text-sm font-bold flex items-center gap-2 transition-all ${isEditingSchedule ? "bg-amber-500/20 text-amber-400 border border-amber-500/20" : "bg-white/5 text-white/60 hover:bg-white/10"
+                            className={`flex-1 md:flex-none justify-center px-3 py-2 md:px-4 rounded-xl text-[10px] md:text-sm font-bold flex items-center gap-1 md:gap-2 transition-all ${isEditingSchedule ? "bg-amber-500/20 text-amber-400 border border-amber-500/20" : "bg-white/5 text-white/60 hover:bg-white/10"
                                 }`}>
-                            <Settings size={18} /> {isEditingSchedule ? "Finalizar Edición" : "Configurar Horarios"}
+                            <Settings size={14} className="md:w-[18px] md:h-[18px]" /> {isEditingSchedule ? "Finalizar" : "Configurar Horarios"}
                         </button>
                         <button
                             onClick={() => setIsAdding(true)}
-                            className="bg-white text-black px-4 py-2 rounded-xl text-sm font-bold flex items-center gap-2 hover:bg-white/90 transition-all">
-                            <Plus size={18} /> Nuevo Servicio
+                            className="flex-1 md:flex-none justify-center bg-white text-black px-3 py-2 md:px-4 rounded-xl text-[10px] md:text-sm font-bold flex items-center gap-1 md:gap-2 hover:bg-white/90 transition-all">
+                            <Plus size={14} className="md:w-[18px] md:h-[18px]" /> Nuevo Servicio
                         </button>
                     </div>
                 }

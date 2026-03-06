@@ -517,8 +517,8 @@ export default function AdminDashboardContent({ clients: initialClients }: { cli
                                 <div className="p-10 text-center text-white/20 italic">No se encontraron negocios</div>
                             ) : paginatedClients.map(client => (
                                 <div key={client.id} className="glass p-4 rounded-2xl border-white/5 bg-white/[0.02] space-y-4">
-                                    <div className="flex items-start justify-between gap-3">
-                                        <div className="flex items-center gap-3 min-w-0">
+                                    <div className="flex items-start justify-between gap-3 overflow-hidden">
+                                        <div className="flex-1 flex items-center gap-3 min-w-0">
                                             <div className={`shrink-0 w-10 h-10 rounded-xl flex items-center justify-center font-black text-sm border ${client.isActive ? "bg-blue-600/20 text-blue-400 border-blue-600/20" : "bg-white/5 text-white/30 border-white/10"}`}>
                                                 {(client.businessName || "B")[0].toUpperCase()}
                                             </div>
