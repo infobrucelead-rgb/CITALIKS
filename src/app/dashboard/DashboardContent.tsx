@@ -111,9 +111,9 @@ export default function DashboardContent({ client: initialClient }: { client: an
                 <div className="border-t border-white/5 pt-6 space-y-4">
                     <div className="px-1 py-3 rounded-2xl bg-white/5 border border-white/5 text-center flex flex-col items-center justify-center min-h-[50px]">
                         <p className="text-[10px] text-white/40 uppercase font-bold mb-1 opacity-0 group-hover:opacity-100 transition-opacity hidden group-hover:block">Negocio</p>
-                        <p className="text-sm font-medium truncate opacity-0 group-hover:opacity-100 transition-opacity w-full hidden group-hover:block">{client.businessName}</p>
+                        <p className="text-sm font-medium truncate opacity-0 group-hover:opacity-100 transition-opacity w-full hidden group-hover:block">{client.businessName || "Negocio"}</p>
                         <div className="group-hover:hidden text-white/40 font-bold text-sm w-full text-center">
-                            {client.businessName.substring(0, 2).toUpperCase()}
+                            {(client.businessName || "NG").substring(0, 2).toUpperCase()}
                         </div>
                     </div>
                     <button
