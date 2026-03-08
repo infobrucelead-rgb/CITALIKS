@@ -571,14 +571,14 @@ export default function AdminDashboardContent({ clients: initialClients }: { cli
                                             <span className="font-bold text-white/80">{client._count?.services || 0}</span>
                                         </div>
                                     </div>
-                                    <div className="flex items-center justify-between gap-2">
+                                    <div className="flex items-center justify-between gap-3 pt-2">
                                         <button onClick={() => { setSelectedClient(client); setClientDetailTab("info"); setReportData(null); setAppointments([]); }}
-                                            className="flex-1 py-3 rounded-xl bg-blue-600/10 text-blue-400 text-[11px] font-black uppercase border border-blue-600/20 tracking-wider">
-                                            Ver Detalles
+                                            className="flex-1 py-3.5 rounded-2xl bg-blue-600/10 text-blue-400 text-[10px] font-black uppercase border border-blue-600/20 tracking-wider active:scale-95 transition-all">
+                                            Detalles
                                         </button>
                                         <button onClick={() => handleToggleStatus(client.id, client.isActive)}
-                                            className={`flex-1 py-3 rounded-xl text-[11px] font-black uppercase border transition-all ${client.isActive ? "bg-emerald-500/10 border-emerald-500/20 text-emerald-400" : "bg-red-500/10 border-red-500/20 text-red-400"}`}>
-                                            {client.isActive ? "Activo" : "Off"}
+                                            className={`flex-1 py-3.5 rounded-2xl text-[10px] font-black uppercase border active:scale-95 transition-all ${client.isActive ? "bg-emerald-500/10 border-emerald-500/20 text-emerald-400" : "bg-red-500/10 border-red-500/20 text-red-400"}`}>
+                                            {client.isActive ? "Activo" : "Suspendido"}
                                         </button>
                                     </div>
                                 </div>
@@ -796,10 +796,10 @@ export default function AdminDashboardContent({ clients: initialClients }: { cli
                         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
                             <h2 className="text-lg font-bold shrink-0">Citas de Todos los Negocios</h2>
                             <div className="flex flex-wrap gap-2 items-center w-full sm:w-auto">
-                                <div className="flex gap-1 bg-white/5 p-1 rounded-xl w-full sm:w-auto overflow-x-auto custom-scrollbar">
+                                <div className="flex flex-wrap gap-2 bg-white/5 p-1 rounded-xl w-full sm:w-auto justify-center sm:justify-start">
                                     {["all", "CONFIRMED", "CANCELLED"].map(f => (
                                         <button key={f} onClick={() => setAppointmentFilter(f)}
-                                            className={`flex-1 sm:flex-none whitespace-nowrap px-4 py-1.5 rounded-lg text-[10px] font-black uppercase transition-all ${appointmentFilter === f ? "bg-blue-600 text-white" : "text-white/40 hover:text-white"}`}>
+                                            className={`flex-1 sm:flex-none whitespace-nowrap px-4 py-2 rounded-lg text-[10px] font-black uppercase transition-all ${appointmentFilter === f ? "bg-blue-600 text-white shadow-lg shadow-blue-600/20" : "text-white/40 hover:text-white hover:bg-white/5"}`}>
                                             {f === "all" ? "Todas" : f === "CONFIRMED" ? "Confirmadas" : "Canceladas"}
                                         </button>
                                     ))}
@@ -1229,20 +1229,21 @@ function EditableField({ label, icon, value, isEditing, editValue, saving, onEdi
                 <p className="text-[10px] uppercase font-black text-white/30 tracking-widest">{label}</p>
             </div>
             {isEditing ? (
-                <div className="flex flex-wrap sm:flex-nowrap gap-2 mt-1">
+                <div className="flex flex-col gap-3 mt-1">
                     <input
                         autoFocus
                         value={editValue}
                         onChange={e => onChange(e.target.value)}
                         onKeyDown={e => { if (e.key === "Enter") onSave(); if (e.key === "Escape") onCancel(); }}
-                        className="w-full sm:flex-1 bg-white/10 border border-blue-500/50 rounded-lg px-3 py-1.5 text-sm outline-none focus:border-blue-500 min-w-0"
+                        className="w-full bg-white/10 border border-blue-500/50 rounded-xl px-4 py-3 text-sm outline-none focus:border-blue-500 shadow-inner"
                     />
-                    <div className="flex shrink-0 gap-2 ml-auto">
-                        <button onClick={onSave} disabled={saving} className="p-2 bg-blue-600 hover:bg-blue-700 rounded-lg transition-all disabled:opacity-50">
+                    <div className="flex gap-2">
+                        <button onClick={onSave} disabled={saving} className="flex-1 py-3 bg-blue-600 hover:bg-blue-500 rounded-xl transition-all disabled:opacity-50 flex items-center justify-center gap-2 font-bold text-xs text-white">
                             {saving ? <RefreshCw size={14} className="animate-spin" /> : <Save size={14} />}
+                            Guardar
                         </button>
-                        <button onClick={onCancel} className="p-2 bg-white/5 hover:bg-white/10 rounded-lg transition-all">
-                            <X size={14} />
+                        <button onClick={onCancel} className="px-4 py-3 bg-white/5 hover:bg-white/10 rounded-xl transition-all flex items-center justify-center text-white/40">
+                            <X size={16} />
                         </button>
                     </div>
                 </div>
@@ -1276,9 +1277,9 @@ function InfoCard({ label, value, onCopy }: { label: string; value: string; onCo
 
 function StatusBadge({ label, value, active }: { label: string; value: string; active: boolean }) {
     return (
-        <div className="bg-white/[0.03] rounded-2xl p-4 border border-white/5 text-center">
-            <p className="text-[10px] uppercase font-black text-white/30 tracking-widest mb-2">{label}</p>
-            <span className={`px-3 py-1 rounded-full text-[10px] font-black uppercase ${active ? "bg-emerald-500/10 text-emerald-400 border border-emerald-500/20" : "bg-red-500/10 text-red-400 border border-red-500/20"}`}>
+        <div className="bg-white/[0.03] rounded-2xl p-4 border border-white/5 flex flex-col items-center justify-center text-center h-full min-h-[90px]">
+            <p className="text-[10px] uppercase font-black text-white/30 tracking-widest mb-3">{label}</p>
+            <span className={`w-full max-w-[120px] px-3 py-1.5 rounded-lg text-[9px] font-black uppercase tracking-wider flex items-center justify-center transition-all ${active ? "bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 shadow-[0_0_15px_rgba(52,211,153,0.05)]" : "bg-red-500/10 text-red-400 border border-red-500/20 shadow-[0_0_15px_rgba(239,68,68,0.05)]"}`}>
                 {value}
             </span>
         </div>

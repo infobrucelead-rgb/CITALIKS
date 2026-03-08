@@ -1664,14 +1664,14 @@ function CallsList({ logs }: { logs: any[] }) {
                                 </p>
                             </div>
                         </div>
-                        <div className="flex flex-col items-end gap-1">
-                            <span className={`px-2 py-0.5 rounded-lg text-[8px] font-black uppercase tracking-widest ${log.actionTaken === 'booked' ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/20' :
+                        <div className="flex flex-col items-end gap-1.5 shrink-0">
+                            <span className={`px-2.5 py-1 rounded-lg text-[8px] font-black uppercase tracking-widest flex items-center justify-center min-w-[80px] ${log.actionTaken === 'booked' ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/20' :
                                 log.actionTaken === 'cancelled' ? 'bg-red-500/10 text-red-400 border border-red-500/10' :
                                     'bg-white/5 text-white/40 border border-white/5'
                                 }`}>
                                 {log.actionTaken === 'booked' ? 'AGENDADA' : log.actionTaken === 'cancelled' ? 'CANCELADA' : (log.actionTaken?.toUpperCase() || 'INFO')}
                             </span>
-                            <span className="text-[10px] font-mono text-white/40 italic">
+                            <span className="text-[9px] font-mono text-white/40 italic pr-1">
                                 {log.durationSec ? `${Math.floor(log.durationSec / 60)}:${(log.durationSec % 60).toString().padStart(2, '0')}` : '—'}
                             </span>
                         </div>
@@ -1692,8 +1692,8 @@ function StatCard({ title, value, icon }: { title: string, value: any, icon: any
                 </div>
             </div>
             <div className="relative z-10">
-                <h3 className="text-white/40 text-[8px] md:text-[10px] uppercase font-black tracking-[0.15em] mb-1 md:mb-2 truncate">{title}</h3>
-                <p className="text-xl md:text-4xl font-black tracking-tight">{value}</p>
+                <h3 className="text-white/30 text-[9px] md:text-[10px] uppercase font-black tracking-[0.15em] mb-1.5 md:mb-2 truncate">{title}</h3>
+                <p className="text-2xl md:text-4xl font-black tracking-tight">{value}</p>
             </div>
         </div>
     );
