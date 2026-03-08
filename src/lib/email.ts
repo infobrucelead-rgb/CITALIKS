@@ -81,3 +81,23 @@ export async function sendEmail({ to, subject, html, attachments = [] }: {
         };
     }
 }
+
+export function renderCorporateEmail(title: string, content: string) {
+    return `
+        <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #eee; border-radius: 10px; background-color: #f9fafb; color: #1a1a1f;">
+            <div style="text-align: center; margin-bottom: 25px;">
+                <img src="cid:logo" alt="CitaLiks" style="max-width: 180px; height: auto;" />
+            </div>
+            <div style="background-color: white; padding: 35px; border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); border: 1px solid #e5e7eb;">
+                <h1 style="color: #111827; margin-top: 0; font-size: 22px; text-align: center; font-weight: 800; letter-spacing: -0.025em;">${title}</h1>
+                <div style="color: #4b5563; line-height: 1.6; font-size: 15px; margin-top: 20px;">
+                    ${content}
+                </div>
+            </div>
+            <p style="text-align: center; color: #9ca3af; font-size: 11px; margin-top: 25px;">
+                © 2026 CitaLiks. Gestión Inteligente de Citas.<br/>
+                Digitalizando tu agenda con IA profesional.
+            </p>
+        </div>
+    `;
+}

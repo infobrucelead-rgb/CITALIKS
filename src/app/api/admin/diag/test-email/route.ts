@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@clerk/nextjs/server";
 import { prisma } from "@/lib/db";
-import { sendEmail } from "@/lib/email";
+import { sendEmail, renderCorporateEmail } from "@/lib/email";
 
 export async function POST(req: NextRequest) {
     try {
@@ -35,18 +35,18 @@ export async function POST(req: NextRequest) {
         const result = await sendEmail({
             to: testEmail,
             subject: "Prueba de Diagnóstico SMTP - CitaLiks",
-            html: `
-                <div style="font-family: sans-serif; padding: 20px;">
-                    <h2 style="color: #2563eb;">Prueba de Conexión SMTP</h2>
-                    <p>Si has recibido este correo, la configuración de <strong>SMTP</strong> en este entorno es correcta.</p>
-                    <hr />
-                    <p style="font-size: 12px; color: #666;">
-                        <strong>Enviado desde:</strong> ${process.env.SMTP_USER}<br />
-                        <strong>Host:</strong> ${process.env.SMTP_HOST}<br />
-                        <strong>Puerto:</strong> ${process.env.SMTP_PORT}
-                    </p>
-                </div>
-            `
+            html: renderCorporateEmail(
+                "Prueba de Conexión SMTP",
+                `
+                <p>Si has recibido este correo, la configuración de <strong>SMTP</strong> en este entorno es correcta.</p>
+                <hr style="border: none; border-top: 1px solid #f3f4f6; margin: 20px 0;" />
+                <p style="font-size: 12px; color: #6b7280;">
+                    <strong>Enviado desde:</strong> ${process.env.SMTP_USER}<br />
+                    <strong>Host:</strong> ${process.env.SMTP_HOST}<br />
+                    <strong>Puerto:</strong> ${process.env.SMTP_PORT}
+                </p>
+                `
+            )
         });
 
         return NextResponse.json(result);
