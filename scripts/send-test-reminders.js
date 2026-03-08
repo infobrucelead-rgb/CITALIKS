@@ -4,7 +4,8 @@ const fs = require('fs');
 require('dotenv').config({ path: '.env.local' });
 
 async function sendTest() {
-    const targetEmail = "neuralads.mkt@gmail.com";
+    const adminEmail = process.env.ADMIN_EMAIL || "neuralads.mkt@gmail.com";
+    const targetEmail = adminEmail;
     const name = "Negocio de Prueba";
     const paymentUrl = "https://dashboard.citaliks.com/test-payment";
 

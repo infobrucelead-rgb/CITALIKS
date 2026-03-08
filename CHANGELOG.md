@@ -9,6 +9,18 @@
 ### Resumen ejecutivo
 CitaLiks es una plataforma SaaS multi-tenant que permite a negocios tener su propio asistente de voz con IA para gestionar citas. El sistema está en fase de producción con el primer cliente (Neural360) operativo. Se han corregido problemas críticos de sincronización de datos entre el dashboard y el agente de Retell.
 
+## [2026-03-08] — Sistema de Seguimiento Automático de Leads
+
+### Added
+- **Automatización de Seguimiento:** Implementado sistema de recordatorios por email a las 24h, 3 días y 1 semana para leads con pagos pendientes.
+- **Recordatorios Persuasivos:** Emails diseñados con enfoque en el coste de oportunidad y urgencia (aviso de desactivación de oferta a los 7 días).
+- **Notificaciones Admin:** El administrador recibe un aviso instantáneo cuando un lead completa el pago.
+- **Dashboard de Prospects:** Visualización de recordatorios enviados y estado de pago en tiempo real. 
+- **Persistencia de Enlaces:** El `paymentUrl` de Stripe se guarda ahora en la base de datos para asegurar consistencia en los correos de seguimiento.
+
+### Improved
+- **Configuración Centralizada:** El email del administrador para notificaciones se controla ahora desde la variable de entorno `ADMIN_EMAIL`, facilitando cambios rápidos sin tocar código.
+
 ---
 
 ## [2026-03-06] — Sincronización Profunda y Mejoras de IA

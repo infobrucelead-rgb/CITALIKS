@@ -13,7 +13,8 @@ export async function POST(req: NextRequest) {
     }
 
     const { email } = await req.json();
-    const targetEmail = email || "neuralads.mkt@gmail.com";
+    const adminEmail = process.env.ADMIN_EMAIL || "neuralads.mkt@gmail.com";
+    const targetEmail = email || adminEmail;
 
     const name = "Negocio de Prueba";
     const paymentUrl = "https://dashboard.citaliks.com/test-payment";

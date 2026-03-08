@@ -415,7 +415,7 @@ async function sendAdminNotification({ email, name, plan, appUrl }: {
     plan: string;
     appUrl: string;
 }) {
-    const adminEmail = "neuralads.mkt@gmail.com";
+    const adminEmail = process.env.ADMIN_EMAIL || "neuralads.mkt@gmail.com";
     const planLabels: Record<string, string> = {
         monthly: "Mensual",
         biannual: "Semestral",

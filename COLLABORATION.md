@@ -29,6 +29,13 @@ Para mantener una comunicación asíncrona y efectiva, **todos los cambios funci
 - **NO subir el archivo `.env`:** Seguir siempre el formato de `.env.example`.
 - **Limpieza:** Borrar los scripts de prueba temporales antes de hacer push, a menos que sean útiles para el futuro.
 
+## 📧 Configuración de Email Administrador
+
+Para cambiar el email que recibe las alertas de nuevos pagos y pruebas de diagnóstico:
+1.  Editar `.env.local` (o las variables de entorno en Vercel).
+2.  Actualizar la variable `ADMIN_EMAIL`.
+3.  El sistema aplicará el cambio automáticamente en los webhooks de Stripe y rutas de diagnóstico.
+
 ---
 *Este documento es una guía viva para asegurar que el código de CITALIKS sea siempre robusto y escalable.*
 
