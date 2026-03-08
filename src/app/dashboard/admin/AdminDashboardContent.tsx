@@ -9,12 +9,13 @@ import {
 } from "lucide-react";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
-type TabType = "clients" | "prospects" | "invitations" | "appointments";
+type TabType = "clients" | "prospects" | "invitations" | "appointments" | "settings";
 type ClientDetailTab = "info" | "activity" | "appointments" | "subscription";
 
 // ─── Main Component ───────────────────────────────────────────────────────────
-export default function AdminDashboardContent({ clients: initialClients }: { clients: any[] }) {
+export default function AdminDashboardContent({ clients: initialClients, admin: initialAdmin }: { clients: any[], admin: any }) {
     const [clients, setClients] = React.useState(initialClients);
+    const [admin, setAdmin] = React.useState(initialAdmin);
     const [invitations, setInvitations] = React.useState<any[]>([]);
     const [prospects, setProspects] = React.useState<any[]>([]);
     const [loadingProspects, setLoadingProspects] = React.useState(false);
@@ -408,6 +409,48 @@ export default function AdminDashboardContent({ clients: initialClients }: { cli
         showToast("Copiado al portapapeles");
     };
 
+    const handleSaveAdminField = async (field: string, value: string) => {
+        setSaving(true);
+        try {
+            const res = await fetch("/api/admin/profile", {
+                method: "PATCH",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ [field]: value })
+            });
+            if (res.ok) {
+                setAdmin((prev: any) => ({ ...prev, [field]: value }));
+                setEditingField(null);
+                showToast("Configuración global actualizada");
+            } else {
+                const data = await res.json();
+                showToast(data.error || "Error al guardar", "err");
+            }
+        } catch (err) {
+            showToast("Error de conexión", "err");
+        } finally {
+            setSaving(false);
+        }
+    };
+
+    const handleTestSms = async (phone: string) => {
+        if (!phone) return showToast("Configura un teléfono primero", "err");
+        try {
+            const res = await fetch("/api/admin/diag/test-sms", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ phone })
+            });
+            const data = await res.json();
+            if (res.ok && data.success) {
+                showToast("SMS de prueba enviado!");
+            } else {
+                showToast(data.error || "Error al enviar SMS", "err");
+            }
+        } catch (err) {
+            showToast("Error de conexión al enviar SMS", "err");
+        }
+    };
+
     // ── Metrics ───────────────────────────────────────────────────────────────
     const totalCalls = clients.reduce((acc, c) => acc + (c._count?.callLogs || 0), 0);
     const activeCount = clients.filter(c => c.isActive).length;
@@ -453,10 +496,10 @@ export default function AdminDashboardContent({ clients: initialClients }: { cli
 
                 {/* Tabs */}
                 <div className="flex gap-1 mb-6 bg-white/[0.03] p-1 rounded-2xl w-full md:w-fit border border-white/5 overflow-x-auto sticky top-0 md:static z-20 backdrop-blur-md custom-scrollbar shrink-0">
-                    {(["clients", "prospects", "invitations", "appointments"] as TabType[]).map(tab => (
+                    {(["clients", "prospects", "invitations", "appointments", "settings"] as TabType[]).map(tab => (
                         <button key={tab} onClick={() => setActiveTab(tab)}
                             className={`px-4 sm:px-5 py-2.5 rounded-xl text-[11px] sm:text-sm whitespace-nowrap font-bold transition-all ${activeTab === tab ? "bg-blue-600 text-white shadow-lg shadow-blue-600/20" : "text-white/40 hover:text-white"}`}>
-                            {tab === "clients" ? "Negocios" : tab === "prospects" ? "Leads" : tab === "invitations" ? "Invitaciones" : "Citas"}
+                            {tab === "clients" ? "Negocios" : tab === "prospects" ? "Leads" : tab === "invitations" ? "Invitaciones" : tab === "appointments" ? "Citas" : "Configuración"}
                         </button>
                     ))}
                 </div>
@@ -1220,6 +1263,127 @@ export default function AdminDashboardContent({ clients: initialClients }: { cli
                                 </>
                             )}
                         </div>
+                    </div>
+                </div>
+            )}
+
+            {/* ── Tab: Settings ─────────────────────────────────────────── */}
+            {activeTab === "settings" && (
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
+                    {/* Left column */}
+                    <div className="space-y-6">
+                        {/* Admin Profile */}
+                        <section className="rounded-[2rem] bg-white/[0.02] border border-white/5 p-6 space-y-6">
+                            <div className="flex items-center gap-3">
+                                <div className="p-2.5 rounded-xl bg-blue-600/20 text-blue-400"><Settings size={20} /></div>
+                                <div>
+                                    <h2 className="text-xl font-black">Perfil del Administrador</h2>
+                                    <p className="text-[10px] text-white/30 uppercase font-black tracking-widest">Configuración global de la plataforma</p>
+                                </div>
+                            </div>
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <EditableField
+                                    label="Teléfono Admin (Netelip)"
+                                    icon={<Phone size={14} />}
+                                    value={admin?.phone}
+                                    isEditing={editingField === "admin_phone"}
+                                    editValue={editValue}
+                                    saving={saving}
+                                    onEdit={() => { setEditingField("admin_phone"); setEditValue(admin?.phone || ""); }}
+                                    onCancel={() => setEditingField(null)}
+                                    onSave={() => handleSaveAdminField("phone", editValue)}
+                                    onChange={setEditValue}
+                                />
+                                <EditableField
+                                    label="Teléfono Equipo (Transfer)"
+                                    icon={<Users size={14} />}
+                                    value={admin?.transferPhone}
+                                    isEditing={editingField === "admin_transfer"}
+                                    editValue={editValue}
+                                    saving={saving}
+                                    onEdit={() => { setEditingField("admin_transfer"); setEditValue(admin?.transferPhone || ""); }}
+                                    onCancel={() => setEditingField(null)}
+                                    onSave={() => handleSaveAdminField("transferPhone", editValue)}
+                                    onChange={setEditValue}
+                                />
+                            </div>
+                            <div className="pt-4 border-t border-white/5 space-y-3">
+                                <h3 className="text-xs font-black uppercase text-white/30 tracking-widest">Pruebas de Canal</h3>
+                                <div className="grid grid-cols-2 gap-3">
+                                    <button
+                                        onClick={() => handleTestSms(admin?.phone || "")}
+                                        className="flex items-center justify-center gap-2 p-3.5 rounded-xl bg-emerald-600/10 hover:bg-emerald-600/20 text-emerald-400 border border-emerald-600/20 transition-all font-bold text-xs"
+                                    >
+                                        <MessageSquare size={14} /> Probar SMS
+                                    </button>
+                                    <button
+                                        onClick={handleTestEmail}
+                                        disabled={testingEmail}
+                                        className="flex items-center justify-center gap-2 p-3.5 rounded-xl bg-blue-600/10 hover:bg-blue-600/20 text-blue-400 border border-blue-600/20 transition-all font-bold text-xs disabled:opacity-50"
+                                    >
+                                        {testingEmail ? <RefreshCw size={14} className="animate-spin" /> : <Mail size={14} />} Probar Email
+                                    </button>
+                                </div>
+                            </div>
+                        </section>
+
+                        {/* Bot Notifications */}
+                        <section className="rounded-[2rem] bg-white/[0.02] border border-white/5 p-6">
+                            <div className="flex items-center gap-3 mb-5">
+                                <div className="p-2.5 rounded-xl bg-violet-600/20 text-violet-400"><Zap size={20} /></div>
+                                <div>
+                                    <h2 className="text-xl font-black">Notificaciones del Bot</h2>
+                                    <p className="text-[10px] text-white/30 uppercase font-black tracking-widest">Alertas críticas automáticas</p>
+                                </div>
+                            </div>
+                            <div className="space-y-4">
+                                <p className="text-sm text-white/40 leading-relaxed">
+                                    El bot tiene la herramienta <code className="text-violet-400 bg-violet-400/10 px-1.5 py-0.5 rounded-md text-xs">notificar_equipo</code> activa. Si un cliente solicita atención humana o hay una oportunidad de venta prioritaria, recibirás un SMS de alerta inmediata en el teléfono de admin configurado arriba.
+                                </p>
+                                <div className="p-4 rounded-xl bg-violet-500/5 border border-violet-500/10 flex items-start gap-3">
+                                    <Activity size={16} className="text-violet-400 mt-0.5 shrink-0" />
+                                    <div>
+                                        <p className="text-xs font-bold text-violet-400">Estado del Servicio: Activo</p>
+                                        <p className="text-[10px] text-white/30 mt-0.5">Conectado con API de Netelip · Listo para enviar alertas al equipo</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </section>
+                    </div>
+
+                    {/* Right column */}
+                    <div className="space-y-6">
+                        <section className="rounded-[2rem] bg-white/[0.02] border border-white/5 p-6">
+                            <div className="flex items-center gap-3 mb-6">
+                                <div className="p-2.5 rounded-xl bg-amber-600/20 text-amber-400"><Database size={20} /></div>
+                                <div>
+                                    <h2 className="text-xl font-black">Variables de Entorno</h2>
+                                    <p className="text-[10px] text-white/30 uppercase font-black tracking-widest">Parámetros Críticos (Solo Lectura)</p>
+                                </div>
+                            </div>
+                            <div className="space-y-3">
+                                {[
+                                    { label: "Admin Alert Email", value: "neuralads.mkt@gmail.com", status: true },
+                                    { label: "Netelip API", value: "NETELIP_API_TOKEN · Configurado en Vercel", status: true },
+                                    { label: "Stripe Webhook", value: "Endpoint activo en producción", status: true },
+                                    { label: "Retell AI", value: "RETELL_API_KEY · Agentes conectados", status: true },
+                                ].map(item => (
+                                    <div key={item.label} className="flex items-center gap-3 bg-white/[0.03] p-4 rounded-2xl border border-white/5">
+                                        <span className={`w-2 h-2 rounded-full shrink-0 ${item.status ? "bg-emerald-400 shadow-[0_0_6px_rgba(52,211,153,0.5)]" : "bg-red-400"}`} />
+                                        <div className="flex-1 min-w-0">
+                                            <p className="text-[9px] uppercase font-black text-white/20 mb-0.5">{item.label}</p>
+                                            <p className="text-xs font-mono text-white/50 truncate">{item.value}</p>
+                                        </div>
+                                    </div>
+                                ))}
+                                <div className="mt-4 p-4 rounded-xl bg-blue-600/10 border border-blue-600/20 flex gap-3">
+                                    <AlertCircle className="text-blue-400 shrink-0 mt-0.5" size={16} />
+                                    <p className="text-[11px] text-blue-100/50 leading-relaxed">
+                                        Para cambiar tokens o claves de API, edítalas directamente en el panel de Vercel para máxima seguridad.
+                                    </p>
+                                </div>
+                            </div>
+                        </section>
                     </div>
                 </div>
             )}

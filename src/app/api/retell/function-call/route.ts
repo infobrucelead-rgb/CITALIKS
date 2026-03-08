@@ -645,6 +645,55 @@ export async function POST(req: NextRequest) {
                 break;
             }
 
+
+            case "notificar_equipo": {
+                // The bot calls this when a high-priority sales event occurs
+                // (e.g. prospect asking about pricing, wants to speak to a human, etc.)
+                const { motivo, nivel_urgencia } = args as {
+                    motivo?: string;
+                    nivel_urgencia?: "alta" | "media" | "baja";
+                };
+
+                const urgencyEmoji = nivel_urgencia === "alta" ? "🚨" : nivel_urgencia === "media" ? "⚠️" : "📞";
+                const smsText = `${urgencyEmoji} ALERTA CITALIKS: ${masterClient.businessName || "Un cliente"} requiere atención humana. Motivo: ${motivo || "No especificado"}. Nivel: ${nivel_urgencia || "media"}. Llama ASAP.`;
+
+                // Get admin phone from PLATFORM_ADMIN in DB
+                const adminClient = await prisma.client.findFirst({
+                    where: { role: "PLATFORM_ADMIN" },
+                    select: { phone: true }
+                });
+
+                const adminPhone = adminClient?.phone || process.env.ADMIN_PHONE;
+
+                if (adminPhone) {
+                    try {
+                        await sendSms(adminPhone, smsText, "CITALIKS");
+                        console.log(`[retell/function-call] notificar_equipo: SMS sent to admin ${adminPhone}`);
+                    } catch (smsErr) {
+                        console.error("[retell/function-call] notificar_equipo: SMS failed:", (smsErr as any)?.message);
+                    }
+                } else {
+                    console.warn("[retell/function-call] notificar_equipo: No admin phone configured");
+                }
+
+                result = {
+                    notified: !!adminPhone,
+                    message: adminPhone
+                        ? "He avisado al equipo. Un miembro del equipo se pondrá en contacto contigo a la brevedad posible. ¿Hay algo más en lo que pueda ayudarte mientras tanto?"
+                        : "Nuestro equipo estará disponible pronto. ¿Hay algo más con lo que pueda ayudarte?"
+                };
+
+                await saveBotLog({
+                    clientId,
+                    functionName: "notificar_equipo",
+                    inputArgs: args,
+                    resultJson: { notified: !!adminPhone, adminPhone: adminPhone ? "***" : null },
+                    durationMs: Date.now() - startMs,
+                    webhookUrl,
+                });
+                break;
+            }
+
             default: {
                 console.warn(`[retell/function-call] Unknown function: ${function_name}`);
                 result = { error: `Función desconocida: ${function_name}` };

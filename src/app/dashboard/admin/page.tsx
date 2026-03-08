@@ -34,5 +34,5 @@ export default async function AdminDashboardPage() {
         orderBy: { createdAt: "desc" }
     });
 
-    return <AdminDashboardContent clients={allClients} />;
+    return <AdminDashboardContent clients={allClients} admin={client} />;
 }

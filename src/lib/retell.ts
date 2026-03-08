@@ -373,6 +373,23 @@ async function createRetellLLM(
                 required: ["new_date", "new_time"],
             },
         },
+        {
+            type: "custom" as const,
+            name: "notificar_equipo",
+            description: "Usa esta función cuando el cliente quiera hablar con una persona real, solicite información de precios o contratación, o cuando detectes una oportunidad de venta de alta prioridad. Envió una alerta urgente al equipo humano.",
+            url: `${baseUrl}/api/retell/function-call?name=notificar_equipo`,
+            method: "POST" as const,
+            timeout_ms: 8000,
+            parameters: {
+                type: "object" as const,
+                properties: {
+                    client_id: { type: "string" as const, description: "ID del cliente/negocio" },
+                    motivo: { type: "string" as const, description: "Describe brevemente por qué el cliente necesita atención humana" },
+                    nivel_urgencia: { type: "string" as const, enum: ["alta", "media", "baja"], description: "Urgencia: 'alta' si quiere contratar/comprar, 'media' si tiene dudas, 'baja' si es información general" },
+                },
+                required: ["motivo"],
+            },
+        },
     ];
 
     // Normalize transfer number to E.164. Skip tool if number can't be normalized.
