@@ -4,12 +4,13 @@ import {
     LayoutDashboard, Users, Calendar, Phone, Activity,
     Settings, LogOut, Clock, ShieldCheck, Plus,
     Trash2, Search, UserPlus, Image as ImageIcon,
-    ExternalLink, Brain, Loader2, Edit2, ChevronRight, ChevronDown, DollarSign, X
+    ExternalLink, Brain, Loader2, Edit2, ChevronRight, ChevronDown, DollarSign, X,
+    LifeBuoy, Send, MessageSquare, AlertCircle, CheckCircle2
 } from "lucide-react";
 import { useClerk, UserButton } from "@clerk/nextjs";
 import { DAY_NAMES, formatDuration, formatPrice } from "@/lib/utils";
 
-type TabType = "overview" | "calls" | "services" | "config" | "team" | "admin";
+type TabType = "overview" | "calls" | "services" | "config" | "team" | "admin" | "support";
 
 export default function DashboardContent({ client: initialClient }: { client: any }) {
     const [client, setClient] = useState(initialClient);
@@ -47,6 +48,8 @@ export default function DashboardContent({ client: initialClient }: { client: an
                 return <TeamTab client={client} onUpdate={refreshData} onSelectStaff={(s) => { setSelectedStaff(s); setActiveTab("services"); }} />;
             case "config":
                 return <ConfigTab client={client} onUpdate={refreshData} />;
+            case "support":
+                return <SupportTab client={client} />;
             default:
                 return <OverviewTab client={client} />;
         }
@@ -93,6 +96,12 @@ export default function DashboardContent({ client: initialClient }: { client: an
                         label="Configuración"
                         active={activeTab === "config"}
                         onClick={() => setActiveTab("config")}
+                    />
+                    <NavItem
+                        icon={<LifeBuoy size={20} />}
+                        label="Soporte Técnico"
+                        active={activeTab === "support"}
+                        onClick={() => setActiveTab("support")}
                     />
 
                     {client.role === "PLATFORM_ADMIN" && (
@@ -1706,6 +1715,7 @@ function MobileNav({ activeTab, setActiveTab, client }: { activeTab: TabType, se
         { id: "team", label: "Equipo", icon: <Users size={20} /> },
         { id: "services", label: "Agenda", icon: <Calendar size={20} /> },
         ...(client.role === "PLATFORM_ADMIN" ? [{ id: "admin_link", label: "Admin", icon: <ShieldCheck size={20} className="text-amber-400" /> }] : []),
+        { id: "support", label: "Soporte", icon: <LifeBuoy size={20} /> },
         { id: "config", label: "Más", icon: <Settings size={20} /> },
     ];
 
@@ -1733,5 +1743,203 @@ function MobileNav({ activeTab, setActiveTab, client }: { activeTab: TabType, se
                 ))}
             </div>
         </nav>
+    );
+}
+function SupportTab({ client }: { client: any }) {
+    const [tickets, setTickets] = React.useState<any[]>([]);
+    const [loading, setLoading] = React.useState(true);
+    const [isCreating, setIsCreating] = React.useState(false);
+    const [newTicket, setNewTicket] = React.useState({ subject: "", description: "", category: "tecnico" });
+    const [creating, setCreating] = React.useState(false);
+
+    const fetchTickets = async () => {
+        try {
+            const res = await fetch('/api/tickets');
+            const data = await res.json();
+            if (data.tickets) setTickets(data.tickets);
+        } catch (err) {
+            console.error("Error fetching tickets:", err);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    React.useEffect(() => {
+        fetchTickets();
+    }, []);
+
+    const handleCreateTicket = async (e: React.FormEvent) => {
+        e.preventDefault();
+        setCreating(true);
+        try {
+            const res = await fetch('/api/tickets', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(newTicket)
+            });
+            if (res.ok) {
+                setNewTicket({ subject: "", description: "", category: "tecnico" });
+                setIsCreating(false);
+                fetchTickets();
+            }
+        } catch (err) {
+            console.error("Error creating ticket:", err);
+        } finally {
+            setCreating(false);
+        }
+    };
+
+    return (
+        <div className="animate-fade-in">
+            <Header
+                title="Soporte Técnico"
+                subtitle="Estamos aquí para ayudarte. Los tickets Premium se resuelven en menos de 24h hábiles."
+                actions={
+                    <button
+                        onClick={() => setIsCreating(true)}
+                        className="flex items-center gap-2 px-6 py-3 rounded-2xl bg-violet-600 hover:bg-violet-500 font-bold transition-all shadow-lg shadow-violet-500/20"
+                    >
+                        <Plus size={18} />
+                        Nuevo Ticket
+                    </button>
+                }
+            />
+
+            {isCreating && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-300">
+                    <div className="glass w-full max-w-lg rounded-3xl p-8 border border-white/10 shadow-2xl relative overflow-hidden">
+                        <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-violet-600 to-fuchsia-600" />
+
+                        <div className="flex justify-between items-center mb-6">
+                            <h2 className="text-xl font-bold">Abrir nueva incidencia</h2>
+                            <button onClick={() => setIsCreating(false)} className="p-2 hover:bg-white/5 rounded-xl transition-colors">
+                                <X size={20} className="text-white/40" />
+                            </button>
+                        </div>
+
+                        <form onSubmit={handleCreateTicket} className="space-y-5">
+                            <div className="space-y-2">
+                                <label className="text-xs font-black uppercase tracking-widest text-white/40 ml-1">Asunto</label>
+                                <input
+                                    required
+                                    type="text"
+                                    placeholder="Ej: Problema con la integración de Google Calendar"
+                                    className="w-full bg-white/5 border border-white/10 rounded-2xl px-5 py-4 text-sm focus:outline-none focus:border-violet-500/50 transition-all"
+                                    value={newTicket.subject}
+                                    onChange={(e) => setNewTicket({ ...newTicket, subject: e.target.value })}
+                                />
+                            </div>
+
+                            <div className="space-y-2">
+                                <label className="text-xs font-black uppercase tracking-widest text-white/40 ml-1">Categoría</label>
+                                <select
+                                    className="w-full bg-white/5 border border-white/10 rounded-2xl px-5 py-4 text-sm focus:outline-none focus:border-violet-500/50 transition-all appearance-none"
+                                    value={newTicket.category}
+                                    onChange={(e) => setNewTicket({ ...newTicket, category: e.target.value })}
+                                >
+                                    <option value="tecnico" className="bg-[#1a1a1f]">Problema técnico</option>
+                                    <option value="integracion" className="bg-[#1a1a1f]">Solicitar integración</option>
+                                    <option value="consulta" className="bg-[#1a1a1f]">Consulta general / Facturación</option>
+                                </select>
+                            </div>
+
+                            <div className="space-y-2">
+                                <label className="text-xs font-black uppercase tracking-widest text-white/40 ml-1">Descripción</label>
+                                <textarea
+                                    required
+                                    rows={4}
+                                    placeholder="Describe detalladamente el problema..."
+                                    className="w-full bg-white/5 border border-white/10 rounded-2xl px-5 py-4 text-sm focus:outline-none focus:border-violet-500/50 transition-all resize-none"
+                                    value={newTicket.description}
+                                    onChange={(e) => setNewTicket({ ...newTicket, description: e.target.value })}
+                                />
+                            </div>
+
+                            <button
+                                disabled={creating}
+                                className="w-full flex items-center justify-center gap-3 px-8 py-5 rounded-2xl bg-violet-600 hover:bg-violet-500 disabled:opacity-50 font-black uppercase tracking-widest text-sm transition-all shadow-xl shadow-violet-600/20"
+                            >
+                                {creating ? <Loader2 size={18} className="animate-spin" /> : <Send size={18} />}
+                                Enviar Ticket
+                            </button>
+                            <p className="text-[10px] text-center text-white/30 uppercase font-bold tracking-widest">Respuesta en menos de 24h hábiles</p>
+                        </form>
+                    </div>
+                </div>
+            )}
+
+            <div className="space-y-4">
+                {loading ? (
+                    <div className="flex flex-col items-center justify-center py-20 gap-4">
+                        <Loader2 className="animate-spin text-violet-500" size={32} />
+                        <p className="text-white/40 animate-pulse font-medium">Cargando tus solicitudes...</p>
+                    </div>
+                ) : tickets.length === 0 ? (
+                    <div className="glass rounded-3xl p-16 text-center border border-white/5">
+                        <div className="w-20 h-20 bg-violet-500/10 rounded-full flex items-center justify-center mx-auto mb-6">
+                            <MessageSquare size={32} className="text-violet-400" />
+                        </div>
+                        <h3 className="text-xl font-bold mb-2">No tienes tickets abiertos</h3>
+                        <p className="text-white/40 text-sm max-w-sm mx-auto mb-8">
+                            Si tienes algún problema o necesitas una integración especial, abre un nuevo ticket y te ayudaremos pronto.
+                        </p>
+                        <button
+                            onClick={() => setIsCreating(true)}
+                            className="inline-flex items-center gap-2 px-8 py-3 rounded-2xl border border-violet-500/30 hover:bg-violet-500/10 text-violet-300 font-bold transition-all"
+                        >
+                            <Plus size={18} />
+                            Crear mi primer ticket
+                        </button>
+                    </div>
+                ) : (
+                    <div className="grid gap-4">
+                        {tickets.map((ticket) => (
+                            <div key={ticket.id} className="glass rounded-2xl p-6 border border-white/5 hover:border-white/10 transition-all group">
+                                <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                                    <div className="flex gap-4">
+                                        <div className={`w-12 h-12 rounded-xl flex items-center justify-center shrink-0 ${ticket.status === 'resolved' ? 'bg-green-500/10 text-green-400' :
+                                                ticket.status === 'open' ? 'bg-blue-500/10 text-blue-400' : 'bg-amber-500/10 text-amber-400'
+                                            }`}>
+                                            {ticket.status === 'resolved' ? <CheckCircle2 size={24} /> :
+                                                ticket.status === 'open' ? <Activity size={24} /> : <Clock size={24} />}
+                                        </div>
+                                        <div>
+                                            <div className="flex items-center gap-3 mb-1">
+                                                <h4 className="font-bold text-lg">{ticket.subject}</h4>
+                                                <span className={`px-2 py-0.5 rounded-md text-[10px] uppercase font-black tracking-widest ${ticket.category === 'tecnico' ? 'bg-red-500/20 text-red-400' :
+                                                        ticket.category === 'integracion' ? 'bg-violet-500/20 text-violet-400' : 'bg-white/10 text-white/40'
+                                                    }`}>
+                                                    {ticket.category}
+                                                </span>
+                                            </div>
+                                            <p className="text-white/40 text-sm line-clamp-1 group-hover:line-clamp-none transition-all">{ticket.description}</p>
+                                        </div>
+                                    </div>
+                                    <div className="flex flex-row md:flex-col items-center md:items-end justify-between gap-2 border-t md:border-t-0 border-white/5 pt-4 md:pt-0">
+                                        <span className={`px-3 py-1 rounded-lg text-xs font-bold uppercase tracking-widest ${ticket.status === 'resolved' ? 'bg-green-500/20 text-green-300' :
+                                                ticket.status === 'open' ? 'bg-blue-500/20 text-blue-300' : 'bg-amber-500/20 text-amber-300'
+                                            }`}>
+                                            {ticket.status === 'resolved' ? 'Resuelto' :
+                                                ticket.status === 'open' ? 'Abierto' : 'En proceso'}
+                                        </span>
+                                        <span className="text-[10px] text-white/20 font-bold uppercase tracking-widest">
+                                            {new Date(ticket.createdAt).toLocaleDateString('es-ES', { day: '2-digit', month: 'short', year: 'numeric' })}
+                                        </span>
+                                    </div>
+                                </div>
+                                {ticket.adminNotes && (
+                                    <div className="mt-4 p-4 rounded-xl bg-violet-600/10 border border-violet-500/20 text-sm">
+                                        <div className="flex items-center gap-2 mb-2 text-violet-400 font-bold text-xs uppercase tracking-widest">
+                                            <Brain size={14} /> Respuesta de Soporte
+                                        </div>
+                                        <p className="text-white/80 leading-relaxed italic">"{ticket.adminNotes}"</p>
+                                    </div>
+                                )}
+                            </div>
+                        ))}
+                    </div>
+                )}
+            </div>
+        </div>
     );
 }

@@ -63,6 +63,7 @@ model Client {
   callLogs  CallLog[]
   appointments Appointment[]
   botLogs      BotLog[]
+  tickets      Ticket[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -224,4 +225,25 @@ model Invitation {
   updatedAt    DateTime @updatedAt
 
   @@map("invitations")
+}
+
+model Ticket {
+  id          String   @id @default(cuid())
+  clientId    String
+  subject     String
+  description String   @db.Text
+  category    String   // "tecnico" | "integracion" | "consulta"
+  status      String   @default("open") // "open" | "in_progress" | "resolved" | "closed"
+  priority    String   @default("normal") // "low" | "normal" | "high"
+  adminNotes  String?  @db.Text
+  resolvedAt  DateTime?
+  
+  client Client @relation(fields: [clientId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([clientId])
+  @@index([status])
+  @@map("tickets")
 }
