@@ -1,22 +1,6 @@
 import nodemailer from 'nodemailer';
 import path from 'path';
 
-const transporter = nodemailer.createTransport({
-    host: process.env.SMTP_HOST,
-    port: parseInt(process.env.SMTP_PORT || '587'),
-    secure: process.env.SMTP_PORT === '465',
-    auth: {
-        user: process.env.SMTP_USER,
-        pass: process.env.SMTP_PASS,
-    },
-    // Connection pooling for better resource management on Windows
-    pool: true,
-    maxConnections: 5,
-    maxMessages: 100,
-    connectionTimeout: 10000,
-    greetingTimeout: 5000,
-});
-
 const sleep = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
 
 export async function sendEmail({ to, subject, html, attachments = [] }: {
@@ -28,10 +12,22 @@ export async function sendEmail({ to, subject, html, attachments = [] }: {
     const MAX_RETRIES = 3;
     const from = process.env.SMTP_FROM || `"CitaLiks" <${process.env.SMTP_USER}>`;
 
+    // Re-create transporter for each call to avoid stale socket/DNS issues on Windows
+    const transporter = nodemailer.createTransport({
+        host: process.env.SMTP_HOST,
+        port: parseInt(process.env.SMTP_PORT || '465'),
+        secure: process.env.SMTP_PORT === '465',
+        auth: {
+            user: process.env.SMTP_USER,
+            pass: process.env.SMTP_PASS,
+        },
+        connectionTimeout: 15000,
+        greetingTimeout: 10000,
+    });
+
     // Default logo attachment if exists
     const fs = require('fs');
-    const logoRelPath = 'public/logo.png';
-    const logoPath = path.join(process.cwd(), logoRelPath);
+    const logoPath = path.join(process.cwd(), 'public', 'logo.png');
     let finalAttachments = [...attachments];
 
     try {
@@ -61,24 +57,20 @@ export async function sendEmail({ to, subject, html, attachments = [] }: {
     } catch (error: any) {
         console.error(`[Email] ERROR en intento ${retryCount + 1}:`, error.code, error.message);
 
-        // Retry logic for transient Windows errors (EBUSY, ECONNRESET, ETIMEDOUT)
+        // Retry logic for transient Windows errors
         const transientErrors = ['EBUSY', 'ECONNRESET', 'ETIMEDOUT', 'ESOCKET', 'EAI_AGAIN'];
         if (transientErrors.includes(error.code) && retryCount < MAX_RETRIES) {
             const delay = Math.pow(2, retryCount) * 1000;
-            console.log(`[Email] Error transitorio detectado (${error.code}). Reintentando en ${delay}ms...`);
+            console.log(`[Email] Reintentando en ${delay}ms...`);
             await sleep(delay);
             return sendEmail({ to, subject, html, attachments }, retryCount + 1);
         }
 
         let detailedError = error.message;
         if (error.code === 'EAUTH') {
-            detailedError = 'Error de Autenticación SMTP (EAUTH). Revisa usuario y contraseña de aplicación.';
+            detailedError = 'Error de Autenticación SMTP. Revisa tu usuario y contraseña de aplicación en Gmail.';
         } else if (error.code === 'EBUSY') {
-            detailedError = 'El sistema de red está ocupado (EBUSY). Inténtalo de nuevo en unos segundos.';
-        } else if (error.code === 'ESOCKET') {
-            detailedError = 'Error de socket (ESOCKET). ¿Red bloqueada o firewall?';
-        } else if (error.code === 'ETIMEDOUT') {
-            detailedError = 'Tiempo de espera agotado (ETIMEDOUT).';
+            detailedError = 'Servicio de red ocupado (EBUSY). Inténtalo de nuevo.';
         }
 
         return {
