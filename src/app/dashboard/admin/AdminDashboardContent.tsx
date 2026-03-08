@@ -47,6 +47,7 @@ export default function AdminDashboardContent({ clients: initialClients }: { cli
     const [selectedClientFilter, setSelectedClientFilter] = React.useState("all");
     const [creatingCheckout, setCreatingCheckout] = React.useState(false);
     const [openingPortal, setOpeningPortal] = React.useState(false);
+    const [testingEmail, setTestingEmail] = React.useState(false);
 
     const PAGE_SIZE = 10;
 
@@ -361,6 +362,27 @@ export default function AdminDashboardContent({ clients: initialClients }: { cli
             showToast("Error de conexión", "err");
         } finally {
             setSendingInvite(false);
+        }
+    };
+
+    const handleTestEmail = async () => {
+        setTestingEmail(true);
+        try {
+            const res = await fetch("/api/admin/diag/test-email", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ email: inviteForm.email })
+            });
+            const data = await res.json();
+            if (res.ok && data.success) {
+                showToast("Correo de prueba enviado correctamente");
+            } else {
+                showToast(data.error || "Error al probar SMTP", "err");
+            }
+        } catch (err) {
+            showToast("Error de conexión al probar SMTP", "err");
+        } finally {
+            setTestingEmail(false);
         }
     };
 
@@ -690,9 +712,20 @@ export default function AdminDashboardContent({ clients: initialClients }: { cli
                     <div className="space-y-4">
                         <div className="flex justify-between items-center">
                             <h2 className="text-lg font-bold">Historial de Invitaciones</h2>
-                            <button onClick={fetchInvitations} className="p-2 text-white/40 hover:text-white transition-colors rounded-lg hover:bg-white/5">
-                                <RefreshCw size={16} />
-                            </button>
+                            <div className="flex items-center gap-2">
+                                <button
+                                    onClick={handleTestEmail}
+                                    disabled={testingEmail}
+                                    className="px-3 py-1.5 rounded-lg bg-white/5 hover:bg-white/10 text-white/40 hover:text-white transition-all text-xs font-bold flex items-center gap-2 disabled:opacity-50"
+                                    title="Envía un correo de prueba para verificar la configuración SMTP"
+                                >
+                                    <Zap size={14} className={testingEmail ? "animate-pulse text-amber-400" : ""} />
+                                    {testingEmail ? "Probando..." : "Probar SMTP"}
+                                </button>
+                                <button onClick={fetchInvitations} className="p-2 text-white/40 hover:text-white transition-colors rounded-lg hover:bg-white/5">
+                                    <RefreshCw size={16} />
+                                </button>
+                            </div>
                         </div>
                         {/* Desktop Table View */}
                         <div className="hidden md:block rounded-[1.5rem] overflow-x-auto border border-white/5 bg-white/[0.02] custom-scrollbar">

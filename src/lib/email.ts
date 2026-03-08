@@ -41,12 +41,25 @@ export async function sendEmail({ to, subject, html, attachments = [] }: {
             attachments: finalAttachments
         });
         console.log('[Email] Enviado con éxito! ID:', info.messageId);
+        console.log('[Email] Envelope:', info.envelope);
+        console.log('[Email] Response:', info.response);
         return { success: true, messageId: info.messageId };
     } catch (error: any) {
-        console.error('[Email] ERROR CRÍTICO al enviar:', error.message);
+        console.error('[Email] ERROR CRÍTICO al enviar:', error);
+
+        let detailedError = error.message;
         if (error.code === 'EAUTH') {
-            console.error('[Email] Error de Autenticación. Revisa tu SMTP_USER y SMTP_PASS.');
+            detailedError = 'Error de Autenticación SMTP. Revisa SMTP_USER y SMTP_PASS (¿Contraseña de aplicación?).';
+            console.error('[Email] Sugerencia: Verifica si necesitas una nueva "Contraseña de aplicación" en Gmail.');
+        } else if (error.code === 'ESOCKET') {
+            detailedError = 'Error de conexión (Socket). Problema de red o firewall.';
         }
-        return { success: false, error: error.message };
+
+        return {
+            success: false,
+            error: detailedError,
+            code: error.code,
+            command: error.command
+        };
     }
 }
