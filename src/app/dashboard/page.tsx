@@ -28,7 +28,7 @@ export default async function DashboardPage() {
         }
     }
 
-    if (!masterClient || !masterClient.onboardingDone) {
+    if (!masterClient || (!masterClient.onboardingDone && masterClient.role !== "PLATFORM_ADMIN")) {
         redirect("/onboarding");
     }
 
