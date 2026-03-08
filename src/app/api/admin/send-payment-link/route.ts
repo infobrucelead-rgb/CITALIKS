@@ -55,6 +55,7 @@ export async function POST(req: NextRequest) {
         plan,
         notes,
         status: "pending",
+        paymentUrl: checkoutUrl,
         paymentLinkSentAt: new Date(),
         paymentLinkSentBy: userId,
       },
@@ -64,6 +65,7 @@ export async function POST(req: NextRequest) {
         plan,
         notes,
         status: "pending",
+        paymentUrl: checkoutUrl,
         paymentLinkSentAt: new Date(),
         paymentLinkSentBy: userId,
       }
@@ -126,4 +128,30 @@ export async function GET(req: NextRequest) {
   });
 
   return NextResponse.json({ prospects });
+}
+
+/**
+ * DELETE /api/admin/send-payment-link
+ * Deletes a prospect
+ */
+export async function DELETE(req: NextRequest) {
+  const { userId } = await auth();
+  if (!userId) return NextResponse.json({ error: "No autenticado" }, { status: 401 });
+
+  const admin = await prisma.client.findUnique({ where: { clerkUserId: userId } }) as any;
+  if (!admin || admin.role !== "PLATFORM_ADMIN") {
+    return NextResponse.json({ error: "No autorizado" }, { status: 403 });
+  }
+
+  const { prospectId } = await req.json();
+  if (!prospectId) return NextResponse.json({ error: "ID de prospecto faltante" }, { status: 400 });
+
+  try {
+    await prisma.prospect.delete({
+      where: { id: prospectId }
+    });
+    return NextResponse.json({ success: true, message: "Prospecto eliminado" });
+  } catch (error: any) {
+    return NextResponse.json({ error: error.message || "Error al eliminar" }, { status: 500 });
+  }
 }

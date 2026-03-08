@@ -105,7 +105,15 @@ export async function POST(req: NextRequest) {
                             appUrl,
                         });
 
-                        console.log(`[Stripe/Webhook] Onboarding email sent to new prospect ${prospectEmail}`);
+                        // NOTIFY ADMIN
+                        await sendAdminNotification({
+                            email: prospectEmail,
+                            name: prospectName || prospectEmail,
+                            plan,
+                            appUrl
+                        });
+
+                        console.log(`[Stripe/Webhook] Onboarding email and Admin alert sent for ${prospectEmail}`);
                     }
                 }
                 break;
@@ -398,5 +406,41 @@ async function sendOnboardingEmail({ email, name, plan, signUpUrl, appUrl }: {
   </div>
 </body>
 </html>`,
+    });
+}
+
+async function sendAdminNotification({ email, name, plan, appUrl }: {
+    email: string;
+    name: string;
+    plan: string;
+    appUrl: string;
+}) {
+    const adminEmail = "neuralads.mkt@gmail.com";
+    const planLabels: Record<string, string> = {
+        monthly: "Mensual",
+        biannual: "Semestral",
+        annual: "Anual",
+    };
+
+    await sendEmail({
+        to: adminEmail,
+        subject: `🚨 ¡NUEVO PAGO RECIBIDO! — ${name} (${planLabels[plan] || plan})`,
+        html: `
+        <div style="font-family: sans-serif; max-width: 600px; margin: auto; padding: 20px; border: 1px solid #eee; border-radius: 12px; background-color: #f0fdf4;">
+            <h2 style="color: #166534; font-size: 20px;">💰 ¡Enhorabuena Pablo! Nuevo cliente en CitaLiks</h2>
+            <p style="color: #374151; line-height: 1.6;">El lead <strong>${name}</strong> ha completado el pago de su suscripción y ya ha recibido las instrucciones de onboarding.</p>
+            
+            <div style="background-color: white; border: 1px solid #dcfce7; padding: 20px; border-radius: 10px; margin: 25px 0;">
+                <p style="margin: 5px 0; color: #111827;"><strong>Email:</strong> ${email}</p>
+                <p style="margin: 5px 0; color: #111827;"><strong>Plan contratado:</strong> ${planLabels[plan] || plan}</p>
+                <p style="margin: 5px 0; color: #111827;"><strong>Fecha:</strong> ${new Date().toLocaleString('es-ES')}</p>
+            </div>
+
+            <p style="color: #374151; line-height: 1.6;">Es un buen momento para llamar al cliente, darle la bienvenida y asistirle en los pasos iniciales si fuera necesario.</p>
+            
+            <div style="text-align: center; margin: 20px 0;">
+                <a href="${appUrl}/dashboard/admin" style="background-color: #166534; color: white; padding: 12px 24px; text-decoration: none; border-radius: 8px; font-weight: bold; display: inline-block;">Ver en Dashboard de Admin</a>
+            </div>
+        </div>`
     });
 }

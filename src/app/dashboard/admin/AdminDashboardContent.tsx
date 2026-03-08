@@ -334,6 +334,23 @@ export default function AdminDashboardContent({ clients: initialClients }: { cli
         }
     };
 
+    const handleDeleteProspect = async (prospectId: string) => {
+        if (!confirm("¿Eliminar este prospecto?")) return;
+        try {
+            const res = await fetch("/api/admin/send-payment-link", {
+                method: "DELETE",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ prospectId })
+            });
+            if (res.ok) {
+                fetchProspects();
+                showToast("Prospecto eliminado");
+            }
+        } catch (err) {
+            showToast("Error al eliminar", "err");
+        }
+    };
+
     const handleSendInviteLink = async () => {
         setSendingInvite(true);
         try {
@@ -640,27 +657,41 @@ export default function AdminDashboardContent({ clients: initialClients }: { cli
                                                 </span>
                                             </td>
                                             <td className="p-5 text-center">
-                                                <span className={`px-3 py-1 rounded-full text-[10px] font-black uppercase ${prospect.status === "paid" ? "bg-emerald-500/10 text-emerald-400 border border-emerald-500/20" : "bg-white/5 text-white/40 border border-white/10"}`}>
-                                                    {prospect.status === "paid" ? "Pagado" : "Pendiente"}
-                                                </span>
+                                                <div className="flex flex-col items-center gap-1.5">
+                                                    <span className={`px-3 py-1 rounded-full text-[10px] font-black uppercase ${prospect.status === "paid" ? "bg-emerald-500/10 text-emerald-400 border border-emerald-500/20" : prospect.status === "expired" ? "bg-red-500/10 text-red-500 border border-red-500/20" : "bg-white/5 text-white/40 border border-white/10"}`}>
+                                                        {prospect.status === "paid" ? "Pagado" : prospect.status === "expired" ? "Expirado" : "Pendiente"}
+                                                    </span>
+                                                    {prospect.status === "pending" && (
+                                                        <div className="flex gap-1">
+                                                            <span title="24h" className={`w-1.5 h-1.5 rounded-full ${prospect.reminder24hSentAt ? "bg-blue-400" : "bg-white/10"}`} />
+                                                            <span title="3d" className={`w-1.5 h-1.5 rounded-full ${prospect.reminder3dSentAt ? "bg-amber-400" : "bg-white/10"}`} />
+                                                            <span title="7d" className={`w-1.5 h-1.5 rounded-full ${prospect.reminder7dSentAt ? "bg-red-400" : "bg-white/10"}`} />
+                                                        </div>
+                                                    )}
+                                                </div>
                                             </td>
                                             <td className="p-5 text-white/40 text-xs">
                                                 {prospect.paymentLinkSentAt ? new Date(prospect.paymentLinkSentAt).toLocaleString("es-ES") : "Nunca"}
                                             </td>
                                             <td className="p-5 text-right">
-                                                <button onClick={() => {
-                                                    setInviteForm({
-                                                        email: prospect.email,
-                                                        name: prospect.name,
-                                                        phone: prospect.phone || "",
-                                                        plan: prospect.plan || "biannual",
-                                                        notes: prospect.notes || "",
-                                                        type: "stripe"
-                                                    });
-                                                    setIsInviteModalOpen(true);
-                                                }} className="p-2 text-white/20 hover:text-blue-400 hover:bg-blue-400/10 rounded-lg transition-all" title="Reenviar o Editar">
-                                                    <Mail size={15} />
-                                                </button>
+                                                <div className="flex items-center justify-end gap-2">
+                                                    <button onClick={() => {
+                                                        setInviteForm({
+                                                            email: prospect.email,
+                                                            name: prospect.name,
+                                                            phone: prospect.phone || "",
+                                                            plan: prospect.plan || "biannual",
+                                                            notes: prospect.notes || "",
+                                                            type: "stripe"
+                                                        });
+                                                        setIsInviteModalOpen(true);
+                                                    }} className="p-2 text-white/20 hover:text-blue-400 hover:bg-blue-400/10 rounded-lg transition-all" title="Reenviar o Editar">
+                                                        <Mail size={15} />
+                                                    </button>
+                                                    <button onClick={() => handleDeleteProspect(prospect.id)} className="p-2 text-white/20 hover:text-red-400 hover:bg-red-400/10 rounded-lg transition-all" title="Eliminar">
+                                                        <Trash2 size={15} />
+                                                    </button>
+                                                </div>
                                             </td>
                                         </tr>
                                     ))}
@@ -679,27 +710,41 @@ export default function AdminDashboardContent({ clients: initialClients }: { cli
                                             <p className="font-bold text-sm tracking-tight">{prospect.name}</p>
                                             <p className="text-[10px] text-white/30 font-mono truncate max-w-[200px]">{prospect.email}</p>
                                         </div>
-                                        <span className={`px-2 py-0.5 rounded-lg text-[8px] font-black uppercase tracking-widest ${prospect.status === "paid" ? "bg-emerald-500/10 text-emerald-400 border border-emerald-500/20" : "bg-white/5 text-white/40 border border-white/10"}`}>
-                                            {prospect.status === "paid" ? "OK" : "BYE"}
-                                        </span>
+                                        <div className="flex flex-col items-end gap-1.5">
+                                            <span className={`px-2 py-0.5 rounded-lg text-[8px] font-black uppercase tracking-widest ${prospect.status === "paid" ? "bg-emerald-500/10 text-emerald-400 border border-emerald-500/20" : prospect.status === "expired" ? "bg-red-500/10 text-red-500 border border-red-500/10" : "bg-white/5 text-white/40 border border-white/10"}`}>
+                                                {prospect.status === "paid" ? "OK" : prospect.status === "expired" ? "EXP" : "OFF"}
+                                            </span>
+                                            {prospect.status === "pending" && (
+                                                <div className="flex gap-1">
+                                                    <span className={`w-1 h-1 rounded-full ${prospect.reminder24hSentAt ? "bg-blue-400" : "bg-white/10"}`} />
+                                                    <span className={`w-1 h-1 rounded-full ${prospect.reminder3dSentAt ? "bg-amber-400" : "bg-white/10"}`} />
+                                                    <span className={`w-1 h-1 rounded-full ${prospect.reminder7dSentAt ? "bg-red-400" : "bg-white/10"}`} />
+                                                </div>
+                                            )}
+                                        </div>
                                     </div>
                                     <div className="flex items-center justify-between pt-2 border-t border-white/5">
                                         <span className="px-2 py-1 rounded-md bg-blue-600/10 border border-blue-600/20 text-blue-400 text-[10px] font-black uppercase">
                                             {prospect.plan}
                                         </span>
-                                        <button onClick={() => {
-                                            setInviteForm({
-                                                email: prospect.email,
-                                                name: prospect.name,
-                                                phone: prospect.phone || "",
-                                                plan: prospect.plan || "biannual",
-                                                notes: prospect.notes || "",
-                                                type: "stripe"
-                                            });
-                                            setIsInviteModalOpen(true);
-                                        }} className="p-2 text-blue-400 bg-blue-400/10 rounded-xl">
-                                            <Mail size={16} />
-                                        </button>
+                                        <div className="flex gap-2">
+                                            <button onClick={() => {
+                                                setInviteForm({
+                                                    email: prospect.email,
+                                                    name: prospect.name,
+                                                    phone: prospect.phone || "",
+                                                    plan: prospect.plan || "biannual",
+                                                    notes: prospect.notes || "",
+                                                    type: "stripe"
+                                                });
+                                                setIsInviteModalOpen(true);
+                                            }} className="p-2 text-blue-400 bg-blue-400/10 rounded-xl">
+                                                <Mail size={16} />
+                                            </button>
+                                            <button onClick={() => handleDeleteProspect(prospect.id)} className="p-2 text-red-400 bg-red-400/10 rounded-xl">
+                                                <Trash2 size={16} />
+                                            </button>
+                                        </div>
                                     </div>
                                 </div>
                             ))}

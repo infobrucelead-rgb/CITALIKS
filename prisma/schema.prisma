@@ -195,12 +195,19 @@ model Prospect {
   name                String
   plan                String    @default("biannual") // "monthly", "biannual", "annual"
   notes               String?   @db.Text
-  status              String    @default("pending") // "pending", "paid", "onboarded"
+  status              String    @default("pending") // "pending", "paid", "onboarded", "expired"
+  paymentUrl          String?   @db.Text
   paymentLinkSentAt   DateTime?
   paymentLinkSentBy   String?   // admin user id
   paidAt              DateTime?
   stripeSessionId     String?   @unique
   onboardingLinkSentAt DateTime?
+  
+  // Follow-up tracking
+  reminder24hSentAt   DateTime?
+  reminder3dSentAt   DateTime?
+  reminder7dSentAt   DateTime?
+
   createdAt           DateTime  @default(now())
   updatedAt           DateTime  @updatedAt
 
