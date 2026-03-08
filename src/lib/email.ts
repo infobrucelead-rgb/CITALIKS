@@ -9,6 +9,9 @@ const transporter = nodemailer.createTransport({
         user: process.env.SMTP_USER,
         pass: process.env.SMTP_PASS,
     },
+    // Add connection timeout
+    connectionTimeout: 10000,
+    greetingTimeout: 5000,
 });
 
 export async function sendEmail({ to, subject, html, attachments = [] }: {
@@ -19,16 +22,25 @@ export async function sendEmail({ to, subject, html, attachments = [] }: {
 }) {
     const from = process.env.SMTP_FROM || `"CitaLiks" <${process.env.SMTP_USER}>`;
 
-    // Default logo attachment if not provided
-    const logoPath = path.join(process.cwd(), 'public', 'logo.png');
-    const finalAttachments = [
-        {
-            filename: 'logo.png',
-            path: logoPath,
-            cid: 'logo' // matches <img src="cid:logo">
-        },
-        ...attachments
-    ];
+    // Default logo attachment if exists
+    const fs = require('fs');
+    const logoRelPath = 'public/logo.png';
+    const logoPath = path.join(process.cwd(), logoRelPath);
+    let finalAttachments = [...attachments];
+
+    try {
+        if (fs.existsSync(logoPath)) {
+            finalAttachments.push({
+                filename: 'logo.png',
+                path: logoPath,
+                cid: 'logo'
+            });
+        } else {
+            console.warn(`[Email] Logo no encontrado en ${logoPath}, se enviará sin imagen.`);
+        }
+    } catch (e) {
+        console.error('[Email] Error al verificar logo:', e);
+    }
 
     console.log(`[Email] Intentando enviar a ${to} desde ${from}...`);
 
@@ -49,17 +61,20 @@ export async function sendEmail({ to, subject, html, attachments = [] }: {
 
         let detailedError = error.message;
         if (error.code === 'EAUTH') {
-            detailedError = 'Error de Autenticación SMTP. Revisa SMTP_USER y SMTP_PASS (¿Contraseña de aplicación?).';
-            console.error('[Email] Sugerencia: Verifica si necesitas una nueva "Contraseña de aplicación" en Gmail.');
+            detailedError = 'Error de Autenticación SMTP (EAUTH). Revisa usuario y contraseña de aplicación.';
         } else if (error.code === 'ESOCKET') {
-            detailedError = 'Error de conexión (Socket). Problema de red o firewall.';
+            detailedError = 'Error de socket (ESOCKET). ¿El host o puerto son correctos? (Gmail usa 465 SSL o 587 TLS).';
+        } else if (error.code === 'ETIMEDOUT') {
+            detailedError = 'Tiempo de espera agotado (ETIMEDOUT) al conectar con el servidor SMTP.';
+        } else if (error.code === 'EENVELOPE') {
+            detailedError = 'Error en el remitente o destinatario (EENVELOPE).';
         }
 
         return {
             success: false,
             error: detailedError,
-            code: error.code,
-            command: error.command
+            code: error.code || 'UNKNOWN',
+            details: error.message
         };
     }
 }
