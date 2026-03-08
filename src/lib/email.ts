@@ -9,17 +9,23 @@ const transporter = nodemailer.createTransport({
         user: process.env.SMTP_USER,
         pass: process.env.SMTP_PASS,
     },
-    // Add connection timeout
+    // Connection pooling for better resource management on Windows
+    pool: true,
+    maxConnections: 5,
+    maxMessages: 100,
     connectionTimeout: 10000,
     greetingTimeout: 5000,
 });
+
+const sleep = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
 
 export async function sendEmail({ to, subject, html, attachments = [] }: {
     to: string;
     subject: string;
     html: string;
     attachments?: any[];
-}) {
+}, retryCount = 0) {
+    const MAX_RETRIES = 3;
     const from = process.env.SMTP_FROM || `"CitaLiks" <${process.env.SMTP_USER}>`;
 
     // Default logo attachment if exists
@@ -35,14 +41,12 @@ export async function sendEmail({ to, subject, html, attachments = [] }: {
                 path: logoPath,
                 cid: 'logo'
             });
-        } else {
-            console.warn(`[Email] Logo no encontrado en ${logoPath}, se enviará sin imagen.`);
         }
     } catch (e) {
         console.error('[Email] Error al verificar logo:', e);
     }
 
-    console.log(`[Email] Intentando enviar a ${to} desde ${from}...`);
+    console.log(`[Email] [Intento ${retryCount + 1}] Enviando a ${to}...`);
 
     try {
         const info = await transporter.sendMail({
@@ -53,21 +57,28 @@ export async function sendEmail({ to, subject, html, attachments = [] }: {
             attachments: finalAttachments
         });
         console.log('[Email] Enviado con éxito! ID:', info.messageId);
-        console.log('[Email] Envelope:', info.envelope);
-        console.log('[Email] Response:', info.response);
         return { success: true, messageId: info.messageId };
     } catch (error: any) {
-        console.error('[Email] ERROR CRÍTICO al enviar:', error);
+        console.error(`[Email] ERROR en intento ${retryCount + 1}:`, error.code, error.message);
+
+        // Retry logic for transient Windows errors (EBUSY, ECONNRESET, ETIMEDOUT)
+        const transientErrors = ['EBUSY', 'ECONNRESET', 'ETIMEDOUT', 'ESOCKET', 'EAI_AGAIN'];
+        if (transientErrors.includes(error.code) && retryCount < MAX_RETRIES) {
+            const delay = Math.pow(2, retryCount) * 1000;
+            console.log(`[Email] Error transitorio detectado (${error.code}). Reintentando en ${delay}ms...`);
+            await sleep(delay);
+            return sendEmail({ to, subject, html, attachments }, retryCount + 1);
+        }
 
         let detailedError = error.message;
         if (error.code === 'EAUTH') {
             detailedError = 'Error de Autenticación SMTP (EAUTH). Revisa usuario y contraseña de aplicación.';
+        } else if (error.code === 'EBUSY') {
+            detailedError = 'El sistema de red está ocupado (EBUSY). Inténtalo de nuevo en unos segundos.';
         } else if (error.code === 'ESOCKET') {
-            detailedError = 'Error de socket (ESOCKET). ¿El host o puerto son correctos? (Gmail usa 465 SSL o 587 TLS).';
+            detailedError = 'Error de socket (ESOCKET). ¿Red bloqueada o firewall?';
         } else if (error.code === 'ETIMEDOUT') {
-            detailedError = 'Tiempo de espera agotado (ETIMEDOUT) al conectar con el servidor SMTP.';
-        } else if (error.code === 'EENVELOPE') {
-            detailedError = 'Error en el remitente o destinatario (EENVELOPE).';
+            detailedError = 'Tiempo de espera agotado (ETIMEDOUT).';
         }
 
         return {
