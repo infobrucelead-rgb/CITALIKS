@@ -73,7 +73,35 @@ export default async function HomePage() {
             <section className="max-w-6xl mx-auto px-8 py-20">
                 <div className="text-center mb-14">
                     <h2 className="text-4xl font-bold mb-4">Planes y precios</h2>
-                    <p className="text-white/50 text-lg max-w-xl mx-auto">Sin letra pequeña. Sin sorpresas. Elige el plan que mejor se adapte a tu negocio.</p>
+                    <p className="text-white/50 text-lg max-w-xl mx-auto">
+                        Mismas funcionalidades en todos los planes. La diferencia está en la duración del contrato y el coste de implementación.
+                    </p>
+                </div>
+
+                {/* Core features shared by all plans */}
+                <div className="glass rounded-2xl px-8 py-6 mb-10 border border-white/10">
+                    <p className="text-xs uppercase font-black text-white/30 tracking-widest mb-4">✅ Incluido en todos los planes</p>
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm text-white/60">
+                        {[
+                            "Asistente de voz IA en Español",
+                            "Número +34 exclusivo",
+                            "Reserva, cancela y reagenda citas",
+                            "Sincronización Google Calendar",
+                            "SMS de confirmación automático",
+                            "Recordatorios automáticos de cita",
+                            "Transferencia de llamada al equipo",
+                            "Alertas SMS de oportunidades de venta",
+                            "Múltiples profesionales / agenda",
+                            "Dashboard de llamadas y transcripciones",
+                            "Soporte por email",
+                            "Sin límite de llamadas",
+                        ].map((f) => (
+                            <div key={f} className="flex items-start gap-2">
+                                <span className="text-green-400 shrink-0 mt-0.5">✓</span>
+                                <span>{f}</span>
+                            </div>
+                        ))}
+                    </div>
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6 items-stretch">
@@ -85,29 +113,22 @@ export default async function HomePage() {
                                 <span className="text-5xl font-black">99€</span>
                                 <span className="text-white/40 mb-1 text-sm">implementación</span>
                             </div>
-                            <p className="text-white/40 text-xs mt-1">Contratando 12 meses · + 99€/mes</p>
+                            <p className="text-white/40 text-xs mt-1">+ 99€/mes · Contrato 12 meses</p>
                         </div>
-                        <ul className="flex flex-col gap-3 text-sm text-white/70 flex-1">
-                            {[
-                                "Asistente de voz IA en Español",
-                                "Número +34 exclusivo",
-                                "Reserva y cancela citas",
-                                "Sincronización Google Calendar",
-                                "SMS de confirmación automático",
-                                "Dashboard de llamadas",
-                                "Soporte por email",
-                            ].map(f => (
-                                <li key={f} className="flex items-start gap-2">
-                                    <span className="text-green-400 mt-0.5 shrink-0">✓</span>{f}
-                                </li>
-                            ))}
-                        </ul>
+                        <div className="flex-1">
+                            <p className="text-sm text-white/40 mb-3">
+                                Ideal para negocios que buscan el mejor precio comprometiéndose a largo plazo.
+                            </p>
+                            <div className="rounded-xl bg-white/5 px-4 py-3 text-xs text-white/50">
+                                🎯 Todas las funcionalidades incluidas · Ahorro máximo en implementación
+                            </div>
+                        </div>
                         <Link href="/sign-up" className="block text-center px-6 py-3 rounded-2xl border border-violet-500/40 hover:border-violet-400 hover:bg-violet-500/10 font-semibold transition-all text-sm">
                             Empezar con Basic →
                         </Link>
                     </div>
 
-                    {/* BUSINESS — destacado */}
+                    {/* BUSINESS */}
                     <div className="glass rounded-3xl p-8 flex flex-col gap-6 border border-violet-500/60 relative shadow-xl shadow-violet-500/10 hover:border-violet-400/80 transition-all">
                         <div className="absolute -top-4 left-1/2 -translate-x-1/2">
                             <span className="px-4 py-1.5 rounded-full bg-violet-600 text-xs font-black uppercase tracking-widest shadow-lg shadow-violet-500/40">Más popular</span>
@@ -118,23 +139,16 @@ export default async function HomePage() {
                                 <span className="text-5xl font-black">119€</span>
                                 <span className="text-white/40 mb-1 text-sm">implementación</span>
                             </div>
-                            <p className="text-white/40 text-xs mt-1">Contratando 6 meses · + 99€/mes</p>
+                            <p className="text-white/40 text-xs mt-1">+ 99€/mes · Contrato 6 meses</p>
                         </div>
-                        <ul className="flex flex-col gap-3 text-sm text-white/70 flex-1">
-                            {[
-                                "Todo lo de Basic",
-                                "Transferencia de llamada al equipo",
-                                "Alertas SMS de oportunidades de venta",
-                                "Múltiples profesionales / agenda",
-                                "Recordatorios automáticos de cita",
-                                "Reagendado de citas por el bot",
-                                "Soporte prioritario",
-                            ].map(f => (
-                                <li key={f} className="flex items-start gap-2">
-                                    <span className="text-violet-400 mt-0.5 shrink-0">✓</span>{f}
-                                </li>
-                            ))}
-                        </ul>
+                        <div className="flex-1">
+                            <p className="text-sm text-white/40 mb-3">
+                                El equilibrio perfecto entre flexibilidad y ahorro. El favorito de nuestros clientes.
+                            </p>
+                            <div className="rounded-xl bg-violet-500/10 border border-violet-500/20 px-4 py-3 text-xs text-violet-300">
+                                🎯 Todas las funcionalidades incluidas · 6 meses de compromiso
+                            </div>
+                        </div>
                         <Link href="/sign-up" className="block text-center px-6 py-3 rounded-2xl bg-violet-600 hover:bg-violet-500 font-semibold transition-all text-sm glow-purple shadow-lg shadow-violet-500/30">
                             Empezar con Business →
                         </Link>
@@ -148,23 +162,19 @@ export default async function HomePage() {
                                 <span className="text-5xl font-black">149€</span>
                                 <span className="text-white/40 mb-1 text-sm">implementación</span>
                             </div>
-                            <p className="text-white/40 text-xs mt-1">Contratando 3 meses · + 99€/mes</p>
+                            <p className="text-white/40 text-xs mt-1">+ 99€/mes · Contrato 3 meses</p>
                         </div>
-                        <ul className="flex flex-col gap-3 text-sm text-white/70 flex-1">
-                            {[
-                                "Todo lo de Business",
-                                "Integraciones personalizadas (CRM, ERP…)",
-                                "Onboarding presencial o por videollamada",
-                                "Configuración avanzada del agente",
-                                "SLA de respuesta en 24h",
-                                "Facturación personalizada",
-                                "Gestor de cuenta dedicado",
-                            ].map(f => (
-                                <li key={f} className="flex items-start gap-2">
-                                    <span className="text-amber-400 mt-0.5 shrink-0">✓</span>{f}
-                                </li>
-                            ))}
-                        </ul>
+                        <div className="flex-1">
+                            <p className="text-sm text-white/40 mb-3">
+                                Máxima flexibilidad con soporte técnico avanzado e integraciones a medida.
+                            </p>
+                            <div className="rounded-xl bg-amber-500/5 border border-amber-500/20 px-4 py-3 text-xs text-amber-300/80 flex flex-col gap-1.5">
+                                <span className="font-semibold">⭐ Todo lo anterior, más:</span>
+                                <span>🔗 Integraciones CRM / ERP a medida</span>
+                                <span>🎫 Soporte técnico prioritario por tickets</span>
+                                <span>📞 Onboarding por videollamada</span>
+                            </div>
+                        </div>
                         <Link href="/sign-up" className="block text-center px-6 py-3 rounded-2xl border border-amber-500/40 hover:border-amber-400 hover:bg-amber-500/10 font-semibold transition-all text-sm">
                             Empezar con Premium →
                         </Link>
@@ -172,7 +182,11 @@ export default async function HomePage() {
                 </div>
 
                 <p className="text-center text-white/30 text-xs mt-10">
-                    ¿Necesitas integraciones especiales? <a href="mailto:neuralads.mkt@gmail.com" className="text-violet-400 hover:text-violet-300 underline">Contáctanos</a> y te preparamos un presupuesto a medida.
+                    ¿Necesitas integraciones especiales?{" "}
+                    <a href="mailto:neuralads.mkt@gmail.com" className="text-violet-400 hover:text-violet-300 underline">
+                        Contáctanos
+                    </a>{" "}
+                    y te preparamos un presupuesto a medida.
                 </p>
             </section>
 
