@@ -1,6 +1,7 @@
 import { auth } from "@clerk/nextjs/server";
 import { prisma } from "@/lib/db";
 import { NextResponse } from "next/server";
+import { sendEmail } from "@/lib/email";
 
 export async function GET() {
     const { userId } = await auth();
@@ -61,6 +62,33 @@ export async function POST(req: Request) {
                 priority: "normal"
             }
         });
+
+        // Solo enviar email si el cliente tiene email configurado
+        if (client.email) {
+            try {
+                await sendEmail({
+                    to: client.email,
+                    subject: `Confirmación de Ticket: ${subject} - CitaLiks`,
+                    html: `
+                        <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; color: #1a1a1f;">
+                            <h2 style="color: #6d28d9;">Hola ${client.businessName || 'Cliente'},</h2>
+                            <p>Hemos recibido tu incidencia correctamente y ya estamos trabajando en tu caso.</p>
+                            <div style="background: #f8fafc; border-radius: 12px; padding: 15px; margin: 20px 0; border: 1px solid #e2e8f0;">
+                                <p style="margin: 0; font-size: 14px; color: #64748b; text-transform: uppercase; font-weight: bold; letter-spacing: 0.05em;">Asunto:</p>
+                                <p style="margin: 5px 0 0 0; font-weight: bold;">${subject}</p>
+                            </div>
+                            <p>Te responderemos a la mayor brevedad posible (normalmente en menos de 24 horas hábiles si tienes un plan Premium).</p>
+                            <p>Gracias por tu paciencia.</p>
+                            <hr style="border: none; border-top: 1px solid #e2e8f0; margin: 30px 0;" />
+                            <p style="font-size: 12px; color: #94a3b8;">Este es un mensaje automático, por favor no respondas a este correo.</p>
+                        </div>
+                    `
+                });
+                console.log(`[Tickets] Email de confirmación enviado a ${client.email}`);
+            } catch (emailError) {
+                console.error("[Tickets] Error enviando email de confirmación:", emailError);
+            }
+        }
 
         return NextResponse.json({ success: true, ticket });
     } catch (error) {

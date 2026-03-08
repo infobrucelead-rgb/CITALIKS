@@ -1806,8 +1806,8 @@ function SupportTab({ client }: { client: any }) {
             />
 
             {isCreating && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-300">
-                    <div className="glass w-full max-w-lg rounded-3xl p-8 border border-white/10 shadow-2xl relative overflow-hidden">
+                <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/90 backdrop-blur-md animate-in fade-in duration-300">
+                    <div className="bg-[#0f0f13] w-full max-w-lg rounded-3xl p-8 border border-white/10 shadow-2xl relative overflow-hidden">
                         <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-violet-600 to-fuchsia-600" />
 
                         <div className="flex justify-between items-center mb-6">
@@ -1898,7 +1898,7 @@ function SupportTab({ client }: { client: any }) {
                                 <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                                     <div className="flex gap-4">
                                         <div className={`w-12 h-12 rounded-xl flex items-center justify-center shrink-0 ${ticket.status === 'resolved' ? 'bg-green-500/10 text-green-400' :
-                                                ticket.status === 'open' ? 'bg-blue-500/10 text-blue-400' : 'bg-amber-500/10 text-amber-400'
+                                            ticket.status === 'open' ? 'bg-blue-500/10 text-blue-400' : 'bg-amber-500/10 text-amber-400'
                                             }`}>
                                             {ticket.status === 'resolved' ? <CheckCircle2 size={24} /> :
                                                 ticket.status === 'open' ? <Activity size={24} /> : <Clock size={24} />}
@@ -1907,7 +1907,7 @@ function SupportTab({ client }: { client: any }) {
                                             <div className="flex items-center gap-3 mb-1">
                                                 <h4 className="font-bold text-lg">{ticket.subject}</h4>
                                                 <span className={`px-2 py-0.5 rounded-md text-[10px] uppercase font-black tracking-widest ${ticket.category === 'tecnico' ? 'bg-red-500/20 text-red-400' :
-                                                        ticket.category === 'integracion' ? 'bg-violet-500/20 text-violet-400' : 'bg-white/10 text-white/40'
+                                                    ticket.category === 'integracion' ? 'bg-violet-500/20 text-violet-400' : 'bg-white/10 text-white/40'
                                                     }`}>
                                                     {ticket.category}
                                                 </span>
@@ -1917,7 +1917,7 @@ function SupportTab({ client }: { client: any }) {
                                     </div>
                                     <div className="flex flex-row md:flex-col items-center md:items-end justify-between gap-2 border-t md:border-t-0 border-white/5 pt-4 md:pt-0">
                                         <span className={`px-3 py-1 rounded-lg text-xs font-bold uppercase tracking-widest ${ticket.status === 'resolved' ? 'bg-green-500/20 text-green-300' :
-                                                ticket.status === 'open' ? 'bg-blue-500/20 text-blue-300' : 'bg-amber-500/20 text-amber-300'
+                                            ticket.status === 'open' ? 'bg-blue-500/20 text-blue-300' : 'bg-amber-500/20 text-amber-300'
                                             }`}>
                                             {ticket.status === 'resolved' ? 'Resuelto' :
                                                 ticket.status === 'open' ? 'Abierto' : 'En proceso'}
