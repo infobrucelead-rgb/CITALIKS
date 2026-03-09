@@ -1828,63 +1828,65 @@ function SupportTab({ client, initialData, onClearInitialData }: { client: any, 
 
             {isCreating && (
                 <div className="fixed inset-0 z-[60] bg-black/95 backdrop-blur-md animate-in fade-in duration-300 overflow-y-auto">
-                    <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-[#0f0f13] w-[calc(100%-2rem)] max-w-lg rounded-3xl p-6 md:p-8 border border-white/10 shadow-2xl relative overflow-hidden flex flex-col max-h-[95vh]">
-                        <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-violet-600 to-fuchsia-600" />
+                    <div className="flex min-h-[100dvh] md:min-h-screen items-center justify-center p-4">
+                        <div className="bg-[#0f0f13] w-full max-w-lg rounded-3xl p-6 md:p-8 border border-white/10 shadow-2xl relative overflow-hidden flex flex-col max-h-[85vh] text-left md:my-auto">
+                            <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-violet-600 to-fuchsia-600" />
 
-                        <div className="flex justify-between items-center mb-6">
-                            <h2 className="text-xl font-bold">Abrir nueva incidencia</h2>
-                            <button onClick={() => setIsCreating(false)} className="p-2 hover:bg-white/5 rounded-xl transition-colors">
-                                <X size={20} className="text-white/40" />
-                            </button>
-                        </div>
-
-                        <form onSubmit={handleCreateTicket} className="space-y-4 md:space-y-5 overflow-y-auto pr-2 custom-scrollbar">
-                            <div className="space-y-2">
-                                <label className="text-xs font-black uppercase tracking-widest text-white/40 ml-1">Asunto</label>
-                                <input
-                                    required
-                                    type="text"
-                                    placeholder="Ej: Problema con la integración de Google Calendar"
-                                    className="w-full bg-white/5 border border-white/10 rounded-2xl px-5 py-4 text-sm focus:outline-none focus:border-violet-500/50 transition-all"
-                                    value={newTicket.subject}
-                                    onChange={(e) => setNewTicket({ ...newTicket, subject: e.target.value })}
-                                />
+                            <div className="flex justify-between items-center mb-6">
+                                <h2 className="text-xl font-bold">Abrir nueva incidencia</h2>
+                                <button onClick={() => setIsCreating(false)} className="p-2 hover:bg-white/5 rounded-xl transition-colors">
+                                    <X size={20} className="text-white/40" />
+                                </button>
                             </div>
 
-                            <div className="space-y-2">
-                                <label className="text-xs font-black uppercase tracking-widest text-white/40 ml-1">Categoría</label>
-                                <select
-                                    className="w-full bg-white/5 border border-white/10 rounded-2xl px-5 py-4 text-sm focus:outline-none focus:border-violet-500/50 transition-all appearance-none"
-                                    value={newTicket.category}
-                                    onChange={(e) => setNewTicket({ ...newTicket, category: e.target.value })}
+                            <form onSubmit={handleCreateTicket} className="space-y-4 md:space-y-5 overflow-y-auto pr-2 custom-scrollbar">
+                                <div className="space-y-2">
+                                    <label className="text-xs font-black uppercase tracking-widest text-white/40 ml-1">Asunto</label>
+                                    <input
+                                        required
+                                        type="text"
+                                        placeholder="Ej: Problema con la integración de Google Calendar"
+                                        className="w-full bg-white/5 border border-white/10 rounded-2xl px-5 py-4 text-sm focus:outline-none focus:border-violet-500/50 transition-all"
+                                        value={newTicket.subject}
+                                        onChange={(e) => setNewTicket({ ...newTicket, subject: e.target.value })}
+                                    />
+                                </div>
+
+                                <div className="space-y-2">
+                                    <label className="text-xs font-black uppercase tracking-widest text-white/40 ml-1">Categoría</label>
+                                    <select
+                                        className="w-full bg-white/5 border border-white/10 rounded-2xl px-5 py-4 text-sm focus:outline-none focus:border-violet-500/50 transition-all appearance-none"
+                                        value={newTicket.category}
+                                        onChange={(e) => setNewTicket({ ...newTicket, category: e.target.value })}
+                                    >
+                                        <option value="tecnico" className="bg-[#1a1a1f]">Problema técnico</option>
+                                        <option value="integracion" className="bg-[#1a1a1f]">Solicitar integración</option>
+                                        <option value="consulta" className="bg-[#1a1a1f]">Consulta general / Facturación</option>
+                                    </select>
+                                </div>
+
+                                <div className="space-y-2">
+                                    <label className="text-xs font-black uppercase tracking-widest text-white/40 ml-1">Descripción</label>
+                                    <textarea
+                                        required
+                                        rows={3}
+                                        placeholder="Describe detalladamente el problema..."
+                                        className="w-full bg-white/5 border border-white/10 rounded-2xl px-5 py-4 text-sm focus:outline-none focus:border-violet-500/50 transition-all resize-none"
+                                        value={newTicket.description}
+                                        onChange={(e) => setNewTicket({ ...newTicket, description: e.target.value })}
+                                    />
+                                </div>
+
+                                <button
+                                    disabled={creating}
+                                    className="w-full flex items-center justify-center gap-3 px-8 py-5 rounded-2xl bg-violet-600 hover:bg-violet-500 disabled:opacity-50 font-black uppercase tracking-widest text-sm transition-all shadow-xl shadow-violet-600/20"
                                 >
-                                    <option value="tecnico" className="bg-[#1a1a1f]">Problema técnico</option>
-                                    <option value="integracion" className="bg-[#1a1a1f]">Solicitar integración</option>
-                                    <option value="consulta" className="bg-[#1a1a1f]">Consulta general / Facturación</option>
-                                </select>
-                            </div>
-
-                            <div className="space-y-2">
-                                <label className="text-xs font-black uppercase tracking-widest text-white/40 ml-1">Descripción</label>
-                                <textarea
-                                    required
-                                    rows={3}
-                                    placeholder="Describe detalladamente el problema..."
-                                    className="w-full bg-white/5 border border-white/10 rounded-2xl px-5 py-4 text-sm focus:outline-none focus:border-violet-500/50 transition-all resize-none"
-                                    value={newTicket.description}
-                                    onChange={(e) => setNewTicket({ ...newTicket, description: e.target.value })}
-                                />
-                            </div>
-
-                            <button
-                                disabled={creating}
-                                className="w-full flex items-center justify-center gap-3 px-8 py-5 rounded-2xl bg-violet-600 hover:bg-violet-500 disabled:opacity-50 font-black uppercase tracking-widest text-sm transition-all shadow-xl shadow-violet-600/20"
-                            >
-                                {creating ? <Loader2 size={18} className="animate-spin" /> : <Send size={18} />}
-                                Enviar Ticket
-                            </button>
-                            <p className="text-[10px] text-center text-white/30 uppercase font-bold tracking-widest">Respuesta en menos de 24h hábiles</p>
-                        </form>
+                                    {creating ? <Loader2 size={18} className="animate-spin" /> : <Send size={18} />}
+                                    Enviar Ticket
+                                </button>
+                                <p className="text-[10px] text-center text-white/30 uppercase font-bold tracking-widest">Respuesta en menos de 24h hábiles</p>
+                            </form>
+                        </div>
                     </div>
                 </div>
             )}
