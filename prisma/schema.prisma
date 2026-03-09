@@ -16,6 +16,14 @@ enum UserRole {
   ADMIN
 }
 
+enum CalendarProvider {
+  GOOGLE
+  MICROSOFT
+  ICAL
+  PMS
+  NONE
+}
+
 model Client {
   id              String    @id @default(cuid())
   clerkUserId     String    @unique
@@ -50,11 +58,33 @@ model Client {
   renewalReminderSent  Boolean   @default(false)
   renewalReminderSentAt DateTime?
 
-  // Google Calendar OAuth (Configuración maestra del negocio)
+  // Calendar Configuration
+  activeCalendarProvider CalendarProvider @default(GOOGLE)
+
+  // Google Calendar OAuth
   googleAccessToken  String?  @db.Text
   googleRefreshToken String?  @db.Text
   googleTokenExpiry  DateTime?
   calendarId         String?  @default("primary")
+
+  // Microsoft OAuth
+  microsoftAccessToken  String?  @db.Text
+  microsoftRefreshToken String?  @db.Text
+  microsoftTokenExpiry  DateTime?
+  microsoftCalendarId   String?
+
+  // PMS Integration
+  pmsProvider String? // "CLOUDBEDS", "MEWS", etc.
+  pmsApiKey   String? @db.Text
+  pmsUrl      String? @db.Text
+  pmsActive   Boolean @default(false)
+  icalUrl     String? @db.Text
+
+  // CRM Integration
+  crmProvider String? // "HUBSPOT", "PIPEDRIVE", "SALESFORCE"
+  crmApiKey   String? @db.Text
+  crmUrl      String? @db.Text
+  crmActive   Boolean @default(false)
 
   // Relaciones
   staff     Staff[]
