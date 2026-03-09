@@ -15,6 +15,7 @@ type TabType = "overview" | "calls" | "services" | "config" | "team" | "admin" |
 export default function DashboardContent({ client: initialClient }: { client: any }) {
     const [client, setClient] = useState(initialClient);
     const [activeTab, setActiveTab] = useState<TabType>("overview");
+    const [supportInitialData, setSupportInitialData] = useState<any>(null);
     const [selectedStaff, setSelectedStaff] = useState<any>(null);
     const { signOut } = useClerk();
 
@@ -49,9 +50,12 @@ export default function DashboardContent({ client: initialClient }: { client: an
             case "config":
                 return <ConfigTab client={client} onUpdate={refreshData} />;
             case "support":
-                return <SupportTab client={client} />;
+                return <SupportTab client={client} initialData={supportInitialData} onClearInitialData={() => setSupportInitialData(null)} />;
             case "integrations":
-                return <IntegrationsTab client={client} onUpdate={refreshData} />;
+                return <IntegrationsTab client={client} onUpdate={refreshData} onContactSupport={(data) => {
+                    setSupportInitialData(data);
+                    setActiveTab("support");
+                }} />;
             default:
                 return <OverviewTab client={client} />;
         }
@@ -1754,7 +1758,7 @@ function MobileNav({ activeTab, setActiveTab, client }: { activeTab: TabType, se
         </nav>
     );
 }
-function SupportTab({ client }: { client: any }) {
+function SupportTab({ client, initialData, onClearInitialData }: { client: any, initialData?: any, onClearInitialData?: () => void }) {
     const [tickets, setTickets] = React.useState<any[]>([]);
     const [loading, setLoading] = React.useState(true);
     const [isCreating, setIsCreating] = React.useState(false);
@@ -1776,6 +1780,14 @@ function SupportTab({ client }: { client: any }) {
     React.useEffect(() => {
         fetchTickets();
     }, []);
+
+    React.useEffect(() => {
+        if (initialData) {
+            setNewTicket({ ...newTicket, ...initialData });
+            setIsCreating(true);
+            if (onClearInitialData) onClearInitialData();
+        }
+    }, [initialData]);
 
     const handleCreateTicket = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -1953,7 +1965,7 @@ function SupportTab({ client }: { client: any }) {
     );
 }
 
-function IntegrationsTab({ client }: { client: any; onUpdate: () => void }) {
+function IntegrationsTab({ client, onUpdate, onContactSupport }: { client: any; onUpdate: () => void; onContactSupport: (data: any) => void }) {
     return (
         <div className="animate-fade-in">
             <Header
@@ -2006,7 +2018,11 @@ function IntegrationsTab({ client }: { client: any; onUpdate: () => void }) {
                 </p>
                 <div className="flex flex-col sm:flex-row justify-center gap-4">
                     <button
-                        onClick={() => window.open("mailto:neuralads.mkt@gmail.com")}
+                        onClick={() => onContactSupport({
+                            subject: "Integración CRM / PMS",
+                            category: "integracion",
+                            description: "Hola, me gustaría solicitar ayuda para configurar mi integración de CRM o PMS."
+                        })}
                         className="px-8 py-3 bg-blue-600 hover:bg-blue-500 text-white rounded-2xl font-bold transition-all"
                     >
                         Contactar Soporte
