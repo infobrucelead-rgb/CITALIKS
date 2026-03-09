@@ -1830,8 +1830,6 @@ function SupportTab({ client, initialData, onClearInitialData }: { client: any, 
             {isCreating && typeof window !== 'undefined' && createPortal(
                 <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/95 backdrop-blur-md p-4 animate-in fade-in duration-300">
                     <div className="bg-[#0f0f13] w-full max-w-lg rounded-3xl p-6 border border-white/10 shadow-2xl relative flex flex-col max-h-[calc(100vh-2rem)]">
-                        <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-violet-600 to-fuchsia-600 z-20" />
-
                         <div className="flex justify-between items-center mb-6 shrink-0 relative z-20">
                             <h2 className="text-xl font-bold">Abrir nueva incidencia</h2>
                             <button onClick={() => setIsCreating(false)} className="p-2 hover:bg-white/5 rounded-xl transition-colors">

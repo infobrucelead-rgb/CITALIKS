@@ -4,10 +4,17 @@
 
 ---
 
-## ESTADO ACTUAL DEL PROYECTO — 06 Mar 2026
+## ESTADO ACTUAL DEL PROYECTO — 09 Mar 2026
 
 ### Resumen ejecutivo
-CitaLiks es una plataforma SaaS multi-tenant que permite a negocios tener su propio asistente de voz con IA para gestionar citas. El sistema está en fase de producción con el primer cliente (Neural360) operativo. Se han corregido problemas críticos de sincronización de datos entre el dashboard y el agente de Retell.
+CitaLiks es una plataforma SaaS multi-tenant que permite a negocios tener su propio asistente de voz con IA para gestionar citas. El sistema está en fase de producción con el primer cliente (Neural360) operativo. Se han corregido problemas críticos de sincronización de datos entre el dashboard y el agente de Retell, y se han realizado mejoras significativas en la UI/UX del panel de integraciones y soporte.
+
+## [2026-03-09] — Mejoras UI/UX en Soporte e Integraciones
+
+### Improved
+- **Modal de Soporte:** Rediseño estructural del modal de "Nuevo Ticket" para garantizar que no se corte en pantallas móviles. Implementado un React Portal (`document.body`) con `min-h-[100dvh]` para asegurar un centrado perfecto independientemente de animaciones o transformaciones CSS del contenedor padre.
+- **Estética Consistente:** Eliminada la franja superior de gradiente (violeta/fuchsia) del modal de soporte para alinear el diseño con el resto de modales de la plataforma (estilo glassmorphic minimalista).
+- **Flujo de Integraciones:** El botón de "Contactar Soporte" en la pestaña de integraciones ahora pre-rellena automáticamente el asunto ("Integración CRM / PMS") y la categoría ("Solicitar integración"), abriendo directamente el modal de soporte sin que el usuario tenga que navegar.
 
 ## [2026-03-08] — Sistema de Seguimiento Automático de Leads
 

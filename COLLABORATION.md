@@ -62,6 +62,16 @@ Si un deploy a producción introduce un bug crítico, se puede revertir a cualqu
 
 ---
 
+## 📋 Notas de sesión — 09 Mar 2026 (Antigravity)
+
+### Problemas resueltos en esta sesión
+
+1. **Cliping del Modal de Soporte en Móvil** — Se resolvió un bug visual crítico donde el modal de soporte se cortaba en pantallas pequeñas debido a animaciones CSS parentales. Solucionado implementando un **React Portal** que renderiza el modal directamente en `document.body` garantizando posicionamiento viewport-fixed real.
+2. **Conexión Integraciones -> Soporte** — Mejorada la UX conectando la pestaña de Integraciones con el sistema de tickets. Ahora el botón transfiere estado (contexto predefinido) entre componentes hermanos del dashboard.
+3. **Consistencia Visual** — Eliminados gradientes coloridos de modales secundarios para mantener el enfoque dark/glassmorphic de la marca.
+
+---
+
 ## 📋 Notas de sesión — 01 Mar 2026 (Manus)
 
 ### Problemas resueltos en esta sesión
