@@ -80,6 +80,7 @@ async function runTests() {
         const res = await bookAppointment({
             clientId,
             callerName: "Tester Stress",
+            callerPhone: "+34600000000",
             serviceName: "Corte de pelo",
             date: testDate,
             time: "12:30",
@@ -99,6 +100,7 @@ async function runTests() {
         const res = await bookAppointment({
             clientId,
             callerName: "Tester Double",
+            callerPhone: "+34600000000",
             serviceName: "Barba",
             date: testDate,
             time: "12:30"
@@ -111,8 +113,7 @@ async function runTests() {
     await testCase("Cancel Appointment", async () => {
         const res = await cancelAppointment({
             clientId,
-            callerName: "Tester Stress",
-            date: testDate
+            appointmentId: lastEventId
         });
         if (!res.cancelled) throw new Error(res.message);
     });
@@ -130,6 +131,7 @@ async function runTests() {
             await bookAppointment({
                 clientId,
                 callerName: "Late Tester",
+                callerPhone: "+34600000000",
                 serviceName: "Corte",
                 date: testDate,
                 time: "17:45", // Overlaps with closing at 18:00 if duration > 15

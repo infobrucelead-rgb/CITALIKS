@@ -312,6 +312,7 @@ export async function checkAvailability(
     params?: {
         staffCalendarId?: string;
         prismaOverride?: any;
+        stepMin?: number;
     }
 ): Promise<TimeSlot[]> {
     const db = params?.prismaOverride || prisma;
@@ -379,7 +380,7 @@ export async function checkAvailability(
         if (!isOccupied) {
             slots.push({ start: slotStartStr, end: `${String(Math.floor(slotEndMin / 60)).padStart(2, '0')}:${String(slotEndMin % 60).padStart(2, '0')}` });
         }
-        currentMin += 30;
+        currentMin += params?.stepMin || 30;
     }
 
     return slots;
@@ -388,13 +389,15 @@ export async function checkAvailability(
 export async function bookAppointment(params: {
     clientId: string;
     callerName: string;
-    callerPhone: string;
+    callerPhone?: string;
     serviceName: string;
     staffName?: string;
     date: string;
     time: string;
     durationMin?: number;
     prismaOverride?: any;
+    notes?: string;
+    staffCalendarId?: string;
 }) {
     const db = params.prismaOverride || prisma;
     const durationMin = params.durationMin || 30;
@@ -408,7 +411,7 @@ export async function bookAppointment(params: {
         data: {
             clientId: params.clientId,
             callerName: params.callerName,
-            callerPhone: params.callerPhone,
+            callerPhone: params.callerPhone || null,
             serviceName: params.serviceName,
             date: params.date,
             time: params.time.substring(0, 5),
@@ -435,7 +438,7 @@ export async function bookAppointment(params: {
                 calendarId,
                 requestBody: {
                     summary: `${params.serviceName} - ${params.callerName}`,
-                    description: `Cita agendada por CitaLiks.\nServicio: ${params.serviceName}\nCliente: ${params.callerName}\nTeléfono: ${params.callerPhone}`,
+                    description: `Cita agendada por CitaLiks.\nServicio: ${params.serviceName}\nCliente: ${params.callerName}\nTeléfono: ${params.callerPhone || 'No indicado'}`,
                     start: { dateTime: startDateTime, timeZone: 'Europe/Madrid' },
                     end: { dateTime: endDateTime, timeZone: 'Europe/Madrid' }
                 }
@@ -460,7 +463,7 @@ export async function bookAppointment(params: {
                     subject: `Cita: ${params.callerName} (${params.serviceName})`,
                     body: {
                         contentType: "HTML",
-                        content: `Cita agendada por CitaLiks.<br>Servicio: ${params.serviceName}<br>Cliente: ${params.callerName}<br>Teléfono: ${params.callerPhone}`
+                        content: `Cita agendada por CitaLiks.<br>Servicio: ${params.serviceName}<br>Cliente: ${params.callerName}<br>Teléfono: ${params.callerPhone || 'No indicado'}`
                     },
                     start: { dateTime: startDateTime, timeZone: "Europe/Madrid" },
                     end: { dateTime: endDateTime, timeZone: "Europe/Madrid" }
@@ -477,7 +480,7 @@ export async function bookAppointment(params: {
             if (connector) {
                 const result = await connector.createAppointment({
                     name: params.callerName,
-                    phone: params.callerPhone,
+                    phone: params.callerPhone || "",
                     date: params.date,
                     time: params.time,
                     service: params.serviceName
@@ -494,14 +497,13 @@ export async function bookAppointment(params: {
     }
 
     // 2. Sync with CRM if active
-    if (client?.crmActive) {
+    if (client?.crmActive && params.callerPhone) {
         try {
             const crm = getCRMConnector(client.crmProvider, client);
             if (crm) {
                 const contact = await crm.createOrUpdateContact({
                     name: params.callerName,
                     phone: params.callerPhone,
-                    // email: params.callerEmail // If we have it
                 });
                 if (contact) {
                     await crm.logActivity({
@@ -521,12 +523,49 @@ export async function bookAppointment(params: {
 
 export async function cancelAppointment(params: {
     clientId: string;
-    appointmentId: string;
+    appointmentId?: string; // Optional: can search by other criteria
+    callerName?: string;
+    callerPhone?: string;
+    date?: string;
+    time?: string;
     prismaOverride?: any;
 }) {
     const db = params.prismaOverride || prisma;
-    const appointment = await (db as any).appointment.findUnique({ where: { id: params.appointmentId } });
-    if (!appointment) throw new Error("Appointment not found");
+    let appointment;
+
+    if (params.appointmentId) {
+        appointment = await (db as any).appointment.findUnique({ where: { id: params.appointmentId } });
+    } else {
+        // Find by criteria (latest confirmed appointment for this person/day)
+        appointment = await (db as any).appointment.findFirst({
+            where: {
+                clientId: params.clientId,
+                callerName: params.callerName,
+                date: params.date,
+                time: params.time,
+                status: "CONFIRMED"
+            },
+            orderBy: { createdAt: 'desc' }
+        });
+
+        // Try searching by phone if name didn't work
+        if (!appointment && (params.callerPhone || params.callerName)) {
+            appointment = await (db as any).appointment.findFirst({
+                where: {
+                    clientId: params.clientId,
+                    date: params.date,
+                    status: "CONFIRMED",
+                    OR: [
+                        { callerPhone: params.callerPhone },
+                        { callerName: params.callerName }
+                    ]
+                },
+                orderBy: { createdAt: 'desc' }
+            });
+        }
+    }
+
+    if (!appointment) throw new Error("Cita no encontrada");
 
     const client = await db.client.findUnique({
         where: { id: params.clientId },
@@ -556,7 +595,7 @@ export async function cancelAppointment(params: {
     }
 
     await (db as any).appointment.update({
-        where: { id: params.appointmentId },
+        where: { id: appointment.id },
         data: { status: "CANCELLED" }
     });
 
