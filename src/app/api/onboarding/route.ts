@@ -107,6 +107,13 @@ export async function POST(req: NextRequest) {
         updates.transferPhone = data.transferPhone;
     }
 
+    if (step === 5) {
+        updates.wantsGoogleCalendar = !!data.wantsGoogleCalendar;
+        updates.wantsMicrosoftOutlook = !!data.wantsMicrosoftOutlook;
+        updates.wantsCRM = !!data.wantsCRM;
+        updates.wantsPMS = !!data.wantsPMS;
+    }
+
     await prisma.client.update({
         where: { id: client.id },
         data: updates,

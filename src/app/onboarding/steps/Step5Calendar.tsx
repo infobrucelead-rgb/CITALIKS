@@ -1,6 +1,6 @@
 "use client";
-import { useState } from "react";
-import Link from "next/link";
+import React, { useState } from "react";
+import { Calendar, Mail, Zap, Database, CheckCircle2 } from "lucide-react";
 
 export default function Step5Calendar({
     data,
@@ -11,55 +11,64 @@ export default function Step5Calendar({
     onNext: (d: any) => void;
     onBack: () => void;
 }) {
-    const [isConnected, setIsConnected] = useState(!!data?.googleAccessToken);
+    const [preferences, setPreferences] = useState({
+        wantsGoogleCalendar: data?.wantsGoogleCalendar ?? true,
+        wantsMicrosoftOutlook: data?.wantsMicrosoftOutlook ?? false,
+        wantsCRM: data?.wantsCRM ?? false,
+        wantsPMS: data?.wantsPMS ?? false,
+    });
 
-    const handleConnect = () => {
-        const searchParams = new URLSearchParams(window.location.search);
-        const token = searchParams.get("token");
-        window.location.href = `/api/google/connect${token ? `?token=${token}` : ""}`;
+    const togglePref = (key: keyof typeof preferences) => {
+        setPreferences(prev => ({ ...prev, [key]: !prev[key] }));
+    };
+
+    const handleNext = () => {
+        onNext(preferences);
     };
 
     return (
         <div className="space-y-6">
             <div>
-                <h2 className="text-2xl font-bold mb-1">Conecta tu agenda</h2>
+                <h2 className="text-2xl font-bold mb-1">Integraciones</h2>
                 <p className="text-white/50 text-sm">
-                    El asistente leerá y escribirá en tu Google Calendar para gestionar las citas.
+                    Indícanos qué sistemas utilizas. Nuestro equipo de soporte terminará de configurarlos por ti para que no tengas que preocuparte de la parte técnica.
                 </p>
             </div>
 
-            <div className="space-y-6 py-4">
-                <div className="flex flex-col items-center justify-center p-8 rounded-3xl bg-white/5 border border-white/10 border-dashed">
-                    <div className="w-16 h-16 rounded-full bg-white/10 flex items-center justify-center mb-4">
-                        <img src="https://upload.wikimedia.org/wikipedia/commons/a/a5/Google_Calendar_icon_%282020%29.svg" alt="Google Cal" className="w-8 h-8" />
-                    </div>
-                    <h3 className="text-lg font-semibold mb-2">Google Calendar</h3>
-                    <p className="text-xs text-white/40 text-center max-w-[280px] mb-6">
-                        {isConnected
-                            ? "Tu cuenta ya está vinculada correctamente."
-                            : "Necesitamos acceso para ver tu disponibilidad y crear eventos."}
-                    </p>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 py-2">
+                <SelectionCard
+                    icon={<Calendar className="text-blue-400" size={20} />}
+                    title="Google Calendar"
+                    active={preferences.wantsGoogleCalendar}
+                    onClick={() => togglePref("wantsGoogleCalendar")}
+                />
+                <SelectionCard
+                    icon={<Mail className="text-sky-400" size={20} />}
+                    title="Microsoft Outlook"
+                    active={preferences.wantsMicrosoftOutlook}
+                    onClick={() => togglePref("wantsMicrosoftOutlook")}
+                />
+                <SelectionCard
+                    icon={<Zap className="text-amber-400" size={20} />}
+                    title="CRM (HubSpot, etc)"
+                    active={preferences.wantsCRM}
+                    onClick={() => togglePref("wantsCRM")}
+                />
+                <SelectionCard
+                    icon={<Database className="text-emerald-400" size={20} />}
+                    title="PMS / Software Gestión"
+                    active={preferences.wantsPMS}
+                    onClick={() => togglePref("wantsPMS")}
+                />
+            </div>
 
-                    {isConnected ? (
-                        <div className="px-8 py-3 rounded-xl bg-green-500/20 text-green-400 font-bold border border-green-500/30 flex items-center gap-2">
-                            <span>✓</span> ¡Cuenta conectada!
-                        </div>
-                    ) : (
-                        <button
-                            onClick={handleConnect}
-                            className="px-8 py-3 rounded-xl bg-white text-black font-bold hover:bg-white/90 transition-all flex items-center gap-2"
-                        >
-                            Conectar ahora
-                        </button>
-                    )}
+            <div className="flex items-start gap-3 p-4 bg-blue-500/10 border border-blue-500/20 rounded-xl">
+                <div className="w-5 h-5 rounded-full bg-blue-500/20 flex items-center justify-center shrink-0 mt-0.5">
+                    <span className="text-[10px] text-blue-400 font-bold">i</span>
                 </div>
-
-                <div className="flex items-start gap-3 p-4 bg-yellow-500/10 border border-yellow-500/20 rounded-xl">
-                    <span className="text-xl">💡</span>
-                    <p className="text-[11px] text-yellow-200/70 leading-relaxed">
-                        Tras conectar tu cuenta, Google te pedirá permisos. Una vez aceptados, volverás automáticamente aquí para finalizar.
-                    </p>
-                </div>
+                <p className="text-[11px] text-blue-200/70 leading-relaxed">
+                    Una vez finalices el registro, un técnico se pondrá en contacto contigo para sincronizar las cuentas de forma segura si es necesario.
+                </p>
             </div>
 
             <div className="flex gap-3">
@@ -70,26 +79,31 @@ export default function Step5Calendar({
                     ← Atrás
                 </button>
                 <button
-                    onClick={() => onNext({})}
-                    disabled={!isConnected} // In real app, we verify session or tokens
-                    className={`flex-1 py-3 rounded-xl font-semibold transition-all ${isConnected
-                        ? "bg-blue-600 hover:bg-blue-500 text-white"
-                        : "bg-white/5 text-white/20 cursor-not-allowed border border-white/5"
-                        }`}
+                    onClick={handleNext}
+                    className="flex-1 py-3 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-semibold transition-all shadow-lg shadow-blue-600/20"
                 >
-                    Ya lo he conectado →
-                </button>
-            </div>
-
-            {/* Simulation helper: manually enable continue if the user just wants to see progress */}
-            <div className="text-center pt-2">
-                <button
-                    onClick={() => setIsConnected(true)}
-                    className="text-[10px] text-white/20 hover:text-white/40 underline italic"
-                >
-                    Simular conexión (solo para desarrollo)
+                    Continuar →
                 </button>
             </div>
         </div>
+    );
+}
+
+function SelectionCard({ icon, title, active, onClick }: { icon: React.ReactNode, title: string, active: boolean, onClick: () => void }) {
+    return (
+        <button
+            onClick={onClick}
+            className={`flex items-center gap-4 p-4 rounded-2xl border transition-all text-left ${active ? "bg-blue-600/10 border-blue-600/30 ring-1 ring-blue-600/20" : "bg-white/[0.03] border-white/5 hover:border-white/10"
+                }`}
+        >
+            <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${active ? "bg-blue-600 text-white" : "bg-white/5 text-white/40"}`}>
+                {icon}
+            </div>
+            <div className="flex-1">
+                <p className={`text-sm font-bold ${active ? "text-white" : "text-white/60"}`}>{title}</p>
+                <p className="text-[10px] text-white/30">{active ? "Seleccionado" : "Click para conectar"}</p>
+            </div>
+            {active && <CheckCircle2 size={16} className="text-blue-500" />}
+        </button>
     );
 }

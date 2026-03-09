@@ -86,6 +86,12 @@ model Client {
   crmUrl      String? @db.Text
   crmActive   Boolean @default(false)
 
+  // Integration Intent (Onboarding)
+  wantsGoogleCalendar   Boolean @default(false)
+  wantsMicrosoftOutlook Boolean @default(false)
+  wantsCRM              Boolean @default(false)
+  wantsPMS              Boolean @default(false)
+
   // Relaciones
   staff     Staff[]
   services  Service[]

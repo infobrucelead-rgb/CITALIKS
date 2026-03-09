@@ -5,7 +5,7 @@ import {
     Settings, LogOut, Clock, ShieldCheck, Plus,
     Trash2, Search, UserPlus, Image as ImageIcon,
     ExternalLink, Brain, Loader2, Edit2, ChevronRight, ChevronDown, DollarSign, X,
-    LifeBuoy, Send, MessageSquare, AlertCircle, CheckCircle2, Zap
+    LifeBuoy, Send, MessageSquare, AlertCircle, CheckCircle2, Zap, Mail
 } from "lucide-react";
 import { useClerk, UserButton } from "@clerk/nextjs";
 import { DAY_NAMES, formatDuration, formatPrice } from "@/lib/utils";
@@ -1953,303 +1953,119 @@ function SupportTab({ client }: { client: any }) {
     );
 }
 
-function IntegrationsTab({ client, onUpdate }: { client: any, onUpdate: () => void }) {
-    const [isSaving, setIsSaving] = useState(false);
-    const [pmsData, setPmsData] = useState({
-        pmsProvider: client.pmsProvider || "CLOUDBEDS",
-        pmsApiKey: client.pmsApiKey || "",
-        pmsUrl: client.pmsUrl || "",
-        pmsActive: client.pmsActive || false,
-        icalUrl: client.icalUrl || "",
-        activeCalendarProvider: client.activeCalendarProvider || "GOOGLE",
-        crmProvider: client.crmProvider || "HUBSPOT",
-        crmApiKey: client.crmApiKey || "",
-        crmUrl: client.crmUrl || "",
-        crmActive: client.crmActive || false
-    });
-
-    const handleSave = async () => {
-        setIsSaving(true);
-        try {
-            const res = await fetch('/api/client/update', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(pmsData)
-            });
-            if (res.ok) {
-                onUpdate();
-                alert("Configuración de integración guardada");
-            }
-        } catch (err) {
-            console.error(err);
-        } finally {
-            setIsSaving(false);
-        }
-    };
-
+function IntegrationsTab({ client }: { client: any; onUpdate: () => void }) {
     return (
         <div className="animate-fade-in">
             <Header
                 title="Integraciones & Ecosistema"
-                subtitle="Conecta CitaLiks con tus herramientas externas de gestión y calendario."
-                actions={
-                    <button
-                        onClick={handleSave}
-                        disabled={isSaving}
-                        className="bg-emerald-600 hover:bg-emerald-500 text-white px-6 py-2 rounded-xl text-sm font-bold shadow-lg shadow-emerald-500/20 transition-all disabled:opacity-50"
-                    >
-                        {isSaving ? "Guardando..." : "Guardar Configuración"}
-                    </button>
-                }
+                subtitle="Estado de tus conexiones con herramientas externas."
             />
 
-            <div className="grid grid-cols-1 xl:grid-cols-2 gap-8">
-                {/* Provider Selection */}
-                <div className="glass rounded-[2rem] p-8 border-white/5 bg-blue-600/5 relative overflow-hidden group col-span-full">
-                    <div className="absolute top-0 right-0 w-64 h-64 bg-blue-600/10 rounded-full blur-3xl -mr-32 -mt-32 transition-all group-hover:bg-blue-600/20"></div>
-                    <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
-                        <div className="max-w-md">
-                            <h3 className="text-xl font-bold mb-2 flex items-center gap-2">
-                                <ShieldCheck size={24} className="text-blue-400" /> Origen de Datos Maestro
-                            </h3>
-                            <p className="text-sm text-white/40 leading-relaxed">
-                                Selecciona qué herramienta debe usar CitaLiks como "Verdad Absoluta" para comprobar tu disponibilidad en tiempo real.
-                            </p>
-                        </div>
-                        <div className="w-full md:w-64">
-                            <select
-                                value={pmsData.activeCalendarProvider}
-                                onChange={(e) => setPmsData({ ...pmsData, activeCalendarProvider: e.target.value })}
-                                className="w-full bg-[#0a0a0f] border border-white/10 rounded-2xl px-5 py-4 text-sm font-bold text-blue-400 focus:border-blue-500 outline-none transition-all appearance-none cursor-pointer"
-                            >
-                                <option value="GOOGLE">Google Calendar</option>
-                                <option value="MICROSOFT">Microsoft Outlook</option>
-                                <option value="ICAL">Apple / iCloud (iCal)</option>
-                                <option value="PMS">Herramienta PMS (Cloudbeds...)</option>
-                                <option value="NONE">Solo Local (CitaLiks)</option>
-                            </select>
-                        </div>
-                    </div>
-                </div>
-
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                 {/* Google Calendar */}
-                <div className="glass rounded-[2rem] p-8 border-white/5 space-y-6">
-                    <div className="flex items-center justify-between mb-4">
-                        <div className="flex items-center gap-4">
-                            <div className="w-12 h-12 rounded-2xl bg-blue-500/10 flex items-center justify-center text-blue-400">
-                                <Plus size={24} />
-                            </div>
-                            <div>
-                                <h4 className="font-bold text-lg">Google Calendar</h4>
-                                <p className="text-xs text-white/30">Sincronización bidireccional native</p>
-                            </div>
-                        </div>
-                        <div className={`px-3 py-1 rounded-lg text-[10px] font-black tracking-widest uppercase ${client.googleAccessToken ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/20' : 'bg-red-500/10 text-red-400 border border-red-500/10'}`}>
-                            {client.googleAccessToken ? 'CONECTADO' : 'DESCONECTADO'}
-                        </div>
-                    </div>
-                    <button
-                        onClick={() => window.location.href = '/api/google/connect'}
-                        className="w-full py-4 bg-white/5 hover:bg-white/10 border border-white/10 rounded-2xl text-sm font-bold transition-all flex items-center justify-center gap-2"
-                    >
-                        {client.googleAccessToken ? 'Re-vincular Cuenta' : 'Conectar Google Calendar'}
-                    </button>
-                </div>
+                <IntegrationCard
+                    title="Google Calendar"
+                    description="Sincronización bidireccional de citas."
+                    active={!!client.googleAccessToken}
+                    icon={<Calendar className="text-blue-400" />}
+                    wants={client.wantsGoogleCalendar}
+                />
 
                 {/* Microsoft Outlook */}
-                <div className="glass rounded-[2rem] p-8 border-white/5 space-y-6 opacity-60 group hover:opacity-100 transition-opacity">
-                    <div className="flex items-center justify-between mb-4">
-                        <div className="flex items-center gap-4">
-                            <div className="w-12 h-12 rounded-2xl bg-blue-400/10 flex items-center justify-center text-blue-400">
-                                <ExternalLink size={24} />
-                            </div>
-                            <div>
-                                <h4 className="font-bold text-lg">Microsoft Outlook</h4>
-                                <p className="text-xs text-white/30">Office 365, Outlook.com, Live</p>
-                            </div>
-                        </div>
-                        <div className={`px-3 py-1 rounded-lg text-[10px] font-black tracking-widest uppercase ${client.microsoftAccessToken ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/20' : 'bg-white/10 text-white/20 border border-white/10'}`}>
-                            {client.microsoftAccessToken ? 'CONECTADO' : 'PRÓXIMAMENTE'}
-                        </div>
-                    </div>
+                <IntegrationCard
+                    title="Microsoft Outlook"
+                    description="Office 365, Outlook.com, Live."
+                    active={!!client.microsoftAccessToken}
+                    icon={<Mail size={24} className="text-blue-400" />}
+                    wants={client.wantsMicrosoftOutlook}
+                />
+
+                {/* PMS / Sistema de Gestión */}
+                <IntegrationCard
+                    title="PMS / Gestión"
+                    description="Conexión con Cloudbeds u otros sistemas."
+                    active={client.pmsActive}
+                    icon={<Activity className="text-emerald-400" />}
+                    wants={client.wantsPMS}
+                />
+
+                {/* CRM / HubSpot */}
+                <IntegrationCard
+                    title="CRM / HubSpot"
+                    description="Sincronización de leads y actividades."
+                    active={client.crmActive}
+                    icon={<Zap className="text-purple-400" />}
+                    wants={client.wantsCRM}
+                />
+            </div>
+
+            <div className="mt-12 p-8 glass rounded-[2rem] border-white/5 bg-blue-600/5 text-center">
+                <h3 className="text-xl font-bold mb-4">¿Necesitas ayuda con una integración?</h3>
+                <p className="text-white/40 mb-6 max-w-lg mx-auto">
+                    Nuestro equipo técnico se encarga de configurar las APIs y tokens por ti para asegurar que todo funcione perfectamente.
+                </p>
+                <div className="flex flex-col sm:flex-row justify-center gap-4">
                     <button
-                        onClick={() => alert("Próximamente disponible. Estamos validando la aplicación con Microsoft.")}
-                        className="w-full py-4 bg-white/5 border border-white/5 rounded-2xl text-sm font-bold text-white/20 cursor-not-allowed flex items-center justify-center gap-2"
+                        onClick={() => window.open("mailto:neuralads.mkt@gmail.com")}
+                        className="px-8 py-3 bg-blue-600 hover:bg-blue-500 text-white rounded-2xl font-bold transition-all"
                     >
-                        Conectar Microsoft Account
+                        Contactar Soporte
+                    </button>
+                    <button
+                        onClick={() => {
+                            const url = `${window.location.origin}/api/calendar/feed/${client.id}`;
+                            navigator.clipboard.writeText(url);
+                            alert("URL de iCal copiada al portapapeles.");
+                        }}
+                        className="px-8 py-3 bg-white/5 hover:bg-white/10 text-white border border-white/10 rounded-2xl font-bold transition-all flex items-center justify-center gap-2"
+                    >
+                        <Calendar size={18} /> Copiar mi iCal
                     </button>
                 </div>
+            </div>
+        </div>
+    );
+}
 
-                {/* iCal Feed Import */}
-                <div className="glass rounded-[2rem] p-8 border-white/5 col-span-full space-y-6 relative overflow-hidden">
-                    <div className="flex items-center gap-4 mb-2">
-                        <div className="w-12 h-12 rounded-2xl bg-indigo-500/10 flex items-center justify-center text-indigo-400">
-                            <Calendar size={24} />
-                        </div>
-                        <div>
-                            <h4 className="font-bold text-lg text-indigo-400">Importación Apple / iCloud (iCal Feed)</h4>
-                            <p className="text-sm text-white/40">Sincroniza bloqueos de tiempo desde cualquier calendario que genere un feed público (.ics)</p>
-                        </div>
+function IntegrationCard({ title, description, active, icon, wants }: { title: string, description: string, active: boolean, icon: any, wants: boolean }) {
+    return (
+        <div className="glass rounded-[2rem] p-8 border-white/5 space-y-6 relative overflow-hidden group">
+            <div className={`absolute top-0 right-0 w-32 h-32 rounded-full blur-3xl -mr-16 -mt-16 transition-all ${active ? 'bg-emerald-500/10' : 'bg-blue-500/5'}`} />
+
+            <div className="flex items-center justify-between mb-4 relative z-10">
+                <div className="flex items-center gap-4">
+                    <div className={`w-12 h-12 rounded-2xl flex items-center justify-center ${active ? 'bg-emerald-500/10 text-emerald-400' : 'bg-white/5 text-white/20'}`}>
+                        {icon}
                     </div>
-                    <div className="space-y-2">
-                        <label className="text-[10px] uppercase font-bold text-white/40 tracking-widest block px-1">URL Pública del Calendario</label>
-                        <input
-                            type="text"
-                            value={pmsData.icalUrl}
-                            onChange={(e) => setPmsData({ ...pmsData, icalUrl: e.target.value })}
-                            placeholder="https://p01-caldav.icloud.com/published/2/..."
-                            className="w-full bg-white/5 border border-white/10 rounded-2xl px-5 py-4 text-sm focus:border-indigo-500 outline-none transition-all font-mono"
-                        />
-                        <p className="text-[10px] text-white/20 px-1 italic">
-                            Nota: El feed de iCal es de solo lectura. CitaLiks usará esta información para no agendar citas en momentos ocupados.
-                        </p>
+                    <div>
+                        <h4 className="font-bold text-lg">{title}</h4>
+                        <p className="text-xs text-white/30">{description}</p>
                     </div>
                 </div>
-
-                {/* PMS Configuration */}
-                <div className="glass rounded-[2rem] p-8 border-white/5 col-span-full space-y-8">
-                    <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 border-b border-white/5 pb-8">
-                        <div>
-                            <h4 className="text-xl font-bold mb-1">Configuración PMS (Property Management System)</h4>
-                            <p className="text-sm text-white/40">Ideal para hoteles, clínicas y centros con softwares especializados.</p>
-                        </div>
-                        <div className="flex items-center gap-3 bg-white/5 p-2 rounded-2xl border border-white/10">
-                            <span className="text-[10px] font-bold uppercase tracking-widest ml-3 text-white/40">Estado PMS:</span>
-                            <button
-                                onClick={() => setPmsData({ ...pmsData, pmsActive: !pmsData.pmsActive })}
-                                className={`px-6 py-2 rounded-xl text-[10px] font-black tracking-widest uppercase transition-all ${pmsData.pmsActive ? 'bg-emerald-500 text-black shadow-lg shadow-emerald-500/20' : 'bg-white/10 text-white/40 hover:bg-white/20'}`}
-                            >
-                                {pmsData.pmsActive ? 'ACTIVO' : 'INACTIVO'}
-                            </button>
-                        </div>
-                    </div>
-
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                        <div className="space-y-2">
-                            <label className="text-[10px] uppercase font-bold text-white/40 tracking-widest block px-1">Proveedor PMS</label>
-                            <select
-                                value={pmsData.pmsProvider}
-                                onChange={(e) => setPmsData({ ...pmsData, pmsProvider: e.target.value })}
-                                className="w-full bg-white/5 border border-white/10 rounded-2xl px-5 py-4 text-sm focus:border-blue-500 outline-none transition-all appearance-none cursor-pointer"
-                            >
-                                <option value="CLOUDBEDS" className="bg-[#0f0f18]">Cloudbeds</option>
-                                <option value="MEWS" className="bg-[#0f0f18]" disabled>Mews (Próximamente)</option>
-                                <option value="AMADEUS" className="bg-[#0f0f18]" disabled>Amadeus (Próximamente)</option>
-                            </select>
-                        </div>
-                        <div className="space-y-2 lg:col-span-2">
-                            <label className="text-[10px] uppercase font-bold text-white/40 tracking-widest block px-1">URL de API / Servidor</label>
-                            <input
-                                type="text"
-                                value={pmsData.pmsUrl}
-                                onChange={(e) => setPmsData({ ...pmsData, pmsUrl: e.target.value })}
-                                placeholder="https://api.cloudbeds.com/v1.1/..."
-                                className="w-full bg-white/5 border border-white/10 rounded-2xl px-5 py-4 text-sm focus:border-blue-500 outline-none transition-all font-mono"
-                            />
-                        </div>
-                        <div className="space-y-2 lg:col-span-3">
-                            <label className="text-[10px] uppercase font-bold text-white/40 tracking-widest block px-1 flex justify-between items-center">
-                                <span>API Key / Token Privado</span>
-                                <span className="text-amber-500/60 lowercase italic font-normal tracking-tight">Nunca compartas esta clave con nadie.</span>
-                            </label>
-                            <div className="relative">
-                                <input
-                                    type="password"
-                                    value={pmsData.pmsApiKey}
-                                    onChange={(e) => setPmsData({ ...pmsData, pmsApiKey: e.target.value })}
-                                    className="w-full bg-white/5 border border-white/10 rounded-2xl px-5 py-4 text-sm focus:border-blue-500 outline-none transition-all font-mono"
-                                />
-                                <ShieldCheck size={18} className="absolute right-5 top-1/2 -translate-y-1/2 text-white/10" />
-                            </div>
-                        </div>
-                    </div>
-
-                    <div className="p-6 rounded-3xl bg-amber-500/5 border border-amber-500/10">
-                        <div className="flex gap-4">
-                            <AlertCircle size={24} className="text-amber-500 shrink-0" />
-                            <div className="space-y-1">
-                                <p className="text-sm font-bold text-amber-500">¿Cómo funciona la integración PMS?</p>
-                                <p className="text-xs text-amber-500/60 leading-relaxed">
-                                    Al activar el modo PMS, CitaLiks consultará directamente tu software de gestión antes de confirmar cualquier cita.
-                                    Asegúrate de que la URL y la API Key sean correctas para evitar fallos en la IA durante las llamadas.
-                                </p>
-                            </div>
-                        </div>
-                    </div>
+                <div className={`px-3 py-1 rounded-lg text-[10px] font-black tracking-widest uppercase border ${active ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20' :
+                    wants ? 'bg-amber-500/10 text-amber-400 border-amber-500/20' : 'bg-white/5 text-white/20 border-white/10'
+                    }`}>
+                    {active ? 'ACTIVA' : wants ? 'EN PROCESO' : 'NO SOLICITADA'}
                 </div>
+            </div>
 
-                {/* CRM Configuration */}
-                <div className="glass rounded-[2rem] p-8 border-white/5 col-span-full space-y-8 bg-purple-600/5">
-                    <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 border-b border-white/5 pb-8">
-                        <div>
-                            <h4 className="text-xl font-bold mb-1 text-purple-400">Configuración CRM</h4>
-                            <p className="text-sm text-white/40">Sincroniza contactos, leads y actividades de llamadas automáticamente.</p>
-                        </div>
-                        <div className="flex items-center gap-3 bg-white/5 p-2 rounded-2xl border border-white/10">
-                            <span className="text-[10px] font-bold uppercase tracking-widest ml-3 text-white/40">Estado CRM:</span>
-                            <button
-                                onClick={() => setPmsData({ ...pmsData, crmActive: !pmsData.crmActive })}
-                                className={`px-6 py-2 rounded-xl text-[10px] font-black tracking-widest uppercase transition-all ${pmsData.crmActive ? 'bg-purple-500 text-white shadow-lg shadow-purple-500/20' : 'bg-white/10 text-white/40 hover:bg-white/20'}`}
-                            >
-                                {pmsData.crmActive ? 'ACTIVO' : 'INACTIVO'}
-                            </button>
-                        </div>
+            <div className="relative z-10">
+                {active ? (
+                    <div className="flex items-center gap-2 text-emerald-400/60 text-xs font-medium">
+                        <CheckCircle2 size={14} />
+                        Sincronización funcionando correctamente
                     </div>
-
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                        <div className="space-y-2">
-                            <label className="text-[10px] uppercase font-bold text-white/40 tracking-widest block px-1">Proveedor CRM</label>
-                            <select
-                                value={pmsData.crmProvider}
-                                onChange={(e) => setPmsData({ ...pmsData, crmProvider: e.target.value })}
-                                className="w-full bg-white/5 border border-white/10 rounded-2xl px-5 py-4 text-sm focus:border-purple-500 outline-none transition-all appearance-none cursor-pointer"
-                            >
-                                <option value="HUBSPOT" className="bg-[#0f0f18]">HubSpot</option>
-                                <option value="PIPEDRIVE" className="bg-[#0f0f18]">Pipedrive</option>
-                                <option value="SALESFORCE" className="bg-[#0f0f18]" disabled>Salesforce (Próximamente)</option>
-                                <option value="ZOHO" className="bg-[#0f0f18]" disabled>Zoho CRM (Próximamente)</option>
-                            </select>
-                        </div>
-                        <div className="space-y-2 lg:col-span-2">
-                            <label className="text-[10px] uppercase font-bold text-white/40 tracking-widest block px-1">Endpoint API / Tenant (Opcional)</label>
-                            <input
-                                type="text"
-                                value={pmsData.crmUrl}
-                                onChange={(e) => setPmsData({ ...pmsData, crmUrl: e.target.value })}
-                                placeholder="https://api.hubapi.com/..."
-                                className="w-full bg-white/5 border border-white/10 rounded-2xl px-5 py-4 text-sm focus:border-purple-500 outline-none transition-all font-mono"
-                            />
-                        </div>
-                        <div className="space-y-2 lg:col-span-3">
-                            <label className="text-[10px] uppercase font-bold text-white/40 tracking-widest block px-1 flex justify-between items-center">
-                                <span>API Key / Client Secret</span>
-                                <span className="text-purple-500/60 lowercase italic font-normal tracking-tight">Access Token personal o clave de aplicación privada.</span>
-                            </label>
-                            <div className="relative">
-                                <input
-                                    type="password"
-                                    value={pmsData.crmApiKey}
-                                    onChange={(e) => setPmsData({ ...pmsData, crmApiKey: e.target.value })}
-                                    className="w-full bg-white/5 border border-white/10 rounded-2xl px-5 py-4 text-sm focus:border-purple-500 outline-none transition-all font-mono"
-                                />
-                                <ShieldCheck size={18} className="absolute right-5 top-1/2 -translate-y-1/2 text-white/10" />
-                            </div>
-                        </div>
+                ) : wants ? (
+                    <div className="flex items-center gap-2 text-amber-500/60 text-xs font-medium">
+                        <Loader2 size={14} className="animate-spin" />
+                        Tu asistente está esperando la configuración del administrador
                     </div>
-
-                    <div className="p-6 rounded-3xl bg-purple-500/5 border border-purple-500/10">
-                        <div className="flex gap-4">
-                            <Zap size={24} className="text-purple-400 shrink-0" />
-                            <div className="space-y-1">
-                                <p className="text-sm font-bold text-purple-400">Automatización Inteligente</p>
-                                <p className="text-xs text-purple-400/60 leading-relaxed">
-                                    Al activar esta integración, CitaLiks creará automáticamente un Contacto o Lead cada vez que un nuevo cliente llame,
-                                    y adjuntará el resumen de la llamada y la cita agendada a su ficha en tiempo real.
-                                </p>
-                            </div>
-                        </div>
+                ) : (
+                    <div className="flex items-center gap-2 text-white/20 text-xs font-medium">
+                        <AlertCircle size={14} />
+                        No has solicitado esta integración todavía
                     </div>
-                </div>
+                )}
             </div>
         </div>
     );

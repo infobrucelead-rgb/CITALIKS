@@ -1127,7 +1127,12 @@ export default function AdminDashboardContent({ clients: initialClients, admin: 
                                             { field: "calendarId", label: "ID Calendario Google", icon: <Calendar size={14} /> },
                                             { field: "retellAgentId", label: "Retell Agent ID", icon: <Database size={14} /> },
                                             { field: "databaseUrl", label: "URL de Base de Datos", icon: <Database size={14} /> },
-                                            { field: "googleAccessToken", label: "Token Google (Dev Mock)", icon: <Settings size={14} /> },
+                                            { field: "googleAccessToken", label: "Google Access Token", icon: <Settings size={14} /> },
+                                            { field: "microsoftAccessToken", label: "Microsoft Access Token", icon: <Mail size={14} /> },
+                                            { field: "crmApiKey", label: "CRM API Key", icon: <Database size={14} /> },
+                                            { field: "crmUrl", label: "CRM API URL", icon: <Zap size={14} /> },
+                                            { field: "pmsApiKey", label: "PMS API Key", icon: <Database size={14} /> },
+                                            { field: "pmsUrl", label: "PMS API URL", icon: <Zap size={14} /> },
                                         ].map(({ field, label, icon }) => (
                                             <EditableField
                                                 key={field}
@@ -1165,6 +1170,20 @@ export default function AdminDashboardContent({ clients: initialClients, admin: 
                                             </div>
                                         )}
                                         <StatusBadge label="Agente Retell" value={selectedClient.retellAgentId ? "Vinculado" : "Sin agente"} active={!!selectedClient.retellAgentId} />
+                                    </div>
+
+                                    {/* Integration Preferences (Wants) */}
+                                    <div className="mt-8 space-y-4">
+                                        <h3 className="text-sm font-black uppercase tracking-widest text-white/30 flex items-center gap-2">
+                                            <Zap size={16} className="text-amber-400" />
+                                            Interés en Integraciones (Onboarding)
+                                        </h3>
+                                        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                                            <PreferenceBadge label="Google Calendar" active={selectedClient.wantsGoogleCalendar} />
+                                            <PreferenceBadge label="Microsoft Outlook" active={selectedClient.wantsMicrosoftOutlook} />
+                                            <PreferenceBadge label="CRM / HubSpot" active={selectedClient.wantsCRM} />
+                                            <PreferenceBadge label="PMS / Gestión" active={selectedClient.wantsPMS} />
+                                        </div>
                                     </div>
                                 </>
                             )}
@@ -1347,7 +1366,7 @@ export default function AdminDashboardContent({ clients: initialClients, admin: 
                                     <div className="flex flex-col lg:flex-row lg:items-start justify-between gap-6">
                                         <div className="flex gap-4 flex-1">
                                             <div className={`w-12 h-12 rounded-2xl flex items-center justify-center shrink-0 ${ticket.status === 'resolved' ? 'bg-emerald-500/10 text-emerald-400' :
-                                                    ticket.status === 'open' ? 'bg-blue-500/10 text-blue-400' : 'bg-amber-500/10 text-amber-400'
+                                                ticket.status === 'open' ? 'bg-blue-500/10 text-blue-400' : 'bg-amber-500/10 text-amber-400'
                                                 }`}>
                                                 {ticket.status === 'resolved' ? <CheckCircle2 size={24} /> :
                                                     ticket.status === 'open' ? <Activity size={24} /> : <Clock size={24} />}
@@ -1356,7 +1375,7 @@ export default function AdminDashboardContent({ clients: initialClients, admin: 
                                                 <div className="flex flex-wrap items-center gap-2 mb-2">
                                                     <h4 className="font-bold text-lg truncate">{ticket.subject}</h4>
                                                     <span className={`px-2 py-0.5 rounded-lg text-[10px] uppercase font-black tracking-widest ${ticket.category === 'tecnico' ? 'bg-red-500/20 text-red-400' :
-                                                            ticket.category === 'integracion' ? 'bg-violet-500/20 text-violet-400' : 'bg-white/10 text-white/40'
+                                                        ticket.category === 'integracion' ? 'bg-violet-500/20 text-violet-400' : 'bg-white/10 text-white/40'
                                                         }`}>
                                                         {ticket.category}
                                                     </span>
@@ -1539,6 +1558,22 @@ function StatusBadge({ label, value, active }: { label: string; value: string; a
             <span className={`w-full max-w-[120px] px-3 py-1.5 rounded-lg text-[9px] font-black uppercase tracking-wider flex items-center justify-center transition-all ${active ? "bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 shadow-[0_0_15px_rgba(52,211,153,0.05)]" : "bg-red-500/10 text-red-400 border border-red-500/20 shadow-[0_0_15px_rgba(239,68,68,0.05)]"}`}>
                 {value}
             </span>
+        </div>
+    );
+}
+
+function PreferenceBadge({ label, active }: { label: string; active: boolean }) {
+    return (
+        <div className={`p-3 rounded-2xl border flex flex-col items-center justify-center text-center transition-all ${active ? "bg-blue-600/10 border-blue-600/20" : "bg-white/[0.02] border-white/5 opacity-40"}`}>
+            <p className="text-[9px] uppercase font-black text-white/40 tracking-widest mb-2">{label}</p>
+            {active ? (
+                <div className="flex items-center gap-1.5 text-blue-400">
+                    <CheckCircle2 size={12} />
+                    <span className="text-[10px] font-black uppercase">Solicitado</span>
+                </div>
+            ) : (
+                <span className="text-[10px] font-black uppercase text-white/20">No interés</span>
+            )}
         </div>
     );
 }
