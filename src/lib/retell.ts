@@ -1,7 +1,7 @@
 import Retell from "retell-sdk";
 
 export const retell = new Retell({
-    apiKey: process.env.RETELL_API_KEY!,
+    apiKey: process.env.RETELL_API_KEY || "build_mode_no_api_key",
 });
 
 export interface AgentConfig {
