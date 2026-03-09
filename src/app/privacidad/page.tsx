@@ -1,6 +1,6 @@
 import React from "react";
 import Link from "next/link";
-import { Shield, ArrowLeft, Mail, Lock, Eye, FileText, Globe, Bell, UserCheck, Share2, Clock, Trash2, Database, AlertTriangle } from "lucide-react";
+import { Shield, ArrowLeft, Mail, Lock, Eye, Globe, UserCheck, Share2, Clock, AlertTriangle } from "lucide-react";
 
 export default function PrivacyPolicyPage() {
     return (
