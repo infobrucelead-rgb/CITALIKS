@@ -1827,8 +1827,8 @@ function SupportTab({ client, initialData, onClearInitialData }: { client: any, 
             />
 
             {isCreating && (
-                <div className="fixed inset-0 z-[60] flex items-start md:items-center justify-center p-4 bg-black/95 backdrop-blur-md overflow-y-auto animate-in fade-in duration-300">
-                    <div className="bg-[#0f0f13] w-full max-w-lg rounded-3xl p-6 md:p-8 border border-white/10 shadow-2xl relative overflow-hidden my-auto">
+                <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/95 backdrop-blur-md animate-in fade-in duration-300">
+                    <div className="bg-[#0f0f13] w-full max-w-lg rounded-3xl p-6 md:p-8 border border-white/10 shadow-2xl relative overflow-hidden flex flex-col max-h-[90vh]">
                         <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-violet-600 to-fuchsia-600" />
 
                         <div className="flex justify-between items-center mb-6">
@@ -1838,7 +1838,7 @@ function SupportTab({ client, initialData, onClearInitialData }: { client: any, 
                             </button>
                         </div>
 
-                        <form onSubmit={handleCreateTicket} className="space-y-4 md:space-y-5">
+                        <form onSubmit={handleCreateTicket} className="space-y-4 md:space-y-5 overflow-y-auto pr-2 custom-scrollbar">
                             <div className="space-y-2">
                                 <label className="text-xs font-black uppercase tracking-widest text-white/40 ml-1">Asunto</label>
                                 <input
