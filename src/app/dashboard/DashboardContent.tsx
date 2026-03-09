@@ -1827,8 +1827,8 @@ function SupportTab({ client, initialData, onClearInitialData }: { client: any, 
             />
 
             {isCreating && (
-                <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/95 backdrop-blur-md animate-in fade-in duration-300">
-                    <div className="bg-[#0f0f13] w-full max-w-lg rounded-3xl p-6 md:p-8 border border-white/10 shadow-2xl relative overflow-hidden flex flex-col max-h-[90vh]">
+                <div className="fixed inset-0 z-[60] bg-black/95 backdrop-blur-md animate-in fade-in duration-300 overflow-y-auto">
+                    <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-[#0f0f13] w-[calc(100%-2rem)] max-w-lg rounded-3xl p-6 md:p-8 border border-white/10 shadow-2xl relative overflow-hidden flex flex-col max-h-[95vh]">
                         <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-violet-600 to-fuchsia-600" />
 
                         <div className="flex justify-between items-center mb-6">
