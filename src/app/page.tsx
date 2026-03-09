@@ -209,9 +209,9 @@ export default async function HomePage() {
                 <div className="max-w-7xl mx-auto px-8 flex flex-col md:flex-row items-center justify-between gap-4 text-sm text-white/40">
                     <p>© {new Date().getFullYear()} NeuralAds360. Todos los derechos reservados.</p>
                     <div className="flex items-center gap-6">
-                        <a href="https://neuralads360.com/privacy-policy/" target="_blank" rel="noopener noreferrer" className="hover:text-white transition-colors">
+                        <Link href="/privacidad" className="hover:text-white transition-colors">
                             Política de Privacidad
-                        </a>
+                        </Link>
                     </div>
                 </div>
             </footer>

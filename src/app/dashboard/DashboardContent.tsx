@@ -11,6 +11,17 @@ import {
 import { useClerk, UserButton } from "@clerk/nextjs";
 import { DAY_NAMES, formatDuration, formatPrice } from "@/lib/utils";
 
+const BUSINESS_TYPES = [
+    "Peluquería / Barbería",
+    "Centro de estética / Spa",
+    "Clínica / Médico",
+    "Dentista",
+    "Fisioterapia",
+    "Restaurante / Cafetería",
+    "Taller de coches",
+    "Asesoría / Gestoría",
+    "Otro",
+];
 type TabType = "overview" | "calls" | "services" | "config" | "team" | "admin" | "support" | "integrations";
 
 export default function DashboardContent({ client: initialClient }: { client: any }) {
@@ -1466,11 +1477,16 @@ function ConfigTab({ client, onUpdate }: { client: any, onUpdate: () => void }) 
                         <div className="grid grid-cols-2 gap-4">
                             <div>
                                 <label className="text-[10px] uppercase font-bold text-white/30 block mb-2">Categoría</label>
-                                <input
+                                <select
                                     value={config.businessType}
                                     onChange={(e) => setConfig({ ...config, businessType: e.target.value })}
-                                    className="w-full bg-white/5 border border-white/10 rounded-xl p-3 text-sm focus:border-blue-600 outline-none transition-all"
-                                />
+                                    className="w-full bg-white/5 border border-white/10 rounded-xl p-3 text-sm focus:border-blue-600 outline-none transition-all appearance-none cursor-pointer"
+                                >
+                                    <option value="" className="bg-[#0f0f18] text-white">Selecciona...</option>
+                                    {BUSINESS_TYPES.map((t) => (
+                                        <option key={t} value={t} className="bg-[#0f0f18] text-white">{t}</option>
+                                    ))}
+                                </select>
                             </div>
                             <div>
                                 <label className="text-[10px] uppercase font-bold text-white/30 block mb-2">Ciudad</label>
@@ -1488,51 +1504,59 @@ function ConfigTab({ client, onUpdate }: { client: any, onUpdate: () => void }) 
                         <span className="text-[9px] uppercase tracking-widest text-orange-400 border border-orange-500/20 bg-orange-500/10 px-2 py-1 rounded-full flex items-center gap-1">Solo ADMIN</span>
                     </h3>
                     <div className="space-y-4 relative group">
-                        <div className="absolute inset-0 z-10 cursor-not-allowed" title="Contacta con tu administrador para modificar estos datos"></div>
-                        <div className="opacity-60 transition-opacity">
-                            <label className="text-[10px] uppercase font-bold text-white/30 block mb-2">Nombre del asistente</label>
-                            <input
-                                value={config.agentName}
-                                disabled
-                                className="w-full bg-white/5 border border-white/10 rounded-xl p-3 text-sm outline-none transition-all"
-                            />
-                        </div>
-                        <div className="opacity-60 transition-opacity">
-                            <label className="text-[10px] uppercase font-bold text-white/30 block mb-2">Género de voz</label>
-                            <div className="relative">
-                                <select
-                                    value={config.agentVoice}
-                                    disabled
-                                    className="w-full bg-white/5 border border-white/10 rounded-xl p-3 text-sm outline-none transition-all appearance-none"
-                                >
-                                    <option value="male" className="text-black">Hombre</option>
-                                    <option value="female" className="text-black">Mujer</option>
-                                </select>
-                                <Users size={16} className="absolute right-4 top-1/2 -translate-y-1/2 text-white/20 pointer-events-none" />
+                        {/* We only wrap the read-only inputs in the relative overlay div, leaving the transfer button accessible */}
+                        <div className="relative">
+                            <div className="absolute inset-0 z-10 cursor-not-allowed" title="Contacta con tu administrador para modificar estos datos"></div>
+                            <div className="space-y-4 opacity-60">
+                                <div className="transition-opacity">
+                                    <label className="text-[10px] uppercase font-bold text-white/30 block mb-2">Nombre del asistente</label>
+                                    <input
+                                        value={config.agentName}
+                                        disabled
+                                        className="w-full bg-white/5 border border-white/10 rounded-xl p-3 text-sm outline-none transition-all"
+                                    />
+                                </div>
+                                <div className="transition-opacity">
+                                    <label className="text-[10px] uppercase font-bold text-white/30 block mb-2">Género de voz</label>
+                                    <div className="relative">
+                                        <select
+                                            value={config.agentVoice}
+                                            disabled
+                                            className="w-full bg-white/5 border border-white/10 rounded-xl p-3 text-sm outline-none transition-all appearance-none"
+                                        >
+                                            <option value="male" className="text-black">Hombre</option>
+                                            <option value="female" className="text-black">Mujer</option>
+                                        </select>
+                                        <Users size={16} className="absolute right-4 top-1/2 -translate-y-1/2 text-white/20 pointer-events-none" />
+                                    </div>
+                                </div>
+                                <div className="transition-opacity">
+                                    <label className="text-[10px] uppercase font-bold text-white/30 block mb-2">Tono de voz</label>
+                                    <div className="relative">
+                                        <select
+                                            value={config.agentTone}
+                                            disabled
+                                            className="w-full bg-white/5 border border-white/10 rounded-xl p-3 text-sm outline-none transition-all appearance-none"
+                                        >
+                                            <option value="profesional" className="text-black">Profesional</option>
+                                            <option value="cercano" className="text-black">Cercano</option>
+                                        </select>
+                                        <Settings size={16} className="absolute right-4 top-1/2 -translate-y-1/2 text-white/20 pointer-events-none" />
+                                    </div>
+                                </div>
+                                <div className="pt-2">
+                                    <label className="text-[10px] uppercase font-bold text-white/30 block mb-2">Teléfono de desvío (Humano)</label>
+                                    <input
+                                        value={config.transferPhone}
+                                        disabled
+                                        placeholder="+34 600 000 000"
+                                        className="w-full bg-white/5 border border-white/10 rounded-xl p-3 text-sm outline-none transition-all font-mono"
+                                    />
+                                </div>
                             </div>
                         </div>
-                        <div className="opacity-60 transition-opacity">
-                            <label className="text-[10px] uppercase font-bold text-white/30 block mb-2">Tono de voz</label>
-                            <div className="relative">
-                                <select
-                                    value={config.agentTone}
-                                    disabled
-                                    className="w-full bg-white/5 border border-white/10 rounded-xl p-3 text-sm outline-none transition-all appearance-none"
-                                >
-                                    <option value="profesional" className="text-black">Profesional</option>
-                                    <option value="cercano" className="text-black">Cercano</option>
-                                </select>
-                                <Settings size={16} className="absolute right-4 top-1/2 -translate-y-1/2 text-white/20 pointer-events-none" />
-                            </div>
-                        </div>
-                        <div className="pt-4 opacity-100 transition-opacity">
-                            <label className="text-[10px] uppercase font-bold text-white/30 block mb-2">Teléfono de desvío (Humano)</label>
-                            <input
-                                value={config.transferPhone}
-                                disabled
-                                placeholder="+34 600 000 000"
-                                className="w-full bg-white/5 border border-white/10 rounded-xl p-3 text-sm outline-none transition-all font-mono mb-3"
-                            />
+
+                        <div className="pt-2">
                             <button
                                 onClick={() => {
                                     const qs = new URLSearchParams({
