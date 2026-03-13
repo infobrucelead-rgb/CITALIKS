@@ -36,11 +36,11 @@ export default function DashboardContent({ client: initialClient }: { client: an
         try {
             const res = await fetch('/api/onboarding', { cache: 'no-store' });
             const data = await res.json();
-            if (data.client) {
+            if (data?.client) {
                 setClient(data.client);
                 // Update selected staff if it exists
                 if (selectedStaff) {
-                    const updatedStaff = (data.client.staff || []).find((s: any) => s.id === selectedStaff.id);
+                    const updatedStaff = (data.client?.staff || []).find((s: any) => s.id === selectedStaff.id);
                     if (updatedStaff) setSelectedStaff(updatedStaff);
                 }
             }
@@ -128,7 +128,7 @@ export default function DashboardContent({ client: initialClient }: { client: an
                         onClick={() => setActiveTab("integrations")}
                     />
 
-                    {client.role === "PLATFORM_ADMIN" && (
+                    {client?.role === "PLATFORM_ADMIN" && (
                         <div className="pt-6 mt-6 border-t border-white/5">
                             <p className="px-1 mb-2 text-[10px] uppercase font-bold text-white/20 tracking-widest opacity-0 group-hover:opacity-100 transition-opacity truncate">Platform</p>
                             <NavItem
@@ -144,9 +144,9 @@ export default function DashboardContent({ client: initialClient }: { client: an
                 <div className="border-t border-white/5 pt-6 space-y-4">
                     <div className="px-1 py-3 rounded-2xl bg-white/5 border border-white/5 text-center flex flex-col items-center justify-center min-h-[50px]">
                         <p className="text-[10px] text-white/40 uppercase font-bold mb-1 opacity-0 group-hover:opacity-100 transition-opacity hidden group-hover:block">Negocio</p>
-                        <p className="text-sm font-medium truncate opacity-0 group-hover:opacity-100 transition-opacity w-full hidden group-hover:block">{client.businessName || "Negocio"}</p>
+                        <p className="text-sm font-medium truncate opacity-0 group-hover:opacity-100 transition-opacity w-full hidden group-hover:block">{client?.businessName || "Negocio"}</p>
                         <div className="group-hover:hidden text-white/40 font-bold text-sm w-full text-center">
-                            {(client.businessName || "NG").substring(0, 2).toUpperCase()}
+                            {(client?.businessName || "NG").substring(0, 2).toUpperCase()}
                         </div>
                     </div>
                     <button
@@ -344,7 +344,7 @@ function TeamTab({ client, onUpdate, onSelectStaff }: { client: any, onUpdate: (
     const [loadingCalendars, setLoadingCalendars] = useState(false);
 
     useEffect(() => {
-        if (!client.googleAccessToken) return;
+        if (!client?.googleAccessToken) return;
         const fetchCalendars = async () => {
             setLoadingCalendars(true);
             try {
@@ -452,7 +452,7 @@ function TeamTab({ client, onUpdate, onSelectStaff }: { client: any, onUpdate: (
                                 <label className="text-[10px] uppercase font-bold text-white/30 block">Google Calendar ID</label>
                                 {loadingCalendars && <Loader2 size={12} className="animate-spin text-blue-400" />}
                             </div>
-                            {client.googleAccessToken ? (
+                            {client?.googleAccessToken ? (
                                 <div className="relative">
                                     <select
                                         value={editingStaff ? (editingStaff.googleCalendarId || "primary") : newData.googleCalendarId}
@@ -518,7 +518,7 @@ function TeamTab({ client, onUpdate, onSelectStaff }: { client: any, onUpdate: (
             )}
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {(client.staff || []).map((member: any) => (
+                {(client?.staff || []).map((member: any) => (
                     <div key={member.id} className="glass p-6 rounded-3xl group relative">
                         <div className="flex items-center gap-4 mb-4">
                             <div className="w-12 h-12 rounded-2xl bg-blue-600/20 flex items-center justify-center text-blue-400">
@@ -576,17 +576,17 @@ function ServicesTab({ client, onUpdate, selectedStaff, setSelectedStaff }: { cl
     const [localSchedules, setLocalSchedules] = useState<any[]>([]);
 
     // Services for the current context (business or specific staff)
-    const contextServices = (client.services || []).filter((s: any) =>
+    const contextServices = (client?.services || []).filter((s: any) =>
         selectedStaff ? s.staffId === selectedStaff.id : (s.staffId === null || !s.staffId)
     );
 
     // Sync local schedules when client data or selectedStaff changes
     useEffect(() => {
-        const filtered = (client.schedules || []).filter((s: any) =>
+        const filtered = (client?.schedules || []).filter((s: any) =>
             selectedStaff ? s.staffId === selectedStaff.id : (s.staffId === null || !s.staffId)
         );
         setLocalSchedules(filtered);
-    }, [client.schedules, selectedStaff]);
+    }, [client?.schedules, selectedStaff]);
 
     const handleAdd = async () => {
         try {
@@ -1043,8 +1043,13 @@ function StaffCalendar({ staffId, staffName }: { staffId: string, staffName: str
     };
 
     const getEventStyle = (event: any) => {
+        if (!event?.start || !event?.end) return { display: 'none' };
+        
         const start = new Date(event.start.dateTime || event.start.date);
         const end = new Date(event.end.dateTime || event.end.date);
+        
+        if (isNaN(start.getTime()) || isNaN(end.getTime())) return { display: 'none' };
+
         const startTotalMinutes = start.getHours() * 60 + start.getMinutes();
         const gridStartMinutes = 8 * 60;
         const top = ((startTotalMinutes - gridStartMinutes) / 60) * 80;
@@ -1057,10 +1062,12 @@ function StaffCalendar({ staffId, staffName }: { staffId: string, staffName: str
         };
     };
 
-    const isSameDay = (d1: Date, d2: Date) =>
-        d1.getFullYear() === d2.getFullYear() &&
-        d1.getMonth() === d2.getMonth() &&
-        d1.getDate() === d2.getDate();
+    const isSameDay = (d1: Date, d2: Date) => {
+        if (!d1 || !d2 || isNaN(d1.getTime()) || isNaN(d2.getTime())) return false;
+        return d1.getFullYear() === d2.getFullYear() &&
+            d1.getMonth() === d2.getMonth() &&
+            d1.getDate() === d2.getDate();
+    };
 
     return (
         <div className="glass p-8 rounded-[2rem] border-white/5 shadow-2xl space-y-6">
@@ -1175,7 +1182,10 @@ function StaffCalendar({ staffId, staffName }: { staffId: string, staffName: str
                                 ))}
 
                                 {!loading && events.map((event, idx) => {
+                                    if (!event?.start) return null;
                                     const eventStart = new Date(event.start.dateTime || event.start.date);
+                                    if (isNaN(eventStart.getTime())) return null;
+                                    
                                     const dayIdx = calendarDays.findIndex(d => isSameDay(d, eventStart));
                                     if (dayIdx === -1) return null;
 
