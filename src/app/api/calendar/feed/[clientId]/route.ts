@@ -13,22 +13,29 @@ export async function GET(
     context: { params: Promise<{ clientId: string }> }
 ) {
     try {
-        // ─── Security: Require CRON_SECRET token ───────────────────────────────
-        const token = req.nextUrl.searchParams.get("token");
-        const expectedToken = process.env.CRON_SECRET;
-
-        if (!expectedToken || token !== expectedToken) {
-            return new NextResponse("Forbidden", { status: 403 });
-        }
-        // ───────────────────────────────────────────────────────────────────────
-
+        // ─── Security: Validar token único del cliente ─────────────────────────
         const params = await context.params;
         const { clientId } = params;
+        const token = req.nextUrl.searchParams.get("token");
+
+        if (!token) {
+            return new NextResponse("Missing token", { status: 401 });
+        }
 
         const client = await (prisma.client as any).findUnique({
             where: { id: clientId },
             include: { appointments: { where: { status: "CONFIRMED" } } },
         });
+
+        if (!client) {
+            return new NextResponse("Not Found", { status: 404 });
+        }
+
+        // Si el cliente no tiene token generado o no coincide, rechazar
+        if (!client.icalToken || token !== client.icalToken) {
+            return new NextResponse("Invalid token", { status: 403 });
+        }
+        // ───────────────────────────────────────────────────────────────────────
 
         if (!client) {
             return new NextResponse("Not Found", { status: 404 });

@@ -8,10 +8,11 @@ import { sendEmail } from "@/lib/email";
  * 24h, 3d, and 7d (Final) sequences.
  */
 export async function POST(req: NextRequest) {
+    // 1. Fail-fast: Validar secreto de CRON inmediatamente
     const authHeader = req.headers.get("authorization");
     const cronSecret = process.env.CRON_SECRET;
 
-    if (cronSecret && authHeader !== `Bearer ${cronSecret}`) {
+    if (!cronSecret || authHeader !== `Bearer ${cronSecret}`) {
         return NextResponse.json({ error: "No autorizado" }, { status: 401 });
     }
 

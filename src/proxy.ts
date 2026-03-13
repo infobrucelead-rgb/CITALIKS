@@ -10,15 +10,32 @@ const isPublicApiRoute = createRouteMatcher([
     "/api/stripe/(.*)",
     "/api/cron/(.*)",
     "/api/diag(.*)",
-    "/api/admin/(.*)",
+    // Eliminado /api/admin/ de aquí para hacerlo privado
 ]);
 
+const isAdminRoute = createRouteMatcher(["/api/admin/(.*)"]);
+
 const proxyHandler = clerkMiddleware(async (auth, req) => {
-    // Rutas de Retell, Stripe webhooks y crons: no requieren auth de Clerk
+    // 1. Proteger rutas de administración (Solo PLATFORM_ADMIN)
+    if (isAdminRoute(req)) {
+        const { userId, sessionClaims } = await auth();
+        const role = (sessionClaims?.metadata as any)?.role;
+
+        if (!userId || role !== 'PLATFORM_ADMIN') {
+            return new Response(JSON.stringify({ error: "No autorizado. Se requiere rol PLATFORM_ADMIN." }), {
+                status: 403,
+                headers: { "Content-Type": "application/json" }
+            });
+        }
+        return; // Permitir si es admin
+    }
+
+    // 2. Rutas de Retell, Stripe webhooks y crons: no requieren auth de Clerk
     if (isPublicApiRoute(req)) {
         return;
     }
-    // Rutas del dashboard y onboarding: requieren auth
+
+    // 3. Rutas del dashboard y onboarding: requieren auth básica
     if (isProtectedRoute(req)) {
         await auth.protect();
     }

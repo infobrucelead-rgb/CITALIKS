@@ -6,8 +6,8 @@ export async function GET(req: NextRequest) {
     const authHeader = req.headers.get("authorization");
     const cronSecret = process.env.CRON_SECRET;
 
-    // Security check for Vercel Cron or manual authorized trigger
-    if (cronSecret && authHeader !== `Bearer ${cronSecret}`) {
+    // Security check: Must have a secret and it must match
+    if (!cronSecret || authHeader !== `Bearer ${cronSecret}`) {
         return NextResponse.json({ error: "No autorizado" }, { status: 401 });
     }
 

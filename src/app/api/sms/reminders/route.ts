@@ -82,15 +82,14 @@ function formatDateSpanish(dateStr: string): string {
 }
 
 export async function POST(req: NextRequest) {
-    // Security: verify cron secret
+    // 1. Fail-fast: Validar secreto de CRON inmediatamente
     const cronSecret = process.env.CRON_SECRET;
-    if (cronSecret) {
-        const authHeader = req.headers.get("authorization");
-        const providedSecret = authHeader?.replace("Bearer ", "");
-        if (providedSecret !== cronSecret) {
-            console.warn("[SMS/reminders] Unauthorized cron attempt");
-            return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-        }
+    const authHeader = req.headers.get("authorization");
+    const providedSecret = authHeader?.replace("Bearer ", "");
+
+    if (!cronSecret || providedSecret !== cronSecret) {
+        console.warn("[SMS/reminders] Unauthorized cron attempt");
+        return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
     const now = new Date();
