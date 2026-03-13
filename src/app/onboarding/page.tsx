@@ -30,6 +30,7 @@ export type OnboardingData = {
     agentTone: "profesional" | "cercano";
     agentVoice: "male" | "female";
     transferPhone?: string;
+    googleAccessToken?: string;
 };
 
 async function saveStep(step: number, data: Partial<OnboardingData>, token?: string) {
