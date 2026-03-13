@@ -7,8 +7,8 @@ export const metadata: Metadata = {
     title: "CitaLiks — Asistente de voz con IA para tu negocio",
     description:
         "Gestiona tu agenda automáticamente con un asistente de voz en español. Recibe llamadas, crea y cancela citas 24/7.",
-    other: {
-        "google-site-verification": "HQLjY9WbHPOvRP_NTUezf-rxLUV9PiMm5foamCT_M3g",
+    verification: {
+        google: "HQLjY9WbHPOvRP_NTUezf-rxLUV9PiMm5foamCT_M3g",
     },
 };
 
