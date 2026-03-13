@@ -100,6 +100,11 @@ function generateSystemPrompt(config: AgentConfig): string {
     return `Eres ${agentName}, la recepcionista telefónica de ${businessName}.
 ${toneDesc}
 
+## FECHA Y HORA ACTUAL (Referencia Obligatoria)
+- Hoy es: ${dateStr}
+- Hora actual en Madrid: ${timeStr}
+Calcula cualquier fecha relativa (como "mañana", "lunes", o "el próximo viernes") basándote EXCLUSIVAMENTE en el día de hoy arriba indicado.
+
 ## SALUDO — SIEMPRE IGUAL, SIN EXCEPCIÓN
 Al inicio de CADA llamada di exactamente:
 "¡Hola! Gracias por llamar a ${businessName}, ¿en qué te puedo ayudar?"
