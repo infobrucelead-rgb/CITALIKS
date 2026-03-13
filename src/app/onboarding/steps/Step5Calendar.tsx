@@ -40,24 +40,24 @@ export default function Step5Calendar({
                 <div className="sm:col-span-2">
                     <button
                         onClick={() => window.open("/api/auth/google", "_blank", "width=600,height=700")}
-                        className={`w-full flex items-center justify-between p-4 rounded-2xl border transition-all ${data.googleAccessToken ? "bg-green-500/10 border-green-500/30" : "bg-blue-600/10 border-blue-600/30 hover:border-blue-500/50"
+                        className={`w-full flex items-center justify-between p-4 rounded-2xl border transition-all ${data?.googleAccessToken ? "bg-green-500/10 border-green-500/30" : "bg-blue-600/10 border-blue-600/30 hover:border-blue-500/50"
                             }`}
                     >
                         <div className="flex items-center gap-4">
-                            <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${data.googleAccessToken ? "bg-green-500" : "bg-blue-600"} text-white`}>
+                            <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${data?.googleAccessToken ? "bg-green-500" : "bg-blue-600"} text-white`}>
                                 <Calendar size={20} />
                             </div>
                             <div className="text-left">
                                 <p className="text-sm font-bold">Vincular con Google Calendar</p>
                                 <p className="text-[10px] text-white/30">
-                                    {data.googleAccessToken ? "✓ Cuenta vinculada correctamente" : "Necesario para evitar duplicados"}
+                                    {data?.googleAccessToken ? "✓ Cuenta vinculada correctamente" : "Necesario para evitar duplicados"}
                                 </p>
                             </div>
                         </div>
-                        {!data.googleAccessToken && <Zap size={16} className="text-blue-400 animate-pulse" />}
-                        {data.googleAccessToken && <CheckCircle2 size={16} className="text-green-500" />}
+                        {!data?.googleAccessToken && <Zap size={16} className="text-blue-400 animate-pulse" />}
+                        {data?.googleAccessToken && <CheckCircle2 size={16} className="text-green-500" />}
                     </button>
-                    {!data.googleAccessToken && (
+                    {!data?.googleAccessToken && (
                         <p className="text-[10px] text-amber-400/70 mt-2 px-2 italic">
                             ⚠️ Es muy recomendable conectar tu Google Calendar ahora para que el bot no reserve en horas ocupadas.
                         </p>

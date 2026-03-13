@@ -41,17 +41,17 @@ export default function RootLayout({
             localization={{
                 ...esES,
                 signIn: {
-                    ...esES.signIn,
+                    ...(esES?.signIn || {}),
                     start: {
-                        ...esES.signIn?.start,
+                        ...(esES?.signIn?.start || {}),
                         title: "Entrar",
                         subtitle: "para continuar a CitaLiks",
                     },
                 },
                 signUp: {
-                    ...esES.signUp,
+                    ...(esES?.signUp || {}),
                     start: {
-                        ...esES.signUp?.start,
+                        ...(esES?.signUp?.start || {}),
                         title: "Crear cuenta",
                         subtitle: "para continuar a CitaLiks",
                     },

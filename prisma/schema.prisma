@@ -78,6 +78,7 @@ model Client {
   pmsApiKey   String? @db.Text
   pmsUrl      String? @db.Text
   pmsActive   Boolean @default(false)
+  icalToken   String? @unique
   icalUrl     String? @db.Text
 
   // CRM Integration
