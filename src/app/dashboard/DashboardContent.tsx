@@ -215,7 +215,7 @@ function Header({ title, subtitle, status, actions }: { title: string, subtitle:
 }
 
 function OverviewTab({ client }: { client: any }) {
-    const logs = client.callLogs || [];
+    const logs = client?.callLogs || [];
     const totalCalls = logs.length;
     const booked = logs.filter((l: any) => l.actionTaken === 'booked').length;
     const totalDurationSec = logs.reduce((acc: number, log: any) => acc + (log.durationSec || 0), 0);
@@ -225,9 +225,9 @@ function OverviewTab({ client }: { client: any }) {
     return (
         <>
             <Header
-                title={`¡Hola ${client.agentName?.split(' ')[0] || "Asistente"}!`}
+                title={`¡Hola ${client?.agentName?.split(' ')[0] || "Asistente"}!`}
                 subtitle="Aquí tienes el resumen de CitaLiks para hoy."
-                status={client.onboardingDone}
+                status={client?.onboardingDone}
             />
 
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6 mb-8 md:mb-10">
@@ -246,7 +246,7 @@ function OverviewTab({ client }: { client: any }) {
                         </div>
                         <div>
                             <p className="text-[10px] uppercase font-bold text-white/30 tracking-widest">Línea del Asistente</p>
-                            <h3 className="text-xl font-mono font-bold text-white">{client.phone || "No configurada"}</h3>
+                            <h3 className="text-xl font-mono font-bold text-white">{client?.phone || "No configurada"}</h3>
                         </div>
                     </div>
                     <p className="text-xs text-white/40 leading-relaxed">Este es el número que tus clientes llaman para hablar con tu asistente de IA.</p>
@@ -260,16 +260,16 @@ function OverviewTab({ client }: { client: any }) {
                         </div>
                         <div>
                             <p className="text-[10px] uppercase font-bold text-white/30 tracking-widest">Desvío a Humano</p>
-                            <h3 className="text-xl font-mono font-bold text-white">{client.transferPhone || "No configurado"}</h3>
+                            <h3 className="text-xl font-mono font-bold text-white">{client?.transferPhone || "No configurado"}</h3>
                         </div>
                     </div>
                     <p className="text-xs text-white/40 leading-relaxed mb-4">Las llamadas se desviarán a este número si el cliente lo solicita o hay una emergencia.</p>
                     <button
                         onClick={() => {
                             const qs = new URLSearchParams({
-                                phone: client.phone || "",
-                                agent: client.agentName || "",
-                                transfer: client.transferPhone || ""
+                                phone: client?.phone || "",
+                                agent: client?.agentName || "",
+                                transfer: client?.transferPhone || ""
                             }).toString();
                             window.open(`/instrucciones?${qs}`, "_blank");
                         }}
@@ -283,16 +283,16 @@ function OverviewTab({ client }: { client: any }) {
             <div className="grid grid-cols-1 xl:grid-cols-3 gap-8">
                 <div className="xl:col-span-2 space-y-6">
                     <h2 className="text-xl font-bold">Últimas llamadas</h2>
-                    <CallsList logs={client.callLogs?.slice(0, 5) || []} />
+                    <CallsList logs={client?.callLogs?.slice(0, 5) || []} />
                 </div>
 
                 <div className="space-y-6">
                     <h2 className="text-xl font-bold">Tu configuración</h2>
                     <div className="glass rounded-3xl p-6 space-y-6">
                         <div>
-                            <label className="text-[10px] uppercase font-bold text-white/30 block mb-3">Servicios ({client.services?.length || 0})</label>
+                            <label className="text-[10px] uppercase font-bold text-white/30 block mb-3">Servicios ({client?.services?.length || 0})</label>
                             <div className="space-y-2">
-                                {client.services?.slice(0, 3).map((s: any) => (
+                                {client?.services?.slice(0, 3).map((s: any) => (
                                     <div key={s.id} className="flex justify-between items-center text-sm p-3 rounded-xl bg-white/2 border border-white/5">
                                         <span className="text-white/80">{s.name}</span>
                                         <span className="text-white/40">{formatDuration(s.durationMin)}</span>
@@ -305,7 +305,7 @@ function OverviewTab({ client }: { client: any }) {
                             <label className="text-[10px] uppercase font-bold text-white/30 block mb-3">Número de contacto</label>
                             <div className="p-4 rounded-2xl bg-blue-500/10 border border-blue-500/20 text-center relative overflow-hidden group">
                                 <div className="absolute inset-0 bg-blue-600/5 translate-y-full group-hover:translate-y-0 transition-transform"></div>
-                                <span className="relative z-10 text-xl font-mono font-bold text-blue-300">{client.phone || "+34 900 000 000"}</span>
+                                <span className="relative z-10 text-xl font-mono font-bold text-blue-300">{client?.phone || "+34 900 000 000"}</span>
                                 <p className="relative z-10 text-[9px] text-blue-300/60 mt-1 uppercase tracking-wider">Línea activa de CitaLiks</p>
                             </div>
                         </div>
@@ -330,7 +330,7 @@ function CallsTab({ client }: { client: any }) {
                         />
                     </div>
                 </div>
-                <CallsList logs={client.callLogs || []} />
+                <CallsList logs={client?.callLogs || []} />
             </div>
         </>
     );
@@ -556,7 +556,7 @@ function TeamTab({ client, onUpdate, onSelectStaff }: { client: any, onUpdate: (
                     </div>
                 ))}
 
-                {(client.staff || []).length === 0 && (
+                {(client?.staff || []).length === 0 && (
                     <div className="col-span-full py-20 text-center glass rounded-3xl border-dashed border-white/10">
                         <Users size={48} className="text-white/5 mx-auto mb-4" />
                         <p className="text-white/40">No hay profesionales registrados.</p>
@@ -1410,10 +1410,10 @@ function ConfigTab({ client, onUpdate }: { client: any, onUpdate: () => void }) 
         agentName: client.agentName || "",
         agentTone: client.agentTone || "profesional",
         agentVoice: client.agentVoice || "male",
-        businessName: client.businessName || "",
-        businessType: client.businessType || "",
-        city: client.city || "",
-        transferPhone: client.transferPhone || ""
+        businessName: client?.businessName || "",
+        businessType: client?.businessType || "",
+        city: client?.city || "",
+        transferPhone: client?.transferPhone || ""
     });
     const [isSaving, setIsSaving] = useState(false);
 
@@ -1686,7 +1686,7 @@ function CallsList({ logs }: { logs: any[] }) {
                                         log.actionTaken === 'cancelled' ? 'bg-red-500/10 text-red-400 border border-red-500/10' :
                                             'bg-white/5 text-white/40 border border-white/5'
                                         }`}>
-                                        {log.actionTaken === 'booked' ? 'AGENDADA' : log.actionTaken === 'cancelled' ? 'CANCELADA' : (log.actionTaken?.toUpperCase() || 'CONSULTA')}
+                                        {log.actionTaken === 'booked' ? 'AGENDADA' : log.actionTaken === 'cancelled' ? 'CANCELADA' : (log?.actionTaken?.toUpperCase() || 'CONSULTA')}
                                     </span>
                                 </td>
                                 <td className="p-5">
@@ -1762,7 +1762,7 @@ function MobileNav({ activeTab, setActiveTab, client }: { activeTab: TabType, se
         { id: "team", label: "Equipo", icon: <Users size={20} /> },
         { id: "services", label: "Agenda", icon: <Calendar size={20} /> },
         { id: "integrations", label: "Intercambio", icon: <ExternalLink size={20} /> },
-        ...(client.role === "PLATFORM_ADMIN" ? [{ id: "admin_link", label: "Admin", icon: <ShieldCheck size={20} className="text-amber-400" /> }] : []),
+        ...(client?.role === "PLATFORM_ADMIN" ? [{ id: "admin_link", label: "Admin", icon: <ShieldCheck size={20} className="text-amber-400" /> }] : []),
         { id: "support", label: "Soporte", icon: <LifeBuoy size={20} /> },
         { id: "config", label: "Más", icon: <Settings size={20} /> },
     ];
