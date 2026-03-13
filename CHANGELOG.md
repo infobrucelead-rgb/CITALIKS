@@ -4,7 +4,16 @@
 
 ---
 
-## ESTADO ACTUAL DEL PROYECTO — 09 Mar 2026
+## [2026-03-13] — Integración de Reservas para Restaurantes
+
+### Added
+- **Arquitectura de Conectores:** Sistema `IRestaurantConnector` para integrar CoverManager, TheFork, OpenTable, Resy y Revo.
+- **Módulo de Restaurantes:** Nuevo servicio `src/lib/restaurant.ts` para gestionar reservas de mesas con comensales (`numGuests`).
+- **Nuevas Funciones Retell:** Implementadas `consultar_disponibilidad_restaurante` y `reservar_mesa` en el handler de Retell (`/api/retell/function-call`).
+- **Esquema de BD:** Añadidos campos `numGuests` en citas y configuración de proveedores de restaurantes en clientes.
+- **Scripts de Test:** Validada la lógica de conectores y fallback dinámico.
+
+## ESTADO ACTUAL DEL PROYECTO — 13 Mar 2026
 
 ### Resumen ejecutivo
 CitaLiks es una plataforma SaaS multi-tenant que permite a negocios tener su propio asistente de voz con IA para gestionar citas. El sistema está en fase de producción con el primer cliente (Neural360) operativo. Se han corregido problemas críticos de sincronización de datos entre el dashboard y el agente de Retell, y se han realizado mejoras significativas en la UI/UX del panel de integraciones y soporte.

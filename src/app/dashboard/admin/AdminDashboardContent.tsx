@@ -1133,6 +1133,9 @@ export default function AdminDashboardContent({ clients: initialClients, admin: 
                                             { field: "crmUrl", label: "CRM API URL", icon: <Zap size={14} /> },
                                             { field: "pmsApiKey", label: "PMS API Key", icon: <Database size={14} /> },
                                             { field: "pmsUrl", label: "PMS API URL", icon: <Zap size={14} /> },
+                                            { field: "restaurantProvider", label: "Motor Reservas (COVERMANAGER/THEFORK...)", icon: <Database size={14} /> },
+                                            { field: "restaurantApiKey", label: "Restaurant API Key", icon: <ShieldCheck size={14} /> },
+                                            { field: "restaurantUrl", label: "Restaurant API URL", icon: <ExternalLink size={14} /> },
                                         ].map(({ field, label, icon }) => (
                                             <EditableField
                                                 key={field}
@@ -1170,6 +1173,9 @@ export default function AdminDashboardContent({ clients: initialClients, admin: 
                                             </div>
                                         )}
                                         <StatusBadge label="Agente Retell" value={selectedClient.retellAgentId ? "Vinculado" : "Sin agente"} active={!!selectedClient.retellAgentId} />
+                                        <div className="cursor-pointer hover:scale-[1.02] transition-transform" onClick={() => handleSaveField("restaurantActive", !selectedClient.restaurantActive as any)}>
+                                            <StatusBadge label="Motor Restaurante" value={selectedClient.restaurantActive ? "Activo" : "Inactivo"} active={selectedClient.restaurantActive} />
+                                        </div>
                                     </div>
 
                                     {/* Integration Preferences (Wants) */}
@@ -1183,6 +1189,7 @@ export default function AdminDashboardContent({ clients: initialClients, admin: 
                                             <PreferenceBadge label="Microsoft Outlook" active={selectedClient.wantsMicrosoftOutlook} />
                                             <PreferenceBadge label="CRM / HubSpot" active={selectedClient.wantsCRM} />
                                             <PreferenceBadge label="PMS / Gestión" active={selectedClient.wantsPMS} />
+                                            <PreferenceBadge label="Reservas Restaurante" active={selectedClient.wantsRestaurant} />
                                         </div>
                                     </div>
                                 </>

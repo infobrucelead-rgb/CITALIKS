@@ -6,7 +6,7 @@ import {
     Settings, LogOut, Clock, ShieldCheck, Plus,
     Trash2, Search, UserPlus, Image as ImageIcon,
     ExternalLink, Brain, Loader2, Edit2, ChevronRight, ChevronDown, DollarSign, X,
-    LifeBuoy, Send, MessageSquare, AlertCircle, CheckCircle2, Zap, Mail
+    LifeBuoy, Send, MessageSquare, AlertCircle, CheckCircle2, Zap, Mail, Utensils
 } from "lucide-react";
 import { useClerk, UserButton } from "@clerk/nextjs";
 import { DAY_NAMES, formatDuration, formatPrice } from "@/lib/utils";
@@ -2032,6 +2032,15 @@ function IntegrationsTab({ client, onUpdate, onContactSupport }: { client: any; 
                     active={client.crmActive}
                     icon={<Zap className="text-purple-400" />}
                     wants={client.wantsCRM}
+                />
+
+                {/* Motor de Reservas (Restaurantes) */}
+                <IntegrationCard
+                    title="Reservas Restaurante"
+                    description="CoverManager, TheFork, OpenTable, etc."
+                    active={client.restaurantActive}
+                    icon={<Utensils className="text-orange-400" />}
+                    wants={client.wantsRestaurant}
                 />
             </div>
 

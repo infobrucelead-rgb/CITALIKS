@@ -5,6 +5,10 @@ import {
     bookAppointment,
     cancelAppointment,
 } from "@/lib/calendar";
+import { 
+    checkRestaurantAvailability, 
+    bookRestaurantTable 
+} from "@/lib/restaurant";
 import { sendSms, buildConfirmationSms, buildCancellationSms } from "@/lib/sms";
 
 // import fs from 'fs';
@@ -295,6 +299,104 @@ export async function POST(req: NextRequest) {
                     resultJson: { slotsCount: slots.length, firstSlots: slots.slice(0, 5).map(s => s.start) },
                     slotsFound: slots.length,
                     scheduleUsed,
+                    durationMs: Date.now() - startMs,
+                    webhookUrl,
+                });
+                break;
+            }
+
+            case "consultar_disponibilidad_restaurante": {
+                const { date, num_guests } = args as {
+                    date: string;
+                    num_guests: number;
+                };
+
+                if (!date) {
+                    result = { error: "¿Para qué día quieres la reserva?" };
+                    break;
+                }
+                if (!num_guests) {
+                    result = { error: "¿Para cuántas personas sería la mesa?" };
+                    break;
+                }
+
+                const restaurantRes = await checkRestaurantAvailability({
+                    clientId,
+                    date,
+                    numGuests: num_guests,
+                    prismaOverride: activePrisma
+                });
+
+                result = {
+                    available_slots: restaurantRes.available_slots,
+                    message: restaurantRes.message + (callerPhoneFromRetell ? ` Veo que nos llamas desde el acabado en ${callerPhoneFromRetell.slice(-3)}. ¿Uso este número para la reserva?` : "")
+                };
+
+                await saveBotLog({
+                    clientId,
+                    functionName: function_name,
+                    inputArgs: args,
+                    resultJson: result,
+                    slotsFound: restaurantRes.available_slots.length,
+                    durationMs: Date.now() - startMs,
+                    webhookUrl,
+                });
+                break;
+            }
+
+            case "reservar_mesa": {
+                const { caller_name, date, time, num_guests, notes, caller_phone } = args as {
+                    caller_name: string;
+                    date: string;
+                    time: string;
+                    num_guests: number;
+                    notes?: string;
+                    caller_phone?: string;
+                };
+
+                if (!date || !time || !num_guests || !caller_name) {
+                    result = { error: "Faltan datos para completar la reserva (nombre, fecha, hora o comensales)." };
+                    break;
+                }
+
+                const resPhone = callerPhoneFromRetell ?? caller_phone ?? null;
+
+                const bookingRes = await bookRestaurantTable({
+                    clientId,
+                    callerName: caller_name,
+                    callerPhone: resPhone ?? undefined,
+                    date,
+                    time,
+                    numGuests: num_guests,
+                    notes,
+                    prismaOverride: activePrisma
+                });
+
+                if (bookingRes.confirmed) {
+                    // SMS de confirmación simplificado para restaurante
+                    if (resPhone) {
+                        const smsMsg = `Reserva confirmada en ${masterClient.businessName} para ${num_guests} pers. el ${formatDateES(date)} a las ${time}. ¡Te esperamos!`;
+                        sendSms(resPhone, smsMsg, (masterClient.businessName || "RESERVA").slice(0, 11))
+                            .catch(err => console.error("SMS Error:", err));
+                    }
+
+                    result = {
+                        confirmed: true,
+                        message: `¡Listo, ${caller_name}! Mesa reservada para ${num_guests} personas el ${formatDateES(date)} a las ${time}. Te hemos enviado un SMS de confirmación.`
+                    };
+                } else {
+                    result = {
+                        confirmed: false,
+                        message: `Lo siento, no he podido confirmar la mesa. ${bookingRes.error || "Inténtalo con otro horario."}`
+                    };
+                }
+
+                await saveBotLog({
+                    clientId,
+                    functionName: function_name,
+                    inputArgs: args,
+                    resultJson: result,
+                    confirmed: bookingRes.confirmed,
                     durationMs: Date.now() - startMs,
                     webhookUrl,
                 });

@@ -86,11 +86,18 @@ model Client {
   crmUrl      String? @db.Text
   crmActive   Boolean @default(false)
 
+  // Restaurant Integration
+  restaurantProvider String? // "COVERMANAGER", "THEFORK", "OPENTABLE", "REVO"
+  restaurantApiKey   String? @db.Text
+  restaurantUrl      String? @db.Text
+  restaurantActive   Boolean @default(false)
+
   // Integration Intent (Onboarding)
   wantsGoogleCalendar   Boolean @default(false)
   wantsMicrosoftOutlook Boolean @default(false)
   wantsCRM              Boolean @default(false)
   wantsPMS              Boolean @default(false)
+  wantsRestaurant       Boolean @default(false)
 
   // Relaciones
   staff     Staff[]
@@ -188,6 +195,7 @@ model Appointment {
   time          String   // HH:MM
   status        String   @default("CONFIRMED") // "CONFIRMED", "CANCELLED"
   notes         String?
+  numGuests     Int?     // Para restaurantes
   externalId    String?  // ID en Google Calendar o similar
 
   // SMS Reminders

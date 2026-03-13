@@ -112,6 +112,7 @@ export async function POST(req: NextRequest) {
         updates.wantsMicrosoftOutlook = !!data.wantsMicrosoftOutlook;
         updates.wantsCRM = !!data.wantsCRM;
         updates.wantsPMS = !!data.wantsPMS;
+        updates.wantsRestaurant = !!data.wantsRestaurant;
     }
 
     await prisma.client.update({

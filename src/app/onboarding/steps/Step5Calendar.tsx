@@ -1,6 +1,6 @@
 "use client";
 import React, { useState } from "react";
-import { Calendar, Mail, Zap, Database, CheckCircle2 } from "lucide-react";
+import { Calendar, Mail, Zap, Database, CheckCircle2, Utensils } from "lucide-react";
 
 export default function Step5Calendar({
     data,
@@ -16,6 +16,7 @@ export default function Step5Calendar({
         wantsMicrosoftOutlook: data?.wantsMicrosoftOutlook ?? false,
         wantsCRM: data?.wantsCRM ?? false,
         wantsPMS: data?.wantsPMS ?? false,
+        wantsRestaurant: data?.wantsRestaurant ?? false,
     });
 
     const togglePref = (key: keyof typeof preferences) => {
@@ -59,6 +60,12 @@ export default function Step5Calendar({
                     title="PMS / Software Gestión"
                     active={preferences.wantsPMS}
                     onClick={() => togglePref("wantsPMS")}
+                />
+                <SelectionCard
+                    icon={<Utensils className="text-orange-400" size={20} />}
+                    title="Motor Reservas (Restaurante)"
+                    active={preferences.wantsRestaurant}
+                    onClick={() => togglePref("wantsRestaurant")}
                 />
             </div>
 
