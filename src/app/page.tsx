@@ -212,6 +212,9 @@ export default async function HomePage() {
                         <Link href="/privacidad" className="hover:text-white transition-colors">
                             Política de Privacidad
                         </Link>
+                        <Link href="/condiciones" className="hover:text-white transition-colors">
+                            Condiciones del Servicio
+                        </Link>
                     </div>
                 </div>
             </footer>

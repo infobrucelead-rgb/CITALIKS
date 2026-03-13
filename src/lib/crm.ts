@@ -9,6 +9,9 @@ export interface CRMContact {
 
 /**
  * Generic CRM Interface
+ * Define los métodos que cualquier CRM (HubSpot, Zoho, etc.) debe implementar
+ * para ser compatible con la arquitectura de "Disponibilidad Federada" 
+ * y el "Dispatcher" de CitaLiks.
  */
 export interface ICRMConnector {
     createOrUpdateContact(params: {

@@ -182,7 +182,14 @@ async function fetchICalBusySlots(url: string, date: string): Promise<{ start: s
     }
 }
 
-// --- Generic Busy Slots Fetcher ---
+// --- Generic Busy Slots Fetcher (Federated Availability) ---
+/**
+ * Esta función es el corazón de la disponibilidad infalible de CitaLiks.
+ * No solo consulta el calendario primario (Google/Microsoft), sino que también
+ * pregunta en tiempo real a otros sistemas activos (CRM, PMS, Restaurante).
+ * Esto garantiza que si un cliente registra una cita manual en su CRM, el bot
+ * lo sepa al instante y no ofrezca ese horario.
+ */
 async function getBusySlots(
     clientId: string,
     date: string,
@@ -593,6 +600,10 @@ export async function bookAppointment(params: {
 /**
  * Handles all secondary integrations (CRM, PMS, Webhooks) 
  * after the master calendar is confirmed.
+ * 
+ * LÓGICA INFALIBLE: Esta función es no-bloqueante. El bot confirma la cita
+ * inmediatamente al usuario y CitaLiks se encarga de propagar los datos
+ * a HubSpot, Pipedrive, Zoho o Webhooks en segundo plano.
  */
 async function dispatchSecondarySyncs(ctx: { client: any, params: any, localAptId: string, db: any }) {
     const { client, params, localAptId, db } = ctx;
