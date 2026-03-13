@@ -115,11 +115,26 @@ function OnboardingContent() {
         const merged = { ...data, ...stepData };
         setData(merged);
         const token = searchParams.get("token");
-        await saveStep(step, stepData, token || undefined);
-        if (step < 6) setStep(step + 1);
+        try {
+            await saveStep(step, stepData, token || undefined);
+            if (step < 6) setStep(step + 1);
+        } catch (err) {
+            console.error("Error saving step:", err);
+            // Even if save fails, we allow moving forward in the UI but log it
+            if (step < 6) setStep(step + 1);
+        }
     };
 
-    const back = () => setStep((s) => Math.max(1, s - 1));
+    const back = async (stepData?: Partial<OnboardingData>) => {
+        if (stepData) {
+            const merged = { ...data, ...stepData };
+            setData(merged);
+            const token = searchParams.get("token");
+            // Save state even when going back to ensure persistence
+            saveStep(step, stepData, token || undefined).catch(console.error);
+        }
+        setStep((s) => Math.max(1, s - 1));
+    };
 
     const progress = ((step - 1) / (STEPS.length - 1)) * 100;
 

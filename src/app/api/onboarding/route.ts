@@ -5,28 +5,46 @@ import { syncBotWithBusinessData } from "@/lib/bot-updates";
 
 // Save onboarding step data
 export async function POST(req: NextRequest) {
+    // 1. Get user email from Clerk to find invitations or existing records
     const { userId } = await auth();
     if (!userId) {
         return NextResponse.json({ error: "No autenticado" }, { status: 401 });
     }
 
     const body = await req.json();
-    const { step, data, token } = body as {
+    const { step, data, token: bodyToken } = body as {
         step: number;
-        data: Record<string, unknown>;
+        data: Record<string, any>;
         token?: string;
     };
 
-    // Upsert client record (create if first time)
-    let client = await prisma.client.findUnique({ where: { clerkUserId: userId } });
+    // 2. Try to find client by userId OR by email (if provided/available)
+    let client = await prisma.client.findFirst({
+        where: {
+            OR: [
+                { clerkUserId: userId },
+                data.email ? { email: data.email as string } : undefined
+            ].filter(Boolean) as any
+        }
+    });
 
     if (!client) {
+        // Check if there is an invitation for this email to link businessName
+        const invitation = bodyToken ? await (prisma as any).invitation.findUnique({ where: { token: bodyToken } }) : null;
+        
         client = await prisma.client.create({
             data: {
                 clerkUserId: userId,
-                email: data.email as string ?? "",
+                email: (data.email as string) || (invitation?.email) || `${userId}@placeholder.com`,
+                businessName: data.businessName as string || invitation?.businessName || "",
                 onboardingStep: step,
             },
+        });
+    } else if (!client.clerkUserId) {
+        // Link clerkUserId to existing record (e.g. from invitation)
+        client = await prisma.client.update({
+            where: { id: client.id },
+            data: { clerkUserId: userId, onboardingStep: step }
         });
     }
 
@@ -120,9 +138,9 @@ export async function POST(req: NextRequest) {
         data: updates,
     });
 
-    if (token) {
+    if (bodyToken) {
         await (prisma as any).invitation.updateMany({
-            where: { token, status: "PENDING" },
+            where: { token: bodyToken, status: "PENDING" },
             data: { status: "ACCEPTED" }
         });
     }

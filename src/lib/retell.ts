@@ -196,7 +196,7 @@ Responde SIEMPRE en español de España.`;
 
 export const VOICE_MAPPING: Record<string, { id: string; model?: string }> = {
     "male": { id: "custom_voice_e3fbb6c669bc652610c5b60c8c" },
-    "female": { id: "eleven_multilingual_v2-Isabella" } // Predeterminada de mujer
+    "female": { id: "eleven_multilingual_v2-Isabella" } // Isabella es una voz premium de alta calidad en español
 };
 
 export async function createRetellAgent(config: AgentConfig): Promise<string> {

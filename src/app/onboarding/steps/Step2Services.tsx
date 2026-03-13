@@ -11,7 +11,7 @@ export default function Step2Services({
 }: {
     data: Partial<OnboardingData>;
     onNext: (d: Partial<OnboardingData>) => void;
-    onBack: () => void;
+    onBack: (d?: Partial<OnboardingData>) => void;
 }) {
     const [services, setServices] = useState<Service[]>(data.services ?? []);
     const [form, setForm] = useState<Service>({ name: "", durationMin: 30 });
@@ -94,7 +94,7 @@ export default function Step2Services({
             )}
 
             <div className="flex gap-3">
-                <button onClick={onBack} className="px-6 py-3 rounded-xl bg-white/10 hover:bg-white/20 font-medium transition-all text-sm">← Atrás</button>
+                <button onClick={() => onBack({ services })} className="px-6 py-3 rounded-xl bg-white/10 hover:bg-white/20 font-medium transition-all text-sm">← Atrás</button>
                 <button onClick={submit} className="flex-1 py-3 rounded-xl bg-blue-600 hover:bg-blue-500 font-semibold transition-all">
                     Continuar →
                 </button>

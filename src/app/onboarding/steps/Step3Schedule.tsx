@@ -19,7 +19,7 @@ export default function Step3Schedule({
 }: {
     data: Partial<OnboardingData>;
     onNext: (d: Partial<OnboardingData>) => void;
-    onBack: () => void;
+    onBack: (d?: Partial<OnboardingData>) => void;
 }) {
     const [schedules, setSchedules] = useState(
         data.schedules ||
@@ -92,7 +92,7 @@ export default function Step3Schedule({
 
             <div className="flex gap-3 pt-4">
                 <button
-                    onClick={onBack}
+                    onClick={() => onBack({ schedules })}
                     className="px-6 py-3 rounded-xl bg-white/10 hover:bg-white/20 font-medium transition-all text-sm"
                 >
                     ← Atrás

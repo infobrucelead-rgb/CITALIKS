@@ -113,8 +113,9 @@ export default function Step6Launch({
                 </div>
                 <div className="flex justify-between items-center text-sm">
                     <span className="text-white/40">Agenda:</span>
-                    <span className="text-green-400 flex items-center gap-1">
-                        <span className="w-1.5 h-1.5 rounded-full bg-green-400" /> Conectada
+                    <span className={data.googleAccessToken ? "text-green-400 flex items-center gap-1" : "text-amber-400 flex items-center gap-1"}>
+                        <span className={`w-1.5 h-1.5 rounded-full ${data.googleAccessToken ? "bg-green-400" : "bg-amber-400"}`} /> 
+                        {data.googleAccessToken ? "Conectada" : "En espera / Maestra"}
                     </span>
                 </div>
                 {data.transferPhone && (

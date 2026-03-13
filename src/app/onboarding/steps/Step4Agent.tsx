@@ -9,7 +9,7 @@ export default function Step4Agent({
 }: {
     data: Partial<OnboardingData>;
     onNext: (d: Partial<OnboardingData>) => void;
-    onBack: () => void;
+    onBack: (d?: Partial<OnboardingData>) => void;
 }) {
     const { register, handleSubmit, watch } = useForm({
         defaultValues: {
@@ -134,7 +134,8 @@ export default function Step4Agent({
 
             <div className="flex gap-3">
                 <button
-                    onClick={onBack}
+                    type="button"
+                    onClick={() => onBack(watch())}
                     className="px-6 py-3 rounded-xl bg-white/10 hover:bg-white/20 font-medium transition-all text-sm"
                 >
                     ← Atrás
