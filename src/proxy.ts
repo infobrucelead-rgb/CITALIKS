@@ -37,7 +37,7 @@ const proxyHandler = clerkMiddleware(async (auth, req) => {
 
     // 3. Rutas del dashboard y onboarding: requieren auth básica
     if (isProtectedRoute(req)) {
-        await auth.protect();
+        await (await auth()).protect();
     }
 });
 
