@@ -1,5 +1,6 @@
 import { prisma } from "./db";
 import { checkAvailability, bookAppointment, TimeSlot } from "./calendar";
+import { getCRMConnector } from "./crm";
 
 /**
  * Interface genérica para conectores de restaurantes.
@@ -19,6 +20,8 @@ export interface IRestaurantConnector {
         numGuests: number;
         notes?: string;
     }): Promise<{ confirmed: boolean; eventId?: string; error?: string }>;
+
+    getBusySlots?(date: string): Promise<TimeSlot[]>;
 }
 
 /**
@@ -55,6 +58,11 @@ class CoverManagerConnector implements IRestaurantConnector {
     async bookTable(params: any) {
         console.log(`[Restaurant/CoverManager] Reservando para ${params.callerName}`);
         return { confirmed: false, error: "Conector CoverManager en desarrollo." };
+    }
+    async getBusySlots(date: string): Promise<TimeSlot[]> {
+        // Aquí llamaríamos a la API de CoverManager para ver qué horas están BLOCK o FULL
+        console.log(`[Restaurant/CoverManager] Consultando ocupación para ${date}`);
+        return [];
     }
 }
 
@@ -176,7 +184,7 @@ export async function bookRestaurantTable(params: TableBookingParams) {
     // Intentar usar conector externo
     const connector = getRestaurantConnector(client);
     if (connector) {
-        return await connector.bookTable({
+        const result = await connector.bookTable({
             callerName: params.callerName,
             callerPhone: params.callerPhone,
             date: params.date,
@@ -184,6 +192,30 @@ export async function bookRestaurantTable(params: TableBookingParams) {
             numGuests: params.numGuests,
             notes: params.notes
         });
+
+        // 2. Sync with CRM if active (Even for external restaurant bookings)
+        if (result.confirmed && client?.crmActive && params.callerPhone) {
+            try {
+                const crm = getCRMConnector(client.crmProvider, client);
+                if (crm) {
+                    const contact = await crm.createOrUpdateContact({
+                        name: params.callerName,
+                        phone: params.callerPhone,
+                    });
+                    if (contact && contact.id) {
+                        await crm.logActivity({
+                            contactId: contact.id,
+                            type: "APPOINTMENT",
+                            details: `Reserva de Mesa (${params.numGuests} pers) via ${client.restaurantProvider || 'Motor'} - ${params.date} ${params.time}`,
+                        });
+                    }
+                }
+            } catch (err) {
+                console.warn("[restaurant/bookTable] CRM sync failed", (err as any).message);
+            }
+        }
+
+        return result;
     }
 
     // Fallback: Google Calendar

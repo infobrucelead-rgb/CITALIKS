@@ -81,10 +81,13 @@ model Client {
   icalUrl     String? @db.Text
 
   // CRM Integration
-  crmProvider String? // "HUBSPOT", "PIPEDRIVE", "SALESFORCE"
+  crmProvider String? // "HUBSPOT", "PIPEDRIVE", "SALESFORCE", "ZOHO"
   crmApiKey   String? @db.Text
   crmUrl      String? @db.Text
   crmActive   Boolean @default(false)
+  crmClientId     String? @db.Text
+  crmClientSecret String? @db.Text
+  crmRefreshToken String? @db.Text
 
   // Restaurant Integration
   restaurantProvider String? // "COVERMANAGER", "THEFORK", "OPENTABLE", "REVO"

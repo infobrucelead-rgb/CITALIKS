@@ -3,6 +3,7 @@ import { prisma } from "./db";
 import { getPMSConnector } from "./pms";
 import { getCRMConnector } from "./crm";
 import { CalendarProvider } from "@prisma/client";
+import { getRestaurantConnector } from "./restaurant";
 
 // --- Google Utils ---
 function getOAuthClient(redirectUri?: string) {
@@ -190,12 +191,15 @@ async function getBusySlots(
     params?: any
 ): Promise<{ start: string, end: string }[]> {
     const busy: { start: string, end: string }[] = [];
+    const client = await db.client.findUnique({ where: { id: clientId } });
+    if (!client) return [];
 
+    // --- 1. Primary Calendar Provider (Google, Microsoft, ICAL, PMS) ---
+    // Note: Google Master is already handled within getAuthenticatedGoogleClient fallback
     if (provider === "GOOGLE") {
         try {
             const { oAuth2Client, calendarId } = await getAuthenticatedGoogleClient(clientId, db, params?.staffCalendarId);
             const calendar = google.calendar({ version: "v3", auth: oAuth2Client });
-
             const madridOffset = getMadridOffset(date);
             const startOfDay = new Date(new Date(`${date}T00:00:00Z`).getTime() - madridOffset * 3600000);
             const endOfDay = new Date(new Date(`${date}T23:59:59Z`).getTime() - madridOffset * 3600000);
@@ -207,7 +211,6 @@ async function getBusySlots(
                     items: [{ id: calendarId }],
                 },
             });
-
             const googleBusy = res.data.calendars?.[calendarId]?.busy ?? [];
             busy.push(...googleBusy.map(b => ({ start: b.start!, end: b.end! })));
         } catch (err) {
@@ -234,7 +237,6 @@ async function getBusySlots(
                     availabilityViewInterval: 30
                 })
             });
-
             const data = await res.json();
             const scheduleData = data.value?.[0];
             if (scheduleData?.scheduleItems) {
@@ -249,21 +251,48 @@ async function getBusySlots(
             console.warn(`[calendar/getBusySlots] Microsoft error:`, (err as any).message);
         }
     } else if (provider === "ICAL") {
-        const client = await db.client.findUnique({ where: { id: clientId } });
-        if (client?.icalUrl) {
+        if (client.icalUrl) {
             const iCalBusy = await fetchICalBusySlots(client.icalUrl, date);
             busy.push(...iCalBusy);
         }
     } else if (provider === "PMS") {
-        const clientRaw = await db.client.findUnique({ where: { id: clientId } });
         try {
-            const connector = await getPMSConnector(clientRaw.pmsProvider, clientRaw);
+            const connector = await getPMSConnector(client.pmsProvider, client);
             if (connector) {
                 const pmsBusy = await connector.getBusySlots(date);
                 busy.push(...pmsBusy);
             }
         } catch (err) {
             console.warn(`[calendar/getBusySlots] PMS error:`, (err as any).message);
+        }
+    }
+
+    // --- 2. Secondary Sync Sources (CRM, Restaurant) ---
+    // Even if Google/PMS is primary, we check others to detect manual entries
+    
+    // CRM Check
+    if (client.crmActive && provider !== "GOOGLE" && provider !== "MICROSOFT") { // Basic rule to avoid redundant checks if CRM is integrated with calendar
+        try {
+            const crm = getCRMConnector(client.crmProvider, client);
+            if (crm && crm.getBusySlots) {
+                const crmBusy = await crm.getBusySlots(date);
+                busy.push(...crmBusy);
+            }
+        } catch (err) {
+            console.warn(`[calendar/getBusySlots] CRM Federated check failed`, (err as any).message);
+        }
+    }
+
+    // Restaurant Check
+    if (client.restaurantActive) {
+        try {
+            const restaurant = getRestaurantConnector(client);
+            if (restaurant && (restaurant as any).getBusySlots) {
+                const resBusy = await (restaurant as any).getBusySlots(date);
+                busy.push(...resBusy);
+            }
+        } catch (err) {
+             console.warn(`[calendar/getBusySlots] Restaurant Federated check failed`, (err as any).message);
         }
     }
 
@@ -285,19 +314,65 @@ async function getAuthenticatedGoogleClient(clientId: string, db: any, staffCale
             googleRefreshToken: true,
             googleTokenExpiry: true,
             calendarId: true,
+            businessName: true
         },
     });
 
-    if (!client?.googleAccessToken) throw new Error("Google not connected");
-
     const oAuth2Client = getOAuthClient();
+
+    // 1. Check if client has their own connection
+    if (client?.googleAccessToken) {
+        oAuth2Client.setCredentials({
+            access_token: client.googleAccessToken,
+            refresh_token: client.googleRefreshToken ?? undefined,
+            expiry_date: client.googleTokenExpiry?.getTime(),
+        });
+        return { oAuth2Client, calendarId: staffCalendarId || client.calendarId || "primary" };
+    }
+
+    // 2. FALLBACK: Use CitaLiks Master Account (Master Calendar Architecture)
+    // We expect MASTER_GOOGLE_REFRESH_TOKEN in env
+    const masterRefreshToken = process.env.MASTER_GOOGLE_REFRESH_TOKEN;
+    if (!masterRefreshToken) {
+        throw new Error("Google not connected and Master Account not configured");
+    }
+
     oAuth2Client.setCredentials({
-        access_token: client.googleAccessToken,
-        refresh_token: client.googleRefreshToken ?? undefined,
-        expiry_date: client.googleTokenExpiry?.getTime(),
+        refresh_token: masterRefreshToken
     });
 
-    return { oAuth2Client, calendarId: staffCalendarId || client.calendarId || "primary" };
+    // If client doesn't have a calendarId, we should ideally create one on the master account
+    // For now, if missing, we'll try to find or create a calendar named after instructions
+    let targetCalendarId = client?.calendarId;
+
+    if (!targetCalendarId || targetCalendarId === "primary") {
+        try {
+            const calendarSvc = google.calendar({ version: "v3", auth: oAuth2Client });
+            const list = await calendarSvc.calendarList.list();
+            const existing = list.data.items?.find(c => c.summary === `CitaLiks: ${client?.businessName || clientId}`);
+            
+            if (existing) {
+                targetCalendarId = existing.id!;
+            } else {
+                console.log(`[Calendar/Master] Creating dedicated calendar for ${client?.businessName}`);
+                const created = await calendarSvc.calendars.insert({
+                    requestBody: { summary: `CitaLiks: ${client?.businessName || clientId}` }
+                });
+                targetCalendarId = created.data.id!;
+            }
+
+            // Save this calendarId for future use (even if it's on the master account)
+            await db.client.update({
+                where: { id: clientId },
+                data: { calendarId: targetCalendarId }
+            });
+        } catch (err) {
+            console.error("[Calendar/Master] Error managing master calendar:", (err as any).message);
+            targetCalendarId = "primary"; // Fallback to master's primary if creation fails
+        }
+    }
+
+    return { oAuth2Client, calendarId: staffCalendarId || targetCalendarId };
 }
 
 export interface TimeSlot {
@@ -421,21 +496,38 @@ export async function bookAppointment(params: {
 
     const client = await db.client.findUnique({
         where: { id: params.clientId },
-        select: { activeCalendarProvider: true, googleAccessToken: true, microsoftAccessToken: true, pmsProvider: true, pmsApiKey: true, pmsUrl: true }
+        select: { 
+            activeCalendarProvider: true, 
+            googleAccessToken: true, 
+            microsoftAccessToken: true, 
+            pmsProvider: true, 
+            pmsApiKey: true, 
+            pmsUrl: true,
+            crmActive: true,
+            crmProvider: true,
+            crmApiKey: true,
+            crmUrl: true,
+            crmClientId: true,
+            crmClientSecret: true,
+            crmRefreshToken: true
+        }
     });
 
     let externalId: string | null = null;
 
-    if (client?.activeCalendarProvider === "GOOGLE") {
+    // 1. Sync with Calendar Providers (Independent blocks for "Dual Sync" support)
+    
+    // --- Google Calendar Sync ---
+    if (client?.activeCalendarProvider === "GOOGLE" || (client?.googleAccessToken)) {
         try {
-            const { oAuth2Client, calendarId } = await getAuthenticatedGoogleClient(params.clientId, db);
+            const { oAuth2Client, calendarId: gCalId } = await getAuthenticatedGoogleClient(params.clientId, db);
             const calendar = google.calendar({ version: "v3", auth: oAuth2Client });
 
             const startDateTime = `${params.date}T${params.time.substring(0, 5)}:00`;
             const endDateTime = new Date(new Date(startDateTime).getTime() + durationMin * 60000).toISOString();
 
             const res = await calendar.events.insert({
-                calendarId,
+                calendarId: gCalId,
                 requestBody: {
                     summary: `${params.serviceName} - ${params.callerName}`,
                     description: `Cita agendada por CitaLiks.\nServicio: ${params.serviceName}\nCliente: ${params.callerName}\nTeléfono: ${params.callerPhone || 'No indicado'}`,
@@ -443,11 +535,18 @@ export async function bookAppointment(params: {
                     end: { dateTime: endDateTime, timeZone: 'Europe/Madrid' }
                 }
             });
-            externalId = res.data.id || null;
+            const gId = res.data.id || null;
+            if (gId) {
+                externalId = gId; // Primary ID if Google is used
+                console.log(`[calendar/bookAppointment] Google sync success: ${gId}`);
+            }
         } catch (err) {
             console.warn("[calendar/bookAppointment] Google sync failed", (err as any).message);
         }
-    } else if (client?.activeCalendarProvider === "MICROSOFT") {
+    }
+
+    // --- Microsoft Outlook Sync ---
+    if (client?.activeCalendarProvider === "MICROSOFT" || (client?.microsoftAccessToken)) {
         try {
             const token = await getAuthenticatedMicrosoftClient(params.clientId, db);
             const startDateTime = `${params.date}T${params.time.substring(0, 5)}:00`;
@@ -470,11 +569,38 @@ export async function bookAppointment(params: {
                 })
             });
             const event = await res.json();
-            externalId = event.id;
+            if (event.id) {
+                if (!externalId) externalId = event.id;
+                console.log(`[calendar/bookAppointment] Microsoft sync success: ${event.id}`);
+            }
         } catch (err) {
             console.warn("[calendar/bookAppointment] Microsoft sync failed", (err as any).message);
         }
-    } else if (client?.activeCalendarProvider === "PMS") {
+    }
+
+    // 2. Dispatch Secondary Syncs (Non-blocking for the bot)
+    // This allows the bot to respond immediately once the "Master" is confirmed
+    dispatchSecondarySyncs({
+        client,
+        params,
+        localAptId: localApt.id,
+        db
+    }).catch(err => console.error("[calendar/book] Dispatch error:", err));
+
+    return { eventId: localApt.id, confirmed: true };
+}
+
+/**
+ * Handles all secondary integrations (CRM, PMS, Webhooks) 
+ * after the master calendar is confirmed.
+ */
+async function dispatchSecondarySyncs(ctx: { client: any, params: any, localAptId: string, db: any }) {
+    const { client, params, localAptId, db } = ctx;
+    let externalId: string | null = null;
+    const durationMin = params.durationMin || 30;
+
+    // --- PMS Sync ---
+    if (client?.activeCalendarProvider === "PMS" || client?.pmsActive) {
         try {
             const connector = await getPMSConnector(client.pmsProvider, client);
             if (connector) {
@@ -485,18 +611,18 @@ export async function bookAppointment(params: {
                     time: params.time,
                     service: params.serviceName
                 });
-                externalId = result.id;
+                if (result.id) externalId = result.id;
             }
         } catch (err) {
-            console.warn("[calendar/bookAppointment] PMS sync failed", (err as any).message);
+            console.warn("[sync/PMS] Failed", (err as any).message);
         }
     }
 
     if (externalId) {
-        await (db as any).appointment.update({ where: { id: localApt.id }, data: { externalId } });
+        await (db as any).appointment.update({ where: { id: localAptId }, data: { externalId } });
     }
 
-    // 2. Sync with CRM if active
+    // --- CRM / Webhook Sync ---
     if (client?.crmActive && params.callerPhone) {
         try {
             const crm = getCRMConnector(client.crmProvider, client);
@@ -514,11 +640,9 @@ export async function bookAppointment(params: {
                 }
             }
         } catch (crmErr) {
-            console.warn("[calendar/book] CRM sync failed (non-blocking)", (crmErr as any).message);
+            console.warn("[sync/CRM] Failed", (crmErr as any).message);
         }
     }
-
-    return { eventId: localApt.id, confirmed: true };
 }
 
 export async function cancelAppointment(params: {

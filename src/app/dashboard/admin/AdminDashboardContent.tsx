@@ -6,7 +6,7 @@ import {
     CheckCircle2, XCircle, Search, RefreshCw, Edit2, Save, X,
     MessageSquare, Clock, TrendingUp, AlertCircle, Copy, ExternalLink,
     ChevronLeft, ChevronDown, Bot, Zap, CalendarX, CalendarCheck,
-    Brain, LifeBuoy
+    Brain, LifeBuoy, Loader2
 } from "lucide-react";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -32,6 +32,8 @@ export default function AdminDashboardContent({ clients: initialClients, admin: 
     const [sendingInvite, setSendingInvite] = React.useState(false);
     const [activeTab, setActiveTab] = React.useState<TabType>("clients");
     const [selectedClient, setSelectedClient] = React.useState<any>(null);
+    const [zohoForm, setZohoForm] = React.useState({ clientId: "", clientSecret: "", grantCode: "", region: "eu" });
+    const [linkingZoho, setLinkingZoho] = React.useState(false);
     const [clientDetailTab, setClientDetailTab] = React.useState<ClientDetailTab>("info");
     const [reportData, setReportData] = React.useState<any>(null);
     const [loadingReport, setLoadingReport] = React.useState(false);
@@ -239,6 +241,31 @@ export default function AdminDashboardContent({ clients: initialClients, admin: 
             }
         } catch (err) {
             showToast("Error al eliminar", "err");
+        }
+    };
+
+
+    const handleZohoLink = async () => {
+        if (!selectedClient) return;
+        setLinkingZoho(true);
+        try {
+            const res = await fetch("/api/admin/crm/zoho/exchange", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ ...zohoForm, businessId: selectedClient.id })
+            });
+            const data = await res.json();
+            if (data.success) {
+                showToast("Zoho Vinculado: La conexión se ha establecido correctamente.");
+                setSelectedClient(data.client);
+                setClients(prev => prev.map(c => c.id === data.client.id ? data.client : c));
+            } else {
+                showToast(`Error en Zoho: ${data.error}`, "err");
+            }
+        } catch (err: any) {
+            showToast(`Error: ${err.message}`, "err");
+        } finally {
+            setLinkingZoho(false);
         }
     };
 
@@ -1131,6 +1158,10 @@ export default function AdminDashboardContent({ clients: initialClients, admin: 
                                             { field: "microsoftAccessToken", label: "Microsoft Access Token", icon: <Mail size={14} /> },
                                             { field: "crmApiKey", label: "CRM API Key", icon: <Database size={14} /> },
                                             { field: "crmUrl", label: "CRM API URL", icon: <Zap size={14} /> },
+                                            { field: "crmProvider", label: "CRM Provider (ZOHO/HUBSPOT...)", icon: <Database size={14} /> },
+                                            { field: "crmClientId", label: "CRM Client ID (Zoho)", icon: <ShieldCheck size={14} /> },
+                                            { field: "crmClientSecret", label: "CRM Client Secret (Zoho)", icon: <ShieldCheck size={14} /> },
+                                            { field: "crmRefreshToken", label: "CRM Refresh Token (Zoho)", icon: <Database size={14} /> },
                                             { field: "pmsApiKey", label: "PMS API Key", icon: <Database size={14} /> },
                                             { field: "pmsUrl", label: "PMS API URL", icon: <Zap size={14} /> },
                                             { field: "restaurantProvider", label: "Motor Reservas (COVERMANAGER/THEFORK...)", icon: <Database size={14} /> },
@@ -1153,6 +1184,47 @@ export default function AdminDashboardContent({ clients: initialClients, admin: 
                                         ))}
                                     </div>
 
+                                    {/* Zoho Connector Wizard */}
+                                    <div className="p-6 rounded-3xl bg-blue-600/5 border border-blue-500/10 space-y-4">
+                                        <div className="flex items-center gap-3 mb-2">
+                                            <div className="w-10 h-10 rounded-xl bg-blue-500/10 flex items-center justify-center text-blue-400">
+                                                <Zap size={20} />
+                                            </div>
+                                            <div>
+                                                <h4 className="font-bold">Asistente de Vinculación Zoho</h4>
+                                                <p className="text-xs text-white/40">Intercambia el Grant Code por un Refresh Token permanente.</p>
+                                            </div>
+                                        </div>
+                                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                            <input 
+                                                placeholder="Client ID" 
+                                                className="bg-white/5 border border-white/10 rounded-xl px-4 py-2 text-sm"
+                                                value={zohoForm.clientId}
+                                                onChange={e => setZohoForm({...zohoForm, clientId: e.target.value})}
+                                            />
+                                            <input 
+                                                placeholder="Client Secret" 
+                                                className="bg-white/5 border border-white/10 rounded-xl px-4 py-2 text-sm"
+                                                value={zohoForm.clientSecret}
+                                                onChange={e => setZohoForm({...zohoForm, clientSecret: e.target.value})}
+                                            />
+                                            <input 
+                                                placeholder="Grant Code" 
+                                                className="bg-white/5 border border-white/10 rounded-xl px-4 py-2 text-sm sm:col-span-2"
+                                                value={zohoForm.grantCode}
+                                                onChange={e => setZohoForm({...zohoForm, grantCode: e.target.value})}
+                                            />
+                                        </div>
+                                        <button 
+                                            disabled={linkingZoho}
+                                            onClick={handleZohoLink}
+                                            className="w-full py-3 bg-blue-600 hover:bg-blue-500 disabled:opacity-50 text-white rounded-xl font-bold transition-all flex items-center justify-center gap-2"
+                                        >
+                                            {linkingZoho ? <Loader2 size={18} className="animate-spin" /> : <ShieldCheck size={18} />}
+                                            Vincular Zoho CRM
+                                        </button>
+                                    </div>
+
                                     {/* Status + Onboarding */}
                                     <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-6">
                                         <div className="cursor-pointer hover:scale-[1.02] transition-transform" onClick={() => handleSaveField("isActive", !selectedClient.isActive as any)}>
@@ -1173,6 +1245,12 @@ export default function AdminDashboardContent({ clients: initialClients, admin: 
                                             </div>
                                         )}
                                         <StatusBadge label="Agente Retell" value={selectedClient.retellAgentId ? "Vinculado" : "Sin agente"} active={!!selectedClient.retellAgentId} />
+                                        <div className="cursor-pointer hover:scale-[1.02] transition-transform" onClick={() => handleSaveField("crmActive", !selectedClient.crmActive as any)}>
+                                            <StatusBadge label="CRM Sync" value={selectedClient.crmActive ? "Sincronizando" : "Pausado"} active={selectedClient.crmActive} />
+                                        </div>
+                                        <div className="cursor-pointer hover:scale-[1.02] transition-transform" onClick={() => handleSaveField("pmsActive", !selectedClient.pmsActive as any)}>
+                                            <StatusBadge label="PMS Sync" value={selectedClient.pmsActive ? "Activo" : "Inactivo"} active={selectedClient.pmsActive} />
+                                        </div>
                                         <div className="cursor-pointer hover:scale-[1.02] transition-transform" onClick={() => handleSaveField("restaurantActive", !selectedClient.restaurantActive as any)}>
                                             <StatusBadge label="Motor Restaurante" value={selectedClient.restaurantActive ? "Activo" : "Inactivo"} active={selectedClient.restaurantActive} />
                                         </div>
