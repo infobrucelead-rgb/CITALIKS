@@ -90,11 +90,16 @@ export default function AdminDashboardContent({ clients: initialClients, admin: 
     const fetchInvitations = async () => {
         try {
             const res = await fetch("/api/admin/invite");
-            if (!res.ok) return;
+            if (!res.ok) {
+                const errData = await res.json().catch(() => ({}));
+                showToast(`Error ${res.status}: ${errData.error || "No se pudieron cargar invitaciones"}`, "err");
+                return;
+            }
             const data = await res.json();
             if (data.invitations) setInvitations(data.invitations);
         } catch (err) {
             console.error("Error fetching invitations:", err);
+            showToast("Error de conexión al cargar invitaciones", "err");
         }
     };
 
@@ -102,11 +107,16 @@ export default function AdminDashboardContent({ clients: initialClients, admin: 
         setLoadingProspects(true);
         try {
             const res = await fetch("/api/admin/send-payment-link");
-            if (!res.ok) return;
+            if (!res.ok) {
+                const errData = await res.json().catch(() => ({}));
+                showToast(`Error ${res.status}: ${errData.error || "No se pudieron cargar leads"}`, "err");
+                return;
+            }
             const data = await res.json();
             if (data.prospects) setProspects(data.prospects);
         } catch (err) {
             console.error("Error fetching prospects:", err);
+            showToast("Error de conexión al cargar leads", "err");
         } finally {
             setLoadingProspects(false);
         }
@@ -116,11 +126,16 @@ export default function AdminDashboardContent({ clients: initialClients, admin: 
         setLoadingAppointments(true);
         try {
             const res = await fetch("/api/admin/appointments");
-            if (!res.ok) return;
+            if (!res.ok) {
+                const errData = await res.json().catch(() => ({}));
+                showToast(`Error ${res.status}: ${errData.error || "No se pudieron cargar citas"}`, "err");
+                return;
+            }
             const data = await res.json();
             if (data.appointments) setAppointments(data.appointments);
         } catch (err) {
             console.error("Error fetching appointments:", err);
+            showToast("Error de conexión al cargar citas", "err");
         } finally {
             setLoadingAppointments(false);
         }
@@ -144,11 +159,16 @@ export default function AdminDashboardContent({ clients: initialClients, admin: 
         setLoadingTickets(true);
         try {
             const res = await fetch("/api/admin/tickets");
-            if (!res.ok) return;
+            if (!res.ok) {
+                const errData = await res.json().catch(() => ({}));
+                showToast(`Error ${res.status}: ${errData.error || "No se pudieron cargar tickets"}`, "err");
+                return;
+            }
             const data = await res.json();
             if (data.tickets) setTickets(data.tickets);
         } catch (err) {
             console.error("Error fetching tickets:", err);
+            showToast("Error de conexión al cargar tickets", "err");
         } finally {
             setLoadingTickets(false);
         }
@@ -1238,7 +1258,7 @@ export default function AdminDashboardContent({ clients: initialClients, admin: 
                                         ) : (
                                             <div
                                                 className="cursor-pointer hover:scale-[1.02] transition-transform group"
-                                                onClick={() => window.location.href = '/api/google/connect'}
+                                                onClick={() => window.open('/api/google/connect', 'google-auth', 'width=600,height=700')}
                                                 title="Haz clic para autorizar a Google Calendar en esta cuenta"
                                             >
                                                 <StatusBadge label="Google Calendar" value="Haz clic para conectar" active={false} />
@@ -1263,7 +1283,11 @@ export default function AdminDashboardContent({ clients: initialClients, admin: 
                                             Interés en Integraciones (Onboarding)
                                         </h3>
                                         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                                            <PreferenceBadge label="Google Calendar" active={selectedClient.wantsGoogleCalendar} />
+                                                                            <PreferenceBadge 
+                                                label="Google Calendar" 
+                                                active={selectedClient.wantsGoogleCalendar} 
+                                                connected={!!selectedClient.googleAccessToken}
+                                            />
                                             <PreferenceBadge label="Microsoft Outlook" active={selectedClient.wantsMicrosoftOutlook} />
                                             <PreferenceBadge label="CRM / HubSpot" active={selectedClient.wantsCRM} />
                                             <PreferenceBadge label="PMS / Gestión" active={selectedClient.wantsPMS} />
@@ -1647,14 +1671,14 @@ function StatusBadge({ label, value, active }: { label: string; value: string; a
     );
 }
 
-function PreferenceBadge({ label, active }: { label: string; active: boolean }) {
+function PreferenceBadge({ label, active, connected }: { label: string; active: boolean; connected?: boolean }) {
     return (
         <div className={`p-3 rounded-2xl border flex flex-col items-center justify-center text-center transition-all ${active ? "bg-blue-600/10 border-blue-600/20" : "bg-white/[0.02] border-white/5 opacity-40"}`}>
             <p className="text-[9px] uppercase font-black text-white/40 tracking-widest mb-2">{label}</p>
             {active ? (
-                <div className="flex items-center gap-1.5 text-blue-400">
-                    <CheckCircle2 size={12} />
-                    <span className="text-[10px] font-black uppercase">Solicitado</span>
+                <div className={`flex items-center gap-1.5 ${connected ? "text-emerald-400" : "text-blue-400"}`}>
+                    {connected ? <CheckCircle2 size={12} /> : <Zap size={12} className="animate-pulse" />}
+                    <span className="text-[10px] font-black uppercase">{connected ? "Conectado" : "Solicitado"}</span>
                 </div>
             ) : (
                 <span className="text-[10px] font-black uppercase text-white/20">No interés</span>

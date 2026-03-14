@@ -1,4 +1,5 @@
 import { clerkMiddleware, createRouteMatcher } from "@clerk/nextjs/server";
+import { prisma } from "@/lib/db";
 
 const isProtectedRoute = createRouteMatcher(["/dashboard(.*)", "/onboarding(.*)"]);
 
@@ -16,18 +17,27 @@ const isPublicApiRoute = createRouteMatcher([
 const isAdminRoute = createRouteMatcher(["/api/admin/(.*)"]);
 
 const proxyHandler = clerkMiddleware(async (auth, req) => {
-    // 1. Proteger rutas de administración (Solo PLATFORM_ADMIN)
     if (isAdminRoute(req)) {
-        const { userId, sessionClaims } = await auth();
-        const role = (sessionClaims?.metadata as any)?.role;
+        const { userId } = await auth();
+        if (!userId) {
+            return new Response(JSON.stringify({ error: "No autenticado" }), {
+                status: 401,
+                headers: { "Content-Type": "application/json" }
+            });
+        }
 
-        if (!userId || role !== 'PLATFORM_ADMIN') {
+        const admin = await prisma.client.findUnique({
+            where: { clerkUserId: userId },
+            select: { role: true }
+        });
+
+        if (!admin || admin.role !== 'PLATFORM_ADMIN') {
             return new Response(JSON.stringify({ error: "No autorizado. Se requiere rol PLATFORM_ADMIN." }), {
                 status: 403,
                 headers: { "Content-Type": "application/json" }
             });
         }
-        return; // Permitir si es admin
+        return; // Permitir si es admin en BD
     }
 
     // 2. Rutas de Retell, Stripe webhooks y crons: no requieren auth de Clerk

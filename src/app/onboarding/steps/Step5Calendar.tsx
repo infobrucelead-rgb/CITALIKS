@@ -1,6 +1,6 @@
 "use client";
 import React, { useState } from "react";
-import { Calendar, Mail, Zap, Database, CheckCircle2, Utensils } from "lucide-react";
+import { Calendar, Mail, Zap, Database, CheckCircle2, Utensils, RefreshCw } from "lucide-react";
 
 export default function Step5Calendar({
     data,
@@ -19,8 +19,29 @@ export default function Step5Calendar({
         wantsRestaurant: data?.wantsRestaurant ?? false,
     });
 
+    const [isConnecting, setIsConnecting] = useState(false);
+
+    // Escuchar el mensaje de éxito del popup
+    React.useEffect(() => {
+        const handleMessage = (event: MessageEvent) => {
+            if (event.data === "google-connected") {
+                setIsConnecting(false);
+                // Forzar recarga de la página para obtener el nuevo estado de la DB
+                // o simplemente esperar a que el usuario pulse "Continuar"
+                window.location.reload(); 
+            }
+        };
+        window.addEventListener("message", handleMessage);
+        return () => window.removeEventListener("message", handleMessage);
+    }, []);
+
     const togglePref = (key: keyof typeof preferences) => {
         setPreferences(prev => ({ ...prev, [key]: !prev[key] }));
+    };
+
+    const handleGoogleConnect = () => {
+        setIsConnecting(true);
+        window.open("/api/google/connect", "google-auth", "width=600,height=700");
     };
 
     const handleNext = () => {
@@ -39,22 +60,26 @@ export default function Step5Calendar({
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 py-2">
                 <div className="sm:col-span-2">
                     <button
-                        onClick={() => window.open("/api/auth/google", "_blank", "width=600,height=700")}
+                        onClick={handleGoogleConnect}
+                        disabled={isConnecting}
                         className={`w-full flex items-center justify-between p-4 rounded-2xl border transition-all ${data?.googleAccessToken ? "bg-green-500/10 border-green-500/30" : "bg-blue-600/10 border-blue-600/30 hover:border-blue-500/50"
-                            }`}
+                            } ${isConnecting ? "opacity-70 cursor-not-allowed" : ""}`}
                     >
                         <div className="flex items-center gap-4">
                             <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${data?.googleAccessToken ? "bg-green-500" : "bg-blue-600"} text-white`}>
-                                <Calendar size={20} />
+                                {isConnecting ? <RefreshCw className="animate-spin" size={20} /> : <Calendar size={20} />}
                             </div>
                             <div className="text-left">
-                                <p className="text-sm font-bold">Vincular con Google Calendar</p>
+                                <p className="text-sm font-bold">
+                                    {isConnecting ? "Conectando..." : "Vincular con Google Calendar"}
+                                </p>
                                 <p className="text-[10px] text-white/30">
                                     {data?.googleAccessToken ? "✓ Cuenta vinculada correctamente" : "Necesario para evitar duplicados"}
                                 </p>
                             </div>
                         </div>
-                        {!data?.googleAccessToken && <Zap size={16} className="text-blue-400 animate-pulse" />}
+                        {!data?.googleAccessToken && !isConnecting && <Zap size={16} className="text-blue-400 animate-pulse" />}
+                        {isConnecting && <RefreshCw size={16} className="text-blue-400 animate-spin" />}
                         {data?.googleAccessToken && <CheckCircle2 size={16} className="text-green-500" />}
                     </button>
                     {!data?.googleAccessToken && (

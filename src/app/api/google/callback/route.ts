@@ -42,11 +42,8 @@ export async function GET(req: NextRequest) {
             data: { onboardingStep: 5 }
         });
 
-        const onboardingUrl = tokenStr
-            ? `/onboarding?token=${tokenStr}&calendar=connected`
-            : `/onboarding?calendar=connected`;
-
-        return NextResponse.redirect(new URL(onboardingUrl, req.url));
+        const successUrl = new URL("/api/google/success", req.url);
+        return NextResponse.redirect(successUrl);
     } catch (err) {
         console.error("[google/callback] error:", err);
         const errFallbackUrl = tokenStr
