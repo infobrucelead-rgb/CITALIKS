@@ -200,8 +200,8 @@ Responde SIEMPRE en español de España.`;
 }
 
 export const VOICE_MAPPING: Record<string, { id: string; model?: string }> = {
-    "male": { id: "custom_voice_e3fbb6c669bc652610c5b60c8c" },
-    "female": { id: "eleven_multilingual_v2-Isabella" } // Isabella es una voz premium de alta calidad en español
+    "male": { id: "custom_voice_8f09ce392fd97452282b332a80" }, // Locutor
+    "female": { id: "custom_voice_534195c3feb5d31c22fd05034e" } // Carolina
 };
 
 export async function createRetellAgent(config: AgentConfig): Promise<string> {
