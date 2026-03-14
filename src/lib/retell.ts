@@ -266,7 +266,7 @@ async function createRetellLLM(
             type: "custom" as const,
             name: "check_availability",
             description: "Consulta los huecos libres en la agenda. Es MUY IMPORTANTE incluir el service_name para que la duración de la cita sea correcta.",
-            url: `${baseUrl}/api/retell/function-call?name=check_availability`,
+            url: `${baseUrl.replace(/\/$/, '')}/api/retell/function-call?name=check_availability`,
             method: "POST" as const,
             timeout_ms: 10000,
             parameters: {
@@ -296,7 +296,7 @@ async function createRetellLLM(
             type: "custom" as const,
             name: "book_appointment",
             description: "Crea una cita en la agenda. Asegúrate de incluir el service_name exacto que el cliente solicitó.",
-            url: `${baseUrl}/api/retell/function-call?name=book_appointment`,
+            url: `${baseUrl.replace(/\/$/, '')}/api/retell/function-call?name=book_appointment`,
             method: "POST" as const,
             timeout_ms: 10000,
             parameters: {
@@ -342,7 +342,7 @@ async function createRetellLLM(
             type: "custom" as const,
             name: "cancel_appointment",
             description: "Cancela una cita existente. Puedes buscar por nombre del cliente, por teléfono, o por ambos. Si el cliente no recuerda su nombre, pídele el número de teléfono con el que reservó.",
-            url: `${baseUrl}/api/retell/function-call?name=cancel_appointment`,
+            url: `${baseUrl.replace(/\/$/, '')}/api/retell/function-call?name=cancel_appointment`,
             method: "POST" as const,
             timeout_ms: 10000,
             parameters: {
@@ -361,7 +361,7 @@ async function createRetellLLM(
             type: "custom" as const,
             name: "reschedule_appointment",
             description: "Mueve una cita existente a una nueva fecha y hora. Usa esto cuando el cliente quiera cambiar su cita, no cuando quiera cancelarla definitivamente.",
-            url: `${baseUrl}/api/retell/function-call?name=reschedule_appointment`,
+            url: `${baseUrl.replace(/\/$/, '')}/api/retell/function-call?name=reschedule_appointment`,
             method: "POST" as const,
             timeout_ms: 15000,
             parameters: {
@@ -382,7 +382,7 @@ async function createRetellLLM(
             type: "custom" as const,
             name: "notificar_equipo",
             description: "Usa esta función cuando el cliente quiera hablar con una persona real, solicite información de precios o contratación, o cuando detectes una oportunidad de venta de alta prioridad. Envió una alerta urgente al equipo humano.",
-            url: `${baseUrl}/api/retell/function-call?name=notificar_equipo`,
+            url: `${baseUrl.replace(/\/$/, '')}/api/retell/function-call?name=notificar_equipo`,
             method: "POST" as const,
             timeout_ms: 8000,
             parameters: {
@@ -471,7 +471,7 @@ export async function updateRetellAgent(
             type: "custom" as const,
             name: "check_availability",
             description: "Consulta los huecos libres en la agenda. Es MUY IMPORTANTE incluir el service_name para que la duración de la cita sea correcta.",
-            url: `${baseUrl}/api/retell/function-call?name=check_availability`,
+            url: `${baseUrl.replace(/\/$/, '')}/api/retell/function-call?name=check_availability`,
             method: "POST" as const,
             timeout_ms: 10000,
             parameters: {
@@ -489,7 +489,7 @@ export async function updateRetellAgent(
             type: "custom" as const,
             name: "book_appointment",
             description: "Crea una cita en la agenda. Asegúrate de incluir el service_name exacto que el cliente solicitó.",
-            url: `${baseUrl}/api/retell/function-call?name=book_appointment`,
+            url: `${baseUrl.replace(/\/$/, '')}/api/retell/function-call?name=book_appointment`,
             method: "POST" as const,
             timeout_ms: 10000,
             parameters: {
@@ -511,7 +511,7 @@ export async function updateRetellAgent(
             type: "custom" as const,
             name: "cancel_appointment",
             description: "Cancela una cita existente. Puedes buscar por nombre del cliente, por teléfono, o por ambos. Si el cliente no recuerda su nombre, pídele el número de teléfono con el que reservó.",
-            url: `${baseUrl}/api/retell/function-call?name=cancel_appointment`,
+            url: `${baseUrl.replace(/\/$/, '')}/api/retell/function-call?name=cancel_appointment`,
             method: "POST" as const,
             timeout_ms: 10000,
             parameters: {
@@ -530,7 +530,7 @@ export async function updateRetellAgent(
             type: "custom" as const,
             name: "reschedule_appointment",
             description: "Mueve una cita existente a una nueva fecha y hora. Usa esto cuando el cliente quiera cambiar su cita, no cuando quiera cancelarla definitivamente.",
-            url: `${baseUrl}/api/retell/function-call?name=reschedule_appointment`,
+            url: `${baseUrl.replace(/\/$/, '')}/api/retell/function-call?name=reschedule_appointment`,
             method: "POST" as const,
             timeout_ms: 15000,
             parameters: {

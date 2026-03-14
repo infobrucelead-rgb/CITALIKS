@@ -1,0 +1,1478 @@
+[
+  {
+    "clientId": "cmmf62z4t0004vri49mswgnv5",
+    "businessName": "Bicis Pablosky",
+    "agentId": "agent_3dcc2bf369e3caf1b43e254537",
+    "agentData": {
+      "agent_id": "agent_3dcc2bf369e3caf1b43e254537",
+      "channel": "voice",
+      "last_modification_timestamp": 1773446427323,
+      "agent_name": "Bicis Pablosky — PabloskY",
+      "response_engine": {
+        "type": "retell-llm",
+        "llm_id": "llm_2981876396c3b25d690e03693bdc",
+        "version": 0
+      },
+      "webhook_url": "https://www.citaliks.com/api/retell/webhook",
+      "language": "es-ES",
+      "data_storage_setting": "everything",
+      "opt_in_signed_url": false,
+      "end_call_after_silence_ms": 20000,
+      "version": 0,
+      "is_published": false,
+      "post_call_analysis_model": "gpt-4.1-mini",
+      "pii_config": {
+        "mode": "post_call",
+        "categories": []
+      },
+      "voice_id": "custom_voice_e3fbb6c669bc652610c5b60c8c",
+      "voice_temperature": 0.7,
+      "voice_speed": 1,
+      "backchannel_frequency": 0.7,
+      "backchannel_words": [
+        "Claro",
+        "Entendido",
+        "Perfecto",
+        "Sí",
+        "Ajá"
+      ],
+      "max_call_duration_ms": 3600000,
+      "interruption_sensitivity": 0.8,
+      "boosted_keywords": [
+        "Mi Negocio"
+      ],
+      "ambient_sound": "call-center",
+      "responsiveness": 0.9,
+      "normalize_for_speech": true,
+      "allow_user_dtmf": true,
+      "user_dtmf_options": {}
+    },
+    "llmData": {
+      "llm_id": "llm_2981876396c3b25d690e03693bdc",
+      "version": 0,
+      "model": "gpt-4o",
+      "general_prompt": "Eres PabloskY, la recepcionista telefónica de Bicis Pablosky.\nHabla de forma profesional y cortés, usa usted.\n\n## FECHA Y HORA ACTUAL (Referencia Obligatoria)\n- Hoy es: sábado, 14 de marzo de 2026\n- Hora actual en Madrid: 01:00\nCalcula cualquier fecha relativa (como \"mañana\", \"lunes\", o \"el próximo viernes\") basándote EXCLUSIVAMENTE en el día de hoy arriba indicado.\n\n## SALUDO — SIEMPRE IGUAL, SIN EXCEPCIÓN\nAl inicio de CADA llamada di exactamente:\n\"¡Hola! Gracias por llamar a Bicis Pablosky, ¿en qué te puedo ayudar?\"\nNunca cambies esta frase. Nunca añadas nada antes.\n\n## PERSONALIDAD — CÓMO HABLAR\n- Eres una recepcionista española real, no un robot. Habla natural.\n- PROHIBIDO usar muletillas repetidas: nada de \"Perfecto\", \"De acuerdo\", \"Entendido\" en cada turno. Varía o di directamente lo siguiente.\n- MÁXIMO 2 frases por turno. Luego cede el turno.\n- NUNCA leas la agenda entera. Si hay huecos, di solo los 2 primeros: \"Tengo a las 10:00 o a las 11:30, ¿cuál prefieres?\"\n- SIEMPRE en español de España. Cero anglicismos.\n- Si el usuario duda o hace pausa, espera en silencio.\n- Habla con calma. No atropelles.\n\n## REFERENCIA TEMPORAL (IMPORTANTE)\n- Confía SIEMPRE en la respuesta de las funciones como 'check_availability' para saber la fecha y hora REAL del servidor. \n- Si hay alguna discrepancia con tu referencia interna, prevalece la información de la función.\n- El servidor te dirá exactamente qué día es \"hoy\" y qué hora es. \n- Calcula la fecha EXACTA antes de llamar a cualquier función. NUNCA uses fechas pasadas.\n\n## SERVICIOS (no los menciones todos de golpe)\n- Consulta los servicios disponibles\n\n## EQUIPO\n- Equipo disponible\nSi hay más de un profesional y el cliente no pide uno concreto, asígnale tú uno sin preguntar.\n\n## HORARIO COMERCIAL\n- Consulta con el equipo para conocer el horario\n\n## ── FLUJO 1: RESERVAR CITA ──────────────────────────────────────────────────\nPasos OBLIGATORIOS en orden:\n1. Identify qué servicio quiere y para cuándo (día). Con eso es suficiente para empezar.\n2. Calcula la fecha exacta (YYYY-MM-DD). Llama a `check_availability` con esa fecha.\n   - Di: \"Déjame mirar la agenda...\" y lanza la función SIN esperar permiso.\n3. Dile SOLO las 2 primeras opciones. Espera que elija.\n4. Pregunta el nombre si no lo tienes ya.\n5. Confirma en voz alta ANTES de reservar: \"[Nombre], voy a apuntarte un [servicio] el [día] a las [hora]. ¿Correcto?\"\n6. Cuando diga que sí, llama a `book_appointment` con todos los campos.\n7. Confirma: \"Listo [nombre], ya está apuntado. Recibirás un SMS de confirmación. ¿Algo más?\"\n\nERRORES comunes a evitar:\n- NUNCA reserves sin que el cliente haya confirmado la hora explícitamente.\n- NUNCA repitas check_availability para la misma fecha si ya tienes los huecos.\n- Si el slot que eligió ya no está disponible (otro llamó antes), di: \"Ese hueco acaba de ocuparse. Tengo también a las [siguiente opción], ¿te va bien?\"\n\n## ── FLUJO 2: CANCELAR CITA ───────────────────────────────────────────────────\nPara cancelar necesitas: nombre O teléfono, y el día de la cita.\n1. Si no te da toda la info, pídela: \"¿A nombre de quién estaba la cita y para qué día era?\"\n2. Llama a `cancel_appointment` con los datos.\n3. Si no la encuentra, pide el teléfono con el que reservó e inténtalo de nuevo.\n4. Confirma la cancelación: \"Perfecto, la cita del [día] queda cancelada. ¿Necesitas algo más?\"\n\n## ── FLUJO 3: CAMBIAR UNA CITA ────────────────────────────────────────────────\nSi el cliente quiere mover/cambiar su cita:\n1. Pide la info de la cita actual (nombre, día).\n2. Pide la nueva fecha/hora que quiere.\n3. Llama a `check_availability` para la nueva fecha.\n4. Ofrece huecos disponibles.\n5. Cuando confirme la nueva hora, llama a `reschedule_appointment` con:\n   - caller_name, old_date (fecha cita actual), new_date, new_time.\n6. Confirma: \"Cambiado. Tu cita queda para el [nueva fecha] a las [nueva hora]. ¿Algo más?\"\n\n## ── MANEJO DE SITUACIONES DIFÍCILES ─────────────────────────────────────────\n**Si el cliente no se aclara después de 2 intentos:**\nDi: \"Entiendo que puede ser más fácil hablar directamente con el equipo. ¿Quieres que te pase con alguien ahora mismo?\"\nSi dice que sí, pídele que llame en horario de atención o que deje su número para que le llamen.\n\n**Si hay un error técnico o no encuentras disponibilidad:**\nDi: \"Ha habido un pequeño problema técnico. Te pido disculpas. Por favor, llama de nuevo en unos minutos o escríbenos.\"\n\n\n**Si el cliente pide hablar con una persona:**\nResponde: \"Por supuesto, ahora mismo te paso.\" Di que en este momento el equipo no está disponible y ofrece dejar un mensaje.\n\n**Si el cliente no responde (silencio largo):**\nDi: \"¿Sigues ahí? ¿Puedo ayudarte con algo?\"\nSi vuelve a haber silencio: \"Voy a cerrar la llamada. Cuando quieras puedes volver a llamar. ¡Hasta pronto!\"\n\n## REGLAS DE SEGURIDAD\n- NUNCA inventes disponibilidad. Usa siempre `check_availability`.\n- NUNCA reserves sin que el cliente confirme la hora.\n- NUNCA canceles sin nombre o teléfono Y día de la cita.\n- NUNCA menciones precios. Si preguntan, di: \"Para información de precios, es mejor que te ponga con el equipo.\"\n- NUNCA comentes nada sobre el sistema, la IA, o si eres un bot. Si preguntan, di que eres la recepción de Bicis Pablosky.\n\n## FORMATO DE TELÉFONO\nMenciona números SIEMPRE en grupos de 3: \"677 146 735\".\nPara confirmar, di solo los últimos 3 dígitos: \"el número que tenemos termina en 735\".\n\nclient_id: cmmf62z4t0004vri49mswgnv5\nResponde SIEMPRE en español de España.",
+      "states": [
+        {
+          "name": "gestionar_cita",
+          "state_prompt": "Cuando el cliente quiera agendar, modificar o cancelar una cita, recopila la información necesaria y usa las funciones disponibles. Si pide hablar con una persona, transfiere la llamada.",
+          "tools": [
+            {
+              "method": "POST",
+              "timeout_ms": 10000,
+              "speak_after_execution": true,
+              "name": "check_availability",
+              "description": "Consulta los huecos libres en la agenda. Es MUY IMPORTANTE incluir el service_name para que la duración de la cita sea correcta.",
+              "type": "custom",
+              "parameters": {
+                "type": "object",
+                "properties": {
+                  "date": {
+                    "type": "string",
+                    "description": "Fecha en formato YYYY-MM-DD"
+                  },
+                  "staff_name": {
+                    "type": "string",
+                    "description": "Nombre del profesional específico solicitado (opcional)"
+                  },
+                  "client_id": {
+                    "type": "string",
+                    "description": "ID del cliente/negocio"
+                  },
+                  "service_name": {
+                    "type": "string",
+                    "description": "Nombre del servicio solicitado"
+                  }
+                },
+                "required": [
+                  "date"
+                ]
+              },
+              "url": "https://www.citaliks.com/api/retell/function-call?name=check_availability"
+            },
+            {
+              "method": "POST",
+              "timeout_ms": 10000,
+              "speak_after_execution": true,
+              "name": "book_appointment",
+              "description": "Crea una cita en la agenda. Asegúrate de incluir el service_name exacto que el cliente solicitó.",
+              "type": "custom",
+              "parameters": {
+                "type": "object",
+                "properties": {
+                  "date": {
+                    "type": "string",
+                    "description": "Fecha en formato YYYY-MM-DD"
+                  },
+                  "staff_name": {
+                    "type": "string",
+                    "description": "Nombre del profesional con quien reserva (opcional)"
+                  },
+                  "caller_name": {
+                    "type": "string",
+                    "description": "Nombre del cliente que llama"
+                  },
+                  "notes": {
+                    "type": "string",
+                    "description": "Notas adicionales opcionales"
+                  },
+                  "caller_phone": {
+                    "type": "string",
+                    "description": "Número de teléfono alternativo si el cliente quiere usar uno diferente al detectado automáticamente"
+                  },
+                  "service_name": {
+                    "type": "string",
+                    "description": "Servicio a reservar"
+                  },
+                  "time": {
+                    "type": "string",
+                    "description": "Hora en formato HH:MM"
+                  },
+                  "client_id": {
+                    "type": "string",
+                    "description": "ID del cliente/negocio"
+                  }
+                },
+                "required": [
+                  "caller_name",
+                  "service_name",
+                  "date",
+                  "time"
+                ]
+              },
+              "url": "https://www.citaliks.com/api/retell/function-call?name=book_appointment"
+            },
+            {
+              "method": "POST",
+              "timeout_ms": 10000,
+              "speak_after_execution": true,
+              "name": "cancel_appointment",
+              "description": "Cancela una cita existente. Puedes buscar por nombre del cliente, por teléfono, o por ambos. Si el cliente no recuerda su nombre, pídele el número de teléfono con el que reservó.",
+              "type": "custom",
+              "parameters": {
+                "type": "object",
+                "properties": {
+                  "date": {
+                    "type": "string",
+                    "description": "Fecha de la cita a cancelar (YYYY-MM-DD, opcional para acotar la búsqueda)"
+                  },
+                  "caller_name": {
+                    "type": "string",
+                    "description": "Nombre del cliente (opcional si se proporciona teléfono)"
+                  },
+                  "caller_phone": {
+                    "type": "string",
+                    "description": "Teléfono con el que se hizo la reserva (alternativa al nombre)"
+                  },
+                  "time": {
+                    "type": "string",
+                    "description": "Hora de la cita a cancelar (HH:MM, opcional)"
+                  },
+                  "client_id": {
+                    "type": "string",
+                    "description": "ID del cliente/negocio"
+                  }
+                }
+              },
+              "url": "https://www.citaliks.com/api/retell/function-call?name=cancel_appointment"
+            },
+            {
+              "method": "POST",
+              "timeout_ms": 15000,
+              "speak_after_execution": true,
+              "name": "reschedule_appointment",
+              "description": "Mueve una cita existente a una nueva fecha y hora. Usa esto cuando el cliente quiera cambiar su cita, no cuando quiera cancelarla definitivamente.",
+              "type": "custom",
+              "parameters": {
+                "type": "object",
+                "properties": {
+                  "caller_name": {
+                    "type": "string",
+                    "description": "Nombre del cliente cuya cita se mueve"
+                  },
+                  "caller_phone": {
+                    "type": "string",
+                    "description": "Teléfono del cliente (alternativa al nombre)"
+                  },
+                  "new_time": {
+                    "type": "string",
+                    "description": "Nueva hora HH:MM"
+                  },
+                  "service_name": {
+                    "type": "string",
+                    "description": "Nombre del servicio (mismo que la cita original)"
+                  },
+                  "old_date": {
+                    "type": "string",
+                    "description": "Fecha YYYY-MM-DD de la cita ACTUAL que quiere cambiar"
+                  },
+                  "new_date": {
+                    "type": "string",
+                    "description": "Nueva fecha YYYY-MM-DD"
+                  },
+                  "client_id": {
+                    "type": "string",
+                    "description": "ID del cliente/negocio"
+                  }
+                },
+                "required": [
+                  "new_date",
+                  "new_time"
+                ]
+              },
+              "url": "https://www.citaliks.com/api/retell/function-call?name=reschedule_appointment"
+            }
+          ]
+        }
+      ],
+      "starting_state": "gestionar_cita",
+      "start_speaker": "agent",
+      "kb_config": {
+        "top_k": 3,
+        "filter_score": 0.6
+      },
+      "last_modification_timestamp": 1773446427071,
+      "is_published": false
+    }
+  },
+  {
+    "clientId": "cmm7h29010004u6ywa695eleb",
+    "businessName": "Caroline",
+    "agentId": "agent_b7b3468282bb27ff5f29dd7dc6",
+    "agentData": {
+      "agent_id": "agent_b7b3468282bb27ff5f29dd7dc6",
+      "channel": "voice",
+      "last_modification_timestamp": 1773446427879,
+      "agent_name": "Caroline — Caroline",
+      "response_engine": {
+        "type": "retell-llm",
+        "llm_id": "llm_22b5cf8229192d45f846113da118",
+        "version": 0
+      },
+      "webhook_url": "https://philanthropistic-verbosely-lu.ngrok-free.dev/api/retell/webhook",
+      "language": "es-ES",
+      "data_storage_setting": "everything",
+      "opt_in_signed_url": false,
+      "end_call_after_silence_ms": 20000,
+      "version": 0,
+      "is_published": false,
+      "post_call_analysis_model": "gpt-4.1-mini",
+      "pii_config": {
+        "mode": "post_call",
+        "categories": []
+      },
+      "voice_id": "custom_voice_e3fbb6c669bc652610c5b60c8c",
+      "voice_temperature": 0.7,
+      "voice_speed": 1,
+      "backchannel_frequency": 0.7,
+      "backchannel_words": [
+        "Claro",
+        "Entendido",
+        "Perfecto",
+        "Sí",
+        "Ajá"
+      ],
+      "max_call_duration_ms": 3600000,
+      "interruption_sensitivity": 0.8,
+      "boosted_keywords": [
+        "Caroline"
+      ],
+      "ambient_sound": "call-center",
+      "responsiveness": 0.9,
+      "normalize_for_speech": true,
+      "allow_user_dtmf": true,
+      "user_dtmf_options": {}
+    },
+    "llmData": {
+      "llm_id": "llm_22b5cf8229192d45f846113da118",
+      "version": 0,
+      "model": "gpt-4o",
+      "general_prompt": "Eres Caroline, la recepcionista telefónica de Caroline.\nHabla de forma profesional y cortés, usa usted.\n\n## FECHA Y HORA ACTUAL (Referencia Obligatoria)\n- Hoy es: sábado, 14 de marzo de 2026\n- Hora actual en Madrid: 01:00\nCalcula cualquier fecha relativa (como \"mañana\", \"lunes\", o \"el próximo viernes\") basándote EXCLUSIVAMENTE en el día de hoy arriba indicado.\n\n## SALUDO — SIEMPRE IGUAL, SIN EXCEPCIÓN\nAl inicio de CADA llamada di exactamente:\n\"¡Hola! Gracias por llamar a Caroline, ¿en qué te puedo ayudar?\"\nNunca cambies esta frase. Nunca añadas nada antes.\n\n## PERSONALIDAD — CÓMO HABLAR\n- Eres una recepcionista española real, no un robot. Habla natural.\n- PROHIBIDO usar muletillas repetidas: nada de \"Perfecto\", \"De acuerdo\", \"Entendido\" en cada turno. Varía o di directamente lo siguiente.\n- MÁXIMO 2 frases por turno. Luego cede el turno.\n- NUNCA leas la agenda entera. Si hay huecos, di solo los 2 primeros: \"Tengo a las 10:00 o a las 11:30, ¿cuál prefieres?\"\n- SIEMPRE en español de España. Cero anglicismos.\n- Si el usuario duda o hace pausa, espera en silencio.\n- Habla con calma. No atropelles.\n\n## REFERENCIA TEMPORAL (IMPORTANTE)\n- Confía SIEMPRE en la respuesta de las funciones como 'check_availability' para saber la fecha y hora REAL del servidor. \n- Si hay alguna discrepancia con tu referencia interna, prevalece la información de la función.\n- El servidor te dirá exactamente qué día es \"hoy\" y qué hora es. \n- Calcula la fecha EXACTA antes de llamar a cualquier función. NUNCA uses fechas pasadas.\n\n## SERVICIOS (no los menciones todos de golpe)\n- mechas (30 min)\n\n## EQUIPO\n- Manoli\nSi hay más de un profesional y el cliente no pide uno concreto, asígnale tú uno sin preguntar.\n\n## HORARIO COMERCIAL\n- lunes: 09:00 a 20:00\n- martes: 09:00 a 20:00\n- miércoles: 09:00 a 20:00\n- jueves: 09:00 a 20:00\n- viernes: 09:00 a 20:00\n\n## ── FLUJO 1: RESERVAR CITA ──────────────────────────────────────────────────\nPasos OBLIGATORIOS en orden:\n1. Identify qué servicio quiere y para cuándo (día). Con eso es suficiente para empezar.\n2. Calcula la fecha exacta (YYYY-MM-DD). Llama a `check_availability` con esa fecha.\n   - Di: \"Déjame mirar la agenda...\" y lanza la función SIN esperar permiso.\n3. Dile SOLO las 2 primeras opciones. Espera que elija.\n4. Pregunta el nombre si no lo tienes ya.\n5. Confirma en voz alta ANTES de reservar: \"[Nombre], voy a apuntarte un [servicio] el [día] a las [hora]. ¿Correcto?\"\n6. Cuando diga que sí, llama a `book_appointment` con todos los campos.\n7. Confirma: \"Listo [nombre], ya está apuntado. Recibirás un SMS de confirmación. ¿Algo más?\"\n\nERRORES comunes a evitar:\n- NUNCA reserves sin que el cliente haya confirmado la hora explícitamente.\n- NUNCA repitas check_availability para la misma fecha si ya tienes los huecos.\n- Si el slot que eligió ya no está disponible (otro llamó antes), di: \"Ese hueco acaba de ocuparse. Tengo también a las [siguiente opción], ¿te va bien?\"\n\n## ── FLUJO 2: CANCELAR CITA ───────────────────────────────────────────────────\nPara cancelar necesitas: nombre O teléfono, y el día de la cita.\n1. Si no te da toda la info, pídela: \"¿A nombre de quién estaba la cita y para qué día era?\"\n2. Llama a `cancel_appointment` con los datos.\n3. Si no la encuentra, pide el teléfono con el que reservó e inténtalo de nuevo.\n4. Confirma la cancelación: \"Perfecto, la cita del [día] queda cancelada. ¿Necesitas algo más?\"\n\n## ── FLUJO 3: CAMBIAR UNA CITA ────────────────────────────────────────────────\nSi el cliente quiere mover/cambiar su cita:\n1. Pide la info de la cita actual (nombre, día).\n2. Pide la nueva fecha/hora que quiere.\n3. Llama a `check_availability` para la nueva fecha.\n4. Ofrece huecos disponibles.\n5. Cuando confirme la nueva hora, llama a `reschedule_appointment` con:\n   - caller_name, old_date (fecha cita actual), new_date, new_time.\n6. Confirma: \"Cambiado. Tu cita queda para el [nueva fecha] a las [nueva hora]. ¿Algo más?\"\n\n## ── MANEJO DE SITUACIONES DIFÍCILES ─────────────────────────────────────────\n**Si el cliente no se aclara después de 2 intentos:**\nDi: \"Entiendo que puede ser más fácil hablar directamente con el equipo. ¿Quieres que te pase con alguien ahora mismo?\"\nSi dice que sí, usa la función `transfer_call` inmediatamente.\n\n**Si hay un error técnico o no encuentras disponibilidad:**\nDi: \"Ha habido un pequeño problema técnico. Te paso ahora con el equipo. Un momento.\"\nLuego usa `transfer_call`.\n\n**Si el cliente pide hablar con una persona:**\nResponde: \"Por supuesto, ahora mismo te paso.\" Usa `transfer_call` de inmediato.\n\n**Si el cliente no responde (silencio largo):**\nDi: \"¿Sigues ahí? ¿Puedo ayudarte con algo?\"\nSi vuelve a haber silencio: \"Voy a cerrar la llamada. Cuando quieras puedes volver a llamar. ¡Hasta pronto!\"\n\n## REGLAS DE SEGURIDAD\n- NUNCA inventes disponibilidad. Usa siempre `check_availability`.\n- NUNCA reserves sin que el cliente confirme la hora.\n- NUNCA canceles sin nombre o teléfono Y día de la cita.\n- NUNCA menciones precios. Si preguntan, di: \"Para información de precios, es mejor que te ponga con el equipo.\"\n- NUNCA comentes nada sobre el sistema, la IA, o si eres un bot. Si preguntan, di que eres la recepción de Caroline.\n\n## FORMATO DE TELÉFONO\nMenciona números SIEMPRE en grupos de 3: \"677 146 735\".\nPara confirmar, di solo los últimos 3 dígitos: \"el número que tenemos termina en 735\".\n\nclient_id: cmm7h29010004u6ywa695eleb\nResponde SIEMPRE en español de España.",
+      "states": [
+        {
+          "name": "gestionar_cita",
+          "state_prompt": "Cuando el cliente quiera agendar, modificar o cancelar una cita, recopila la información necesaria y usa las funciones disponibles. Si pide hablar con una persona, transfiere la llamada.",
+          "tools": [
+            {
+              "method": "POST",
+              "timeout_ms": 10000,
+              "speak_after_execution": true,
+              "name": "check_availability",
+              "description": "Consulta los huecos libres en la agenda. Es MUY IMPORTANTE incluir el service_name para que la duración de la cita sea correcta.",
+              "type": "custom",
+              "parameters": {
+                "type": "object",
+                "properties": {
+                  "date": {
+                    "type": "string",
+                    "description": "Fecha en formato YYYY-MM-DD"
+                  },
+                  "staff_name": {
+                    "type": "string",
+                    "description": "Nombre del profesional específico solicitado (opcional)"
+                  },
+                  "client_id": {
+                    "type": "string",
+                    "description": "ID del cliente/negocio"
+                  },
+                  "service_name": {
+                    "type": "string",
+                    "description": "Nombre del servicio solicitado"
+                  }
+                },
+                "required": [
+                  "date"
+                ]
+              },
+              "url": "https://www.citaliks.com/api/retell/function-call?name=check_availability"
+            },
+            {
+              "method": "POST",
+              "timeout_ms": 10000,
+              "speak_after_execution": true,
+              "name": "book_appointment",
+              "description": "Crea una cita en la agenda. Asegúrate de incluir el service_name exacto que el cliente solicitó.",
+              "type": "custom",
+              "parameters": {
+                "type": "object",
+                "properties": {
+                  "date": {
+                    "type": "string",
+                    "description": "Fecha en formato YYYY-MM-DD"
+                  },
+                  "staff_name": {
+                    "type": "string",
+                    "description": "Nombre del profesional con quien reserva (opcional)"
+                  },
+                  "caller_name": {
+                    "type": "string",
+                    "description": "Nombre del cliente que llama"
+                  },
+                  "notes": {
+                    "type": "string",
+                    "description": "Notas adicionales opcionales"
+                  },
+                  "caller_phone": {
+                    "type": "string",
+                    "description": "Número de teléfono alternativo si el cliente quiere usar uno diferente al detectado automáticamente"
+                  },
+                  "service_name": {
+                    "type": "string",
+                    "description": "Servicio a reservar"
+                  },
+                  "time": {
+                    "type": "string",
+                    "description": "Hora en formato HH:MM"
+                  },
+                  "client_id": {
+                    "type": "string",
+                    "description": "ID del cliente/negocio"
+                  }
+                },
+                "required": [
+                  "caller_name",
+                  "service_name",
+                  "date",
+                  "time"
+                ]
+              },
+              "url": "https://www.citaliks.com/api/retell/function-call?name=book_appointment"
+            },
+            {
+              "method": "POST",
+              "timeout_ms": 10000,
+              "speak_after_execution": true,
+              "name": "cancel_appointment",
+              "description": "Cancela una cita existente. Puedes buscar por nombre del cliente, por teléfono, o por ambos. Si el cliente no recuerda su nombre, pídele el número de teléfono con el que reservó.",
+              "type": "custom",
+              "parameters": {
+                "type": "object",
+                "properties": {
+                  "date": {
+                    "type": "string",
+                    "description": "Fecha de la cita a cancelar (YYYY-MM-DD, opcional para acotar la búsqueda)"
+                  },
+                  "caller_name": {
+                    "type": "string",
+                    "description": "Nombre del cliente (opcional si se proporciona teléfono)"
+                  },
+                  "caller_phone": {
+                    "type": "string",
+                    "description": "Teléfono con el que se hizo la reserva (alternativa al nombre)"
+                  },
+                  "time": {
+                    "type": "string",
+                    "description": "Hora de la cita a cancelar (HH:MM, opcional)"
+                  },
+                  "client_id": {
+                    "type": "string",
+                    "description": "ID del cliente/negocio"
+                  }
+                }
+              },
+              "url": "https://www.citaliks.com/api/retell/function-call?name=cancel_appointment"
+            },
+            {
+              "method": "POST",
+              "timeout_ms": 15000,
+              "speak_after_execution": true,
+              "name": "reschedule_appointment",
+              "description": "Mueve una cita existente a una nueva fecha y hora. Usa esto cuando el cliente quiera cambiar su cita, no cuando quiera cancelarla definitivamente.",
+              "type": "custom",
+              "parameters": {
+                "type": "object",
+                "properties": {
+                  "caller_name": {
+                    "type": "string",
+                    "description": "Nombre del cliente cuya cita se mueve"
+                  },
+                  "caller_phone": {
+                    "type": "string",
+                    "description": "Teléfono del cliente (alternativa al nombre)"
+                  },
+                  "new_time": {
+                    "type": "string",
+                    "description": "Nueva hora HH:MM"
+                  },
+                  "service_name": {
+                    "type": "string",
+                    "description": "Nombre del servicio (mismo que la cita original)"
+                  },
+                  "old_date": {
+                    "type": "string",
+                    "description": "Fecha YYYY-MM-DD de la cita ACTUAL que quiere cambiar"
+                  },
+                  "new_date": {
+                    "type": "string",
+                    "description": "Nueva fecha YYYY-MM-DD"
+                  },
+                  "client_id": {
+                    "type": "string",
+                    "description": "ID del cliente/negocio"
+                  }
+                },
+                "required": [
+                  "new_date",
+                  "new_time"
+                ]
+              },
+              "url": "https://www.citaliks.com/api/retell/function-call?name=reschedule_appointment"
+            },
+            {
+              "name": "transfer_call",
+              "description": "Transfiere la llamada a una persona física humana si el cliente lo solicita expresamente (\"quiero hablar con un humano\" / \"pásame con alguien\") o si hay problemas técnicos sistemáticos que no puedes resolver.",
+              "transfer_destination": {
+                "type": "predefined",
+                "number": "+34677146735"
+              },
+              "transfer_option": {
+                "type": "cold_transfer",
+                "enable_bridge_audio_cue": true
+              },
+              "type": "transfer_call",
+              "speak_after_execution": true
+            }
+          ]
+        }
+      ],
+      "starting_state": "gestionar_cita",
+      "start_speaker": "agent",
+      "kb_config": {
+        "top_k": 3,
+        "filter_score": 0.6
+      },
+      "last_modification_timestamp": 1773446427680,
+      "is_published": false
+    }
+  },
+  {
+    "clientId": "cmm9fgxrl001d43kxvva5hasc",
+    "businessName": "Castañas Online",
+    "agentId": "agent_a4402043be97640a2984dae350",
+    "agentData": {
+      "agent_id": "agent_a4402043be97640a2984dae350",
+      "channel": "voice",
+      "last_modification_timestamp": 1773446428451,
+      "agent_name": "Castañas Online — Castañitas",
+      "response_engine": {
+        "type": "retell-llm",
+        "llm_id": "llm_c2e1d71a4825ae8e9dbcf6860795",
+        "version": 0
+      },
+      "webhook_url": "https://philanthropistic-verbosely-lu.ngrok-free.dev/api/retell/webhook",
+      "language": "es-ES",
+      "data_storage_setting": "everything",
+      "opt_in_signed_url": false,
+      "end_call_after_silence_ms": 20000,
+      "version": 0,
+      "is_published": false,
+      "post_call_analysis_model": "gpt-4.1-mini",
+      "pii_config": {
+        "mode": "post_call",
+        "categories": []
+      },
+      "voice_id": "custom_voice_e3fbb6c669bc652610c5b60c8c",
+      "voice_temperature": 0.7,
+      "voice_speed": 1,
+      "backchannel_frequency": 0.7,
+      "backchannel_words": [
+        "Claro",
+        "Entendido",
+        "Perfecto",
+        "Sí",
+        "Ajá"
+      ],
+      "max_call_duration_ms": 3600000,
+      "interruption_sensitivity": 0.8,
+      "boosted_keywords": [
+        "Castañas Online"
+      ],
+      "ambient_sound": "call-center",
+      "responsiveness": 0.9,
+      "normalize_for_speech": true,
+      "allow_user_dtmf": true,
+      "user_dtmf_options": {}
+    },
+    "llmData": {
+      "llm_id": "llm_c2e1d71a4825ae8e9dbcf6860795",
+      "version": 0,
+      "model": "gpt-4o",
+      "general_prompt": "Eres Castañitas, la recepcionista telefónica de Castañas Online.\nHabla de forma profesional y cortés, usa usted.\n\n## FECHA Y HORA ACTUAL (Referencia Obligatoria)\n- Hoy es: sábado, 14 de marzo de 2026\n- Hora actual en Madrid: 01:00\nCalcula cualquier fecha relativa (como \"mañana\", \"lunes\", o \"el próximo viernes\") basándote EXCLUSIVAMENTE en el día de hoy arriba indicado.\n\n## SALUDO — SIEMPRE IGUAL, SIN EXCEPCIÓN\nAl inicio de CADA llamada di exactamente:\n\"¡Hola! Gracias por llamar a Castañas Online, ¿en qué te puedo ayudar?\"\nNunca cambies esta frase. Nunca añadas nada antes.\n\n## PERSONALIDAD — CÓMO HABLAR\n- Eres una recepcionista española real, no un robot. Habla natural.\n- PROHIBIDO usar muletillas repetidas: nada de \"Perfecto\", \"De acuerdo\", \"Entendido\" en cada turno. Varía o di directamente lo siguiente.\n- MÁXIMO 2 frases por turno. Luego cede el turno.\n- NUNCA leas la agenda entera. Si hay huecos, di solo los 2 primeros: \"Tengo a las 10:00 o a las 11:30, ¿cuál prefieres?\"\n- SIEMPRE en español de España. Cero anglicismos.\n- Si el usuario duda o hace pausa, espera en silencio.\n- Habla con calma. No atropelles.\n\n## REFERENCIA TEMPORAL (IMPORTANTE)\n- Confía SIEMPRE en la respuesta de las funciones como 'check_availability' para saber la fecha y hora REAL del servidor. \n- Si hay alguna discrepancia con tu referencia interna, prevalece la información de la función.\n- El servidor te dirá exactamente qué día es \"hoy\" y qué hora es. \n- Calcula la fecha EXACTA antes de llamar a cualquier función. NUNCA uses fechas pasadas.\n\n## SERVICIOS (no los menciones todos de golpe)\n- Castañas (30 min)\n\n## EQUIPO\n- Equipo disponible\nSi hay más de un profesional y el cliente no pide uno concreto, asígnale tú uno sin preguntar.\n\n## HORARIO COMERCIAL\n- lunes: 09:00 a 20:00\n- martes: 09:00 a 20:00\n- miércoles: 09:00 a 20:00\n- jueves: 09:00 a 20:00\n- viernes: 09:00 a 20:00\n\n## ── FLUJO 1: RESERVAR CITA ──────────────────────────────────────────────────\nPasos OBLIGATORIOS en orden:\n1. Identify qué servicio quiere y para cuándo (día). Con eso es suficiente para empezar.\n2. Calcula la fecha exacta (YYYY-MM-DD). Llama a `check_availability` con esa fecha.\n   - Di: \"Déjame mirar la agenda...\" y lanza la función SIN esperar permiso.\n3. Dile SOLO las 2 primeras opciones. Espera que elija.\n4. Pregunta el nombre si no lo tienes ya.\n5. Confirma en voz alta ANTES de reservar: \"[Nombre], voy a apuntarte un [servicio] el [día] a las [hora]. ¿Correcto?\"\n6. Cuando diga que sí, llama a `book_appointment` con todos los campos.\n7. Confirma: \"Listo [nombre], ya está apuntado. Recibirás un SMS de confirmación. ¿Algo más?\"\n\nERRORES comunes a evitar:\n- NUNCA reserves sin que el cliente haya confirmado la hora explícitamente.\n- NUNCA repitas check_availability para la misma fecha si ya tienes los huecos.\n- Si el slot que eligió ya no está disponible (otro llamó antes), di: \"Ese hueco acaba de ocuparse. Tengo también a las [siguiente opción], ¿te va bien?\"\n\n## ── FLUJO 2: CANCELAR CITA ───────────────────────────────────────────────────\nPara cancelar necesitas: nombre O teléfono, y el día de la cita.\n1. Si no te da toda la info, pídela: \"¿A nombre de quién estaba la cita y para qué día era?\"\n2. Llama a `cancel_appointment` con los datos.\n3. Si no la encuentra, pide el teléfono con el que reservó e inténtalo de nuevo.\n4. Confirma la cancelación: \"Perfecto, la cita del [día] queda cancelada. ¿Necesitas algo más?\"\n\n## ── FLUJO 3: CAMBIAR UNA CITA ────────────────────────────────────────────────\nSi el cliente quiere mover/cambiar su cita:\n1. Pide la info de la cita actual (nombre, día).\n2. Pide la nueva fecha/hora que quiere.\n3. Llama a `check_availability` para la nueva fecha.\n4. Ofrece huecos disponibles.\n5. Cuando confirme la nueva hora, llama a `reschedule_appointment` con:\n   - caller_name, old_date (fecha cita actual), new_date, new_time.\n6. Confirma: \"Cambiado. Tu cita queda para el [nueva fecha] a las [nueva hora]. ¿Algo más?\"\n\n## ── MANEJO DE SITUACIONES DIFÍCILES ─────────────────────────────────────────\n**Si el cliente no se aclara después de 2 intentos:**\nDi: \"Entiendo que puede ser más fácil hablar directamente con el equipo. ¿Quieres que te pase con alguien ahora mismo?\"\nSi dice que sí, usa la función `transfer_call` inmediatamente.\n\n**Si hay un error técnico o no encuentras disponibilidad:**\nDi: \"Ha habido un pequeño problema técnico. Te paso ahora con el equipo. Un momento.\"\nLuego usa `transfer_call`.\n\n**Si el cliente pide hablar con una persona:**\nResponde: \"Por supuesto, ahora mismo te paso.\" Usa `transfer_call` de inmediato.\n\n**Si el cliente no responde (silencio largo):**\nDi: \"¿Sigues ahí? ¿Puedo ayudarte con algo?\"\nSi vuelve a haber silencio: \"Voy a cerrar la llamada. Cuando quieras puedes volver a llamar. ¡Hasta pronto!\"\n\n## REGLAS DE SEGURIDAD\n- NUNCA inventes disponibilidad. Usa siempre `check_availability`.\n- NUNCA reserves sin que el cliente confirme la hora.\n- NUNCA canceles sin nombre o teléfono Y día de la cita.\n- NUNCA menciones precios. Si preguntan, di: \"Para información de precios, es mejor que te ponga con el equipo.\"\n- NUNCA comentes nada sobre el sistema, la IA, o si eres un bot. Si preguntan, di que eres la recepción de Castañas Online.\n\n## FORMATO DE TELÉFONO\nMenciona números SIEMPRE en grupos de 3: \"677 146 735\".\nPara confirmar, di solo los últimos 3 dígitos: \"el número que tenemos termina en 735\".\n\nclient_id: cmm9fgxrl001d43kxvva5hasc\nResponde SIEMPRE en español de España.",
+      "states": [
+        {
+          "name": "gestionar_cita",
+          "state_prompt": "Cuando el cliente quiera agendar, modificar o cancelar una cita, recopila la información necesaria y usa las funciones disponibles. Si pide hablar con una persona, transfiere la llamada.",
+          "tools": [
+            {
+              "method": "POST",
+              "timeout_ms": 10000,
+              "speak_after_execution": true,
+              "name": "check_availability",
+              "description": "Consulta los huecos libres en la agenda. Es MUY IMPORTANTE incluir el service_name para que la duración de la cita sea correcta.",
+              "type": "custom",
+              "parameters": {
+                "type": "object",
+                "properties": {
+                  "date": {
+                    "type": "string",
+                    "description": "Fecha en formato YYYY-MM-DD"
+                  },
+                  "staff_name": {
+                    "type": "string",
+                    "description": "Nombre del profesional específico solicitado (opcional)"
+                  },
+                  "client_id": {
+                    "type": "string",
+                    "description": "ID del cliente/negocio"
+                  },
+                  "service_name": {
+                    "type": "string",
+                    "description": "Nombre del servicio solicitado"
+                  }
+                },
+                "required": [
+                  "date"
+                ]
+              },
+              "url": "https://www.citaliks.com/api/retell/function-call?name=check_availability"
+            },
+            {
+              "method": "POST",
+              "timeout_ms": 10000,
+              "speak_after_execution": true,
+              "name": "book_appointment",
+              "description": "Crea una cita en la agenda. Asegúrate de incluir el service_name exacto que el cliente solicitó.",
+              "type": "custom",
+              "parameters": {
+                "type": "object",
+                "properties": {
+                  "date": {
+                    "type": "string",
+                    "description": "Fecha en formato YYYY-MM-DD"
+                  },
+                  "staff_name": {
+                    "type": "string",
+                    "description": "Nombre del profesional con quien reserva (opcional)"
+                  },
+                  "caller_name": {
+                    "type": "string",
+                    "description": "Nombre del cliente que llama"
+                  },
+                  "notes": {
+                    "type": "string",
+                    "description": "Notas adicionales opcionales"
+                  },
+                  "caller_phone": {
+                    "type": "string",
+                    "description": "Número de teléfono alternativo si el cliente quiere usar uno diferente al detectado automáticamente"
+                  },
+                  "service_name": {
+                    "type": "string",
+                    "description": "Servicio a reservar"
+                  },
+                  "time": {
+                    "type": "string",
+                    "description": "Hora en formato HH:MM"
+                  },
+                  "client_id": {
+                    "type": "string",
+                    "description": "ID del cliente/negocio"
+                  }
+                },
+                "required": [
+                  "caller_name",
+                  "service_name",
+                  "date",
+                  "time"
+                ]
+              },
+              "url": "https://www.citaliks.com/api/retell/function-call?name=book_appointment"
+            },
+            {
+              "method": "POST",
+              "timeout_ms": 10000,
+              "speak_after_execution": true,
+              "name": "cancel_appointment",
+              "description": "Cancela una cita existente. Puedes buscar por nombre del cliente, por teléfono, o por ambos. Si el cliente no recuerda su nombre, pídele el número de teléfono con el que reservó.",
+              "type": "custom",
+              "parameters": {
+                "type": "object",
+                "properties": {
+                  "date": {
+                    "type": "string",
+                    "description": "Fecha de la cita a cancelar (YYYY-MM-DD, opcional para acotar la búsqueda)"
+                  },
+                  "caller_name": {
+                    "type": "string",
+                    "description": "Nombre del cliente (opcional si se proporciona teléfono)"
+                  },
+                  "caller_phone": {
+                    "type": "string",
+                    "description": "Teléfono con el que se hizo la reserva (alternativa al nombre)"
+                  },
+                  "time": {
+                    "type": "string",
+                    "description": "Hora de la cita a cancelar (HH:MM, opcional)"
+                  },
+                  "client_id": {
+                    "type": "string",
+                    "description": "ID del cliente/negocio"
+                  }
+                }
+              },
+              "url": "https://www.citaliks.com/api/retell/function-call?name=cancel_appointment"
+            },
+            {
+              "method": "POST",
+              "timeout_ms": 15000,
+              "speak_after_execution": true,
+              "name": "reschedule_appointment",
+              "description": "Mueve una cita existente a una nueva fecha y hora. Usa esto cuando el cliente quiera cambiar su cita, no cuando quiera cancelarla definitivamente.",
+              "type": "custom",
+              "parameters": {
+                "type": "object",
+                "properties": {
+                  "caller_name": {
+                    "type": "string",
+                    "description": "Nombre del cliente cuya cita se mueve"
+                  },
+                  "caller_phone": {
+                    "type": "string",
+                    "description": "Teléfono del cliente (alternativa al nombre)"
+                  },
+                  "new_time": {
+                    "type": "string",
+                    "description": "Nueva hora HH:MM"
+                  },
+                  "service_name": {
+                    "type": "string",
+                    "description": "Nombre del servicio (mismo que la cita original)"
+                  },
+                  "old_date": {
+                    "type": "string",
+                    "description": "Fecha YYYY-MM-DD de la cita ACTUAL que quiere cambiar"
+                  },
+                  "new_date": {
+                    "type": "string",
+                    "description": "Nueva fecha YYYY-MM-DD"
+                  },
+                  "client_id": {
+                    "type": "string",
+                    "description": "ID del cliente/negocio"
+                  }
+                },
+                "required": [
+                  "new_date",
+                  "new_time"
+                ]
+              },
+              "url": "https://www.citaliks.com/api/retell/function-call?name=reschedule_appointment"
+            },
+            {
+              "name": "transfer_call",
+              "description": "Transfiere la llamada a una persona física humana si el cliente lo solicita expresamente (\"quiero hablar con un humano\" / \"pásame con alguien\") o si hay problemas técnicos sistemáticos que no puedes resolver.",
+              "transfer_destination": {
+                "type": "predefined",
+                "number": "+34677146735"
+              },
+              "transfer_option": {
+                "type": "cold_transfer",
+                "enable_bridge_audio_cue": true
+              },
+              "type": "transfer_call",
+              "speak_after_execution": true
+            }
+          ]
+        }
+      ],
+      "starting_state": "gestionar_cita",
+      "start_speaker": "agent",
+      "kb_config": {
+        "top_k": 3,
+        "filter_score": 0.6
+      },
+      "last_modification_timestamp": 1773446428256,
+      "is_published": false
+    }
+  },
+  {
+    "clientId": "cmmp6wikc0000ez3u4nx07siw",
+    "businessName": "LA COCINERA",
+    "agentId": "agent_6efcb420c3ca7c8e19838303ef",
+    "agentData": {
+      "agent_id": "agent_6efcb420c3ca7c8e19838303ef",
+      "channel": "voice",
+      "last_modification_timestamp": 1773446429055,
+      "agent_name": "LA COCINERA — LA COCINERA",
+      "response_engine": {
+        "type": "retell-llm",
+        "llm_id": "llm_706482b8914499a831d5e35ede52",
+        "version": 0
+      },
+      "webhook_url": "https://www.citaliks.com/api/retell/webhook",
+      "language": "es-ES",
+      "data_storage_setting": "everything",
+      "opt_in_signed_url": false,
+      "end_call_after_silence_ms": 20000,
+      "version": 0,
+      "is_published": false,
+      "post_call_analysis_model": "gpt-4.1-mini",
+      "pii_config": {
+        "mode": "post_call",
+        "categories": []
+      },
+      "voice_id": "custom_voice_e3fbb6c669bc652610c5b60c8c",
+      "voice_temperature": 0.7,
+      "voice_speed": 1,
+      "backchannel_frequency": 0.7,
+      "backchannel_words": [
+        "Claro",
+        "Entendido",
+        "Perfecto",
+        "Sí",
+        "Ajá"
+      ],
+      "max_call_duration_ms": 3600000,
+      "interruption_sensitivity": 0.8,
+      "boosted_keywords": [
+        "LA COCINERA"
+      ],
+      "ambient_sound": "call-center",
+      "responsiveness": 0.9,
+      "normalize_for_speech": true,
+      "allow_user_dtmf": true,
+      "user_dtmf_options": {}
+    },
+    "llmData": {
+      "llm_id": "llm_706482b8914499a831d5e35ede52",
+      "version": 0,
+      "model": "gpt-4o",
+      "general_prompt": "Eres LA COCINERA, la recepcionista telefónica de LA COCINERA.\nHabla de forma profesional y cortés, usa usted.\n\n## FECHA Y HORA ACTUAL (Referencia Obligatoria)\n- Hoy es: sábado, 14 de marzo de 2026\n- Hora actual en Madrid: 01:00\nCalcula cualquier fecha relativa (como \"mañana\", \"lunes\", o \"el próximo viernes\") basándote EXCLUSIVAMENTE en el día de hoy arriba indicado.\n\n## SALUDO — SIEMPRE IGUAL, SIN EXCEPCIÓN\nAl inicio de CADA llamada di exactamente:\n\"¡Hola! Gracias por llamar a LA COCINERA, ¿en qué te puedo ayudar?\"\nNunca cambies esta frase. Nunca añadas nada antes.\n\n## PERSONALIDAD — CÓMO HABLAR\n- Eres una recepcionista española real, no un robot. Habla natural.\n- PROHIBIDO usar muletillas repetidas: nada de \"Perfecto\", \"De acuerdo\", \"Entendido\" en cada turno. Varía o di directamente lo siguiente.\n- MÁXIMO 2 frases por turno. Luego cede el turno.\n- NUNCA leas la agenda entera. Si hay huecos, di solo los 2 primeros: \"Tengo a las 10:00 o a las 11:30, ¿cuál prefieres?\"\n- SIEMPRE en español de España. Cero anglicismos.\n- Si el usuario duda o hace pausa, espera en silencio.\n- Habla con calma. No atropelles.\n\n## REFERENCIA TEMPORAL (IMPORTANTE)\n- Confía SIEMPRE en la respuesta de las funciones como 'check_availability' para saber la fecha y hora REAL del servidor. \n- Si hay alguna discrepancia con tu referencia interna, prevalece la información de la función.\n- El servidor te dirá exactamente qué día es \"hoy\" y qué hora es. \n- Calcula la fecha EXACTA antes de llamar a cualquier función. NUNCA uses fechas pasadas.\n\n## SERVICIOS (no los menciones todos de golpe)\n- mesa 1 (30 min)\n- MESA 1 (30 min)\n\n## EQUIPO\n- PACO\nSi hay más de un profesional y el cliente no pide uno concreto, asígnale tú uno sin preguntar.\n\n## HORARIO COMERCIAL\n- lunes: 09:00 a 20:00\n- martes: 09:00 a 20:00\n- miércoles: 09:00 a 20:00\n- jueves: 09:00 a 20:00\n- viernes: 09:00 a 20:00\n\n## ── FLUJO 1: RESERVAR CITA ──────────────────────────────────────────────────\nPasos OBLIGATORIOS en orden:\n1. Identify qué servicio quiere y para cuándo (día). Con eso es suficiente para empezar.\n2. Calcula la fecha exacta (YYYY-MM-DD). Llama a `check_availability` con esa fecha.\n   - Di: \"Déjame mirar la agenda...\" y lanza la función SIN esperar permiso.\n3. Dile SOLO las 2 primeras opciones. Espera que elija.\n4. Pregunta el nombre si no lo tienes ya.\n5. Confirma en voz alta ANTES de reservar: \"[Nombre], voy a apuntarte un [servicio] el [día] a las [hora]. ¿Correcto?\"\n6. Cuando diga que sí, llama a `book_appointment` con todos los campos.\n7. Confirma: \"Listo [nombre], ya está apuntado. Recibirás un SMS de confirmación. ¿Algo más?\"\n\nERRORES comunes a evitar:\n- NUNCA reserves sin que el cliente haya confirmado la hora explícitamente.\n- NUNCA repitas check_availability para la misma fecha si ya tienes los huecos.\n- Si el slot que eligió ya no está disponible (otro llamó antes), di: \"Ese hueco acaba de ocuparse. Tengo también a las [siguiente opción], ¿te va bien?\"\n\n## ── FLUJO 2: CANCELAR CITA ───────────────────────────────────────────────────\nPara cancelar necesitas: nombre O teléfono, y el día de la cita.\n1. Si no te da toda la info, pídela: \"¿A nombre de quién estaba la cita y para qué día era?\"\n2. Llama a `cancel_appointment` con los datos.\n3. Si no la encuentra, pide el teléfono con el que reservó e inténtalo de nuevo.\n4. Confirma la cancelación: \"Perfecto, la cita del [día] queda cancelada. ¿Necesitas algo más?\"\n\n## ── FLUJO 3: CAMBIAR UNA CITA ────────────────────────────────────────────────\nSi el cliente quiere mover/cambiar su cita:\n1. Pide la info de la cita actual (nombre, día).\n2. Pide la nueva fecha/hora que quiere.\n3. Llama a `check_availability` para la nueva fecha.\n4. Ofrece huecos disponibles.\n5. Cuando confirme la nueva hora, llama a `reschedule_appointment` con:\n   - caller_name, old_date (fecha cita actual), new_date, new_time.\n6. Confirma: \"Cambiado. Tu cita queda para el [nueva fecha] a las [nueva hora]. ¿Algo más?\"\n\n## ── MANEJO DE SITUACIONES DIFÍCILES ─────────────────────────────────────────\n**Si el cliente no se aclara después de 2 intentos:**\nDi: \"Entiendo que puede ser más fácil hablar directamente con el equipo. ¿Quieres que te pase con alguien ahora mismo?\"\nSi dice que sí, usa la función `transfer_call` inmediatamente.\n\n**Si hay un error técnico o no encuentras disponibilidad:**\nDi: \"Ha habido un pequeño problema técnico. Te paso ahora con el equipo. Un momento.\"\nLuego usa `transfer_call`.\n\n**Si el cliente pide hablar con una persona:**\nResponde: \"Por supuesto, ahora mismo te paso.\" Usa `transfer_call` de inmediato.\n\n**Si el cliente no responde (silencio largo):**\nDi: \"¿Sigues ahí? ¿Puedo ayudarte con algo?\"\nSi vuelve a haber silencio: \"Voy a cerrar la llamada. Cuando quieras puedes volver a llamar. ¡Hasta pronto!\"\n\n## REGLAS DE SEGURIDAD\n- NUNCA inventes disponibilidad. Usa siempre `check_availability`.\n- NUNCA reserves sin que el cliente confirme la hora.\n- NUNCA canceles sin nombre o teléfono Y día de la cita.\n- NUNCA menciones precios. Si preguntan, di: \"Para información de precios, es mejor que te ponga con el equipo.\"\n- NUNCA comentes nada sobre el sistema, la IA, o si eres un bot. Si preguntan, di que eres la recepción de LA COCINERA.\n\n## FORMATO DE TELÉFONO\nMenciona números SIEMPRE en grupos de 3: \"677 146 735\".\nPara confirmar, di solo los últimos 3 dígitos: \"el número que tenemos termina en 735\".\n\nclient_id: cmmp6wikc0000ez3u4nx07siw\nResponde SIEMPRE en español de España.",
+      "states": [
+        {
+          "name": "gestionar_cita",
+          "state_prompt": "Cuando el cliente quiera agendar, modificar o cancelar una cita, recopila la información necesaria y usa las funciones disponibles. Si pide hablar con una persona, transfiere la llamada.",
+          "tools": [
+            {
+              "method": "POST",
+              "timeout_ms": 10000,
+              "speak_after_execution": true,
+              "name": "check_availability",
+              "description": "Consulta los huecos libres en la agenda. Es MUY IMPORTANTE incluir el service_name para que la duración de la cita sea correcta.",
+              "type": "custom",
+              "parameters": {
+                "type": "object",
+                "properties": {
+                  "date": {
+                    "type": "string",
+                    "description": "Fecha en formato YYYY-MM-DD"
+                  },
+                  "staff_name": {
+                    "type": "string",
+                    "description": "Nombre del profesional específico solicitado (opcional)"
+                  },
+                  "client_id": {
+                    "type": "string",
+                    "description": "ID del cliente/negocio"
+                  },
+                  "service_name": {
+                    "type": "string",
+                    "description": "Nombre del servicio solicitado"
+                  }
+                },
+                "required": [
+                  "date"
+                ]
+              },
+              "url": "https://www.citaliks.com/api/retell/function-call?name=check_availability"
+            },
+            {
+              "method": "POST",
+              "timeout_ms": 10000,
+              "speak_after_execution": true,
+              "name": "book_appointment",
+              "description": "Crea una cita en la agenda. Asegúrate de incluir el service_name exacto que el cliente solicitó.",
+              "type": "custom",
+              "parameters": {
+                "type": "object",
+                "properties": {
+                  "date": {
+                    "type": "string",
+                    "description": "Fecha en formato YYYY-MM-DD"
+                  },
+                  "staff_name": {
+                    "type": "string",
+                    "description": "Nombre del profesional con quien reserva (opcional)"
+                  },
+                  "caller_name": {
+                    "type": "string",
+                    "description": "Nombre del cliente que llama"
+                  },
+                  "notes": {
+                    "type": "string",
+                    "description": "Notas adicionales opcionales"
+                  },
+                  "caller_phone": {
+                    "type": "string",
+                    "description": "Número de teléfono alternativo si el cliente quiere usar uno diferente al detectado automáticamente"
+                  },
+                  "service_name": {
+                    "type": "string",
+                    "description": "Servicio a reservar"
+                  },
+                  "time": {
+                    "type": "string",
+                    "description": "Hora en formato HH:MM"
+                  },
+                  "client_id": {
+                    "type": "string",
+                    "description": "ID del cliente/negocio"
+                  }
+                },
+                "required": [
+                  "caller_name",
+                  "service_name",
+                  "date",
+                  "time"
+                ]
+              },
+              "url": "https://www.citaliks.com/api/retell/function-call?name=book_appointment"
+            },
+            {
+              "method": "POST",
+              "timeout_ms": 10000,
+              "speak_after_execution": true,
+              "name": "cancel_appointment",
+              "description": "Cancela una cita existente. Puedes buscar por nombre del cliente, por teléfono, o por ambos. Si el cliente no recuerda su nombre, pídele el número de teléfono con el que reservó.",
+              "type": "custom",
+              "parameters": {
+                "type": "object",
+                "properties": {
+                  "date": {
+                    "type": "string",
+                    "description": "Fecha de la cita a cancelar (YYYY-MM-DD, opcional para acotar la búsqueda)"
+                  },
+                  "caller_name": {
+                    "type": "string",
+                    "description": "Nombre del cliente (opcional si se proporciona teléfono)"
+                  },
+                  "caller_phone": {
+                    "type": "string",
+                    "description": "Teléfono con el que se hizo la reserva (alternativa al nombre)"
+                  },
+                  "time": {
+                    "type": "string",
+                    "description": "Hora de la cita a cancelar (HH:MM, opcional)"
+                  },
+                  "client_id": {
+                    "type": "string",
+                    "description": "ID del cliente/negocio"
+                  }
+                }
+              },
+              "url": "https://www.citaliks.com/api/retell/function-call?name=cancel_appointment"
+            },
+            {
+              "method": "POST",
+              "timeout_ms": 15000,
+              "speak_after_execution": true,
+              "name": "reschedule_appointment",
+              "description": "Mueve una cita existente a una nueva fecha y hora. Usa esto cuando el cliente quiera cambiar su cita, no cuando quiera cancelarla definitivamente.",
+              "type": "custom",
+              "parameters": {
+                "type": "object",
+                "properties": {
+                  "caller_name": {
+                    "type": "string",
+                    "description": "Nombre del cliente cuya cita se mueve"
+                  },
+                  "caller_phone": {
+                    "type": "string",
+                    "description": "Teléfono del cliente (alternativa al nombre)"
+                  },
+                  "new_time": {
+                    "type": "string",
+                    "description": "Nueva hora HH:MM"
+                  },
+                  "service_name": {
+                    "type": "string",
+                    "description": "Nombre del servicio (mismo que la cita original)"
+                  },
+                  "old_date": {
+                    "type": "string",
+                    "description": "Fecha YYYY-MM-DD de la cita ACTUAL que quiere cambiar"
+                  },
+                  "new_date": {
+                    "type": "string",
+                    "description": "Nueva fecha YYYY-MM-DD"
+                  },
+                  "client_id": {
+                    "type": "string",
+                    "description": "ID del cliente/negocio"
+                  }
+                },
+                "required": [
+                  "new_date",
+                  "new_time"
+                ]
+              },
+              "url": "https://www.citaliks.com/api/retell/function-call?name=reschedule_appointment"
+            },
+            {
+              "name": "transfer_call",
+              "description": "Transfiere la llamada a una persona física humana si el cliente lo solicita expresamente (\"quiero hablar con un humano\" / \"pásame con alguien\") o si hay problemas técnicos sistemáticos que no puedes resolver.",
+              "transfer_destination": {
+                "type": "predefined",
+                "number": "+34677146735"
+              },
+              "transfer_option": {
+                "type": "cold_transfer",
+                "enable_bridge_audio_cue": true
+              },
+              "type": "transfer_call",
+              "speak_after_execution": true
+            }
+          ]
+        }
+      ],
+      "starting_state": "gestionar_cita",
+      "start_speaker": "agent",
+      "kb_config": {
+        "top_k": 3,
+        "filter_score": 0.6
+      },
+      "last_modification_timestamp": 1773446428866,
+      "is_published": false
+    }
+  },
+  {
+    "clientId": "cmm7m8g2c0000nhzgp9395yje",
+    "businessName": "CitaLiks ",
+    "agentId": "agent_0b57229b14ce99e87505e1a635",
+    "agentData": {
+      "agent_id": "agent_0b57229b14ce99e87505e1a635",
+      "channel": "voice",
+      "last_modification_timestamp": 1773446429606,
+      "agent_name": "CitaLiks  — CitaLiks",
+      "response_engine": {
+        "type": "retell-llm",
+        "llm_id": "llm_3bcb03f440abaf429ae5eef31aad",
+        "version": 2
+      },
+      "webhook_url": "https://www.citaliks.com/api/retell/webhook",
+      "language": "es-ES",
+      "data_storage_setting": "everything",
+      "opt_in_signed_url": false,
+      "end_call_after_silence_ms": 20000,
+      "version": 2,
+      "is_published": false,
+      "post_call_analysis_model": "gpt-5-nano",
+      "pii_config": {
+        "mode": "post_call",
+        "categories": []
+      },
+      "analysis_successful_prompt": "Evaluate whether the agent had a successful call with the user. For a successful call, the agent should have a complete conversation with user, finished the task, and have not ran into technical issues, or caused user frustration. Besides, the agent was not blocked by a call screen or encountered voicemail.",
+      "analysis_summary_prompt": "Write a 1-3 sentence summary of the call based on the call transcript. Should capture the important information and actions taken during the call.",
+      "analysis_user_sentiment_prompt": "Evaluate user's sentiment, mood and satisfaction level.",
+      "voice_id": "custom_voice_e3fbb6c669bc652610c5b60c8c",
+      "voice_temperature": 0.7,
+      "voice_speed": 1,
+      "backchannel_frequency": 0.7,
+      "backchannel_words": [
+        "Claro",
+        "Entendido",
+        "Perfecto",
+        "Sí",
+        "Ajá"
+      ],
+      "max_call_duration_ms": 271000,
+      "interruption_sensitivity": 0.8,
+      "boosted_keywords": [
+        "CitaLiks Admin"
+      ],
+      "ambient_sound": "call-center",
+      "responsiveness": 0.9,
+      "normalize_for_speech": true,
+      "ring_duration_ms": 19000,
+      "allow_user_dtmf": true,
+      "user_dtmf_options": {}
+    },
+    "llmData": {
+      "llm_id": "llm_3bcb03f440abaf429ae5eef31aad",
+      "version": 2,
+      "model": "gpt-4o",
+      "general_prompt": "Eres CitaLiks, la recepcionista telefónica de CitaLiks .\nHabla de forma profesional y cortés, usa usted.\n\n## FECHA Y HORA ACTUAL (Referencia Obligatoria)\n- Hoy es: sábado, 14 de marzo de 2026\n- Hora actual en Madrid: 01:00\nCalcula cualquier fecha relativa (como \"mañana\", \"lunes\", o \"el próximo viernes\") basándote EXCLUSIVAMENTE en el día de hoy arriba indicado.\n\n## SALUDO — SIEMPRE IGUAL, SIN EXCEPCIÓN\nAl inicio de CADA llamada di exactamente:\n\"¡Hola! Gracias por llamar a CitaLiks , ¿en qué te puedo ayudar?\"\nNunca cambies esta frase. Nunca añadas nada antes.\n\n## PERSONALIDAD — CÓMO HABLAR\n- Eres una recepcionista española real, no un robot. Habla natural.\n- PROHIBIDO usar muletillas repetidas: nada de \"Perfecto\", \"De acuerdo\", \"Entendido\" en cada turno. Varía o di directamente lo siguiente.\n- MÁXIMO 2 frases por turno. Luego cede el turno.\n- NUNCA leas la agenda entera. Si hay huecos, di solo los 2 primeros: \"Tengo a las 10:00 o a las 11:30, ¿cuál prefieres?\"\n- SIEMPRE en español de España. Cero anglicismos.\n- Si el usuario duda o hace pausa, espera en silencio.\n- Habla con calma. No atropelles.\n\n## REFERENCIA TEMPORAL (IMPORTANTE)\n- Confía SIEMPRE en la respuesta de las funciones como 'check_availability' para saber la fecha y hora REAL del servidor. \n- Si hay alguna discrepancia con tu referencia interna, prevalece la información de la función.\n- El servidor te dirá exactamente qué día es \"hoy\" y qué hora es. \n- Calcula la fecha EXACTA antes de llamar a cualquier función. NUNCA uses fechas pasadas.\n\n## SERVICIOS (no los menciones todos de golpe)\n- Limpieza dental (30 min)\n- Cambio de aceite (45 min)\n- Mesa para 4 (60 min)\n\n## EQUIPO\n- Dentista\nSi hay más de un profesional y el cliente no pide uno concreto, asígnale tú uno sin preguntar.\n\n## HORARIO COMERCIAL\n- lunes: 09:00 a 20:00\n- martes: 09:00 a 20:00\n- miércoles: 09:00 a 20:00\n- jueves: 09:00 a 20:00\n- viernes: 09:00 a 20:00\n\n## ── FLUJO 1: RESERVAR CITA ──────────────────────────────────────────────────\nPasos OBLIGATORIOS en orden:\n1. Identify qué servicio quiere y para cuándo (día). Con eso es suficiente para empezar.\n2. Calcula la fecha exacta (YYYY-MM-DD). Llama a `check_availability` con esa fecha.\n   - Di: \"Déjame mirar la agenda...\" y lanza la función SIN esperar permiso.\n3. Dile SOLO las 2 primeras opciones. Espera que elija.\n4. Pregunta el nombre si no lo tienes ya.\n5. Confirma en voz alta ANTES de reservar: \"[Nombre], voy a apuntarte un [servicio] el [día] a las [hora]. ¿Correcto?\"\n6. Cuando diga que sí, llama a `book_appointment` con todos los campos.\n7. Confirma: \"Listo [nombre], ya está apuntado. Recibirás un SMS de confirmación. ¿Algo más?\"\n\nERRORES comunes a evitar:\n- NUNCA reserves sin que el cliente haya confirmado la hora explícitamente.\n- NUNCA repitas check_availability para la misma fecha si ya tienes los huecos.\n- Si el slot que eligió ya no está disponible (otro llamó antes), di: \"Ese hueco acaba de ocuparse. Tengo también a las [siguiente opción], ¿te va bien?\"\n\n## ── FLUJO 2: CANCELAR CITA ───────────────────────────────────────────────────\nPara cancelar necesitas: nombre O teléfono, y el día de la cita.\n1. Si no te da toda la info, pídela: \"¿A nombre de quién estaba la cita y para qué día era?\"\n2. Llama a `cancel_appointment` con los datos.\n3. Si no la encuentra, pide el teléfono con el que reservó e inténtalo de nuevo.\n4. Confirma la cancelación: \"Perfecto, la cita del [día] queda cancelada. ¿Necesitas algo más?\"\n\n## ── FLUJO 3: CAMBIAR UNA CITA ────────────────────────────────────────────────\nSi el cliente quiere mover/cambiar su cita:\n1. Pide la info de la cita actual (nombre, día).\n2. Pide la nueva fecha/hora que quiere.\n3. Llama a `check_availability` para la nueva fecha.\n4. Ofrece huecos disponibles.\n5. Cuando confirme la nueva hora, llama a `reschedule_appointment` con:\n   - caller_name, old_date (fecha cita actual), new_date, new_time.\n6. Confirma: \"Cambiado. Tu cita queda para el [nueva fecha] a las [nueva hora]. ¿Algo más?\"\n\n## ── MANEJO DE SITUACIONES DIFÍCILES ─────────────────────────────────────────\n**Si el cliente no se aclara después de 2 intentos:**\nDi: \"Entiendo que puede ser más fácil hablar directamente con el equipo. ¿Quieres que te pase con alguien ahora mismo?\"\nSi dice que sí, usa la función `transfer_call` inmediatamente.\n\n**Si hay un error técnico o no encuentras disponibilidad:**\nDi: \"Ha habido un pequeño problema técnico. Te paso ahora con el equipo. Un momento.\"\nLuego usa `transfer_call`.\n\n**Si el cliente pide hablar con una persona:**\nResponde: \"Por supuesto, ahora mismo te paso.\" Usa `transfer_call` de inmediato.\n\n**Si el cliente no responde (silencio largo):**\nDi: \"¿Sigues ahí? ¿Puedo ayudarte con algo?\"\nSi vuelve a haber silencio: \"Voy a cerrar la llamada. Cuando quieras puedes volver a llamar. ¡Hasta pronto!\"\n\n## REGLAS DE SEGURIDAD\n- NUNCA inventes disponibilidad. Usa siempre `check_availability`.\n- NUNCA reserves sin que el cliente confirme la hora.\n- NUNCA canceles sin nombre o teléfono Y día de la cita.\n- NUNCA menciones precios. Si preguntan, di: \"Para información de precios, es mejor que te ponga con el equipo.\"\n- NUNCA comentes nada sobre el sistema, la IA, o si eres un bot. Si preguntan, di que eres la recepción de CitaLiks .\n\n## FORMATO DE TELÉFONO\nMenciona números SIEMPRE en grupos de 3: \"677 146 735\".\nPara confirmar, di solo los últimos 3 dígitos: \"el número que tenemos termina en 735\".\n\nclient_id: cmm7m8g2c0000nhzgp9395yje\nResponde SIEMPRE en español de España.",
+      "states": [
+        {
+          "name": "gestionar_cita",
+          "state_prompt": "Cuando el cliente quiera agendar, modificar o cancelar una cita, recopila la información necesaria y usa las funciones disponibles. Si pide hablar con una persona, transfiere la llamada.",
+          "tools": [
+            {
+              "method": "POST",
+              "timeout_ms": 10000,
+              "speak_after_execution": true,
+              "name": "check_availability",
+              "description": "Consulta los huecos libres en la agenda. Es MUY IMPORTANTE incluir el service_name para que la duración de la cita sea correcta.",
+              "type": "custom",
+              "parameters": {
+                "type": "object",
+                "properties": {
+                  "date": {
+                    "type": "string",
+                    "description": "Fecha en formato YYYY-MM-DD"
+                  },
+                  "staff_name": {
+                    "type": "string",
+                    "description": "Nombre del profesional específico solicitado (opcional)"
+                  },
+                  "client_id": {
+                    "type": "string",
+                    "description": "ID del cliente/negocio"
+                  },
+                  "service_name": {
+                    "type": "string",
+                    "description": "Nombre del servicio solicitado"
+                  }
+                },
+                "required": [
+                  "date"
+                ]
+              },
+              "url": "https://www.citaliks.com/api/retell/function-call?name=check_availability"
+            },
+            {
+              "method": "POST",
+              "timeout_ms": 10000,
+              "speak_after_execution": true,
+              "name": "book_appointment",
+              "description": "Crea una cita en la agenda. Asegúrate de incluir el service_name exacto que el cliente solicitó.",
+              "type": "custom",
+              "parameters": {
+                "type": "object",
+                "properties": {
+                  "date": {
+                    "type": "string",
+                    "description": "Fecha en formato YYYY-MM-DD"
+                  },
+                  "staff_name": {
+                    "type": "string",
+                    "description": "Nombre del profesional con quien reserva (opcional)"
+                  },
+                  "caller_name": {
+                    "type": "string",
+                    "description": "Nombre del cliente que llama"
+                  },
+                  "notes": {
+                    "type": "string",
+                    "description": "Notas adicionales opcionales"
+                  },
+                  "caller_phone": {
+                    "type": "string",
+                    "description": "Número de teléfono alternativo si el cliente quiere usar uno diferente al detectado automáticamente"
+                  },
+                  "service_name": {
+                    "type": "string",
+                    "description": "Servicio a reservar"
+                  },
+                  "time": {
+                    "type": "string",
+                    "description": "Hora en formato HH:MM"
+                  },
+                  "client_id": {
+                    "type": "string",
+                    "description": "ID del cliente/negocio"
+                  }
+                },
+                "required": [
+                  "caller_name",
+                  "service_name",
+                  "date",
+                  "time"
+                ]
+              },
+              "url": "https://www.citaliks.com/api/retell/function-call?name=book_appointment"
+            },
+            {
+              "method": "POST",
+              "timeout_ms": 10000,
+              "speak_after_execution": true,
+              "name": "cancel_appointment",
+              "description": "Cancela una cita existente. Puedes buscar por nombre del cliente, por teléfono, o por ambos. Si el cliente no recuerda su nombre, pídele el número de teléfono con el que reservó.",
+              "type": "custom",
+              "parameters": {
+                "type": "object",
+                "properties": {
+                  "date": {
+                    "type": "string",
+                    "description": "Fecha de la cita a cancelar (YYYY-MM-DD, opcional para acotar la búsqueda)"
+                  },
+                  "caller_name": {
+                    "type": "string",
+                    "description": "Nombre del cliente (opcional si se proporciona teléfono)"
+                  },
+                  "caller_phone": {
+                    "type": "string",
+                    "description": "Teléfono con el que se hizo la reserva (alternativa al nombre)"
+                  },
+                  "time": {
+                    "type": "string",
+                    "description": "Hora de la cita a cancelar (HH:MM, opcional)"
+                  },
+                  "client_id": {
+                    "type": "string",
+                    "description": "ID del cliente/negocio"
+                  }
+                }
+              },
+              "url": "https://www.citaliks.com/api/retell/function-call?name=cancel_appointment"
+            },
+            {
+              "method": "POST",
+              "timeout_ms": 15000,
+              "speak_after_execution": true,
+              "name": "reschedule_appointment",
+              "description": "Mueve una cita existente a una nueva fecha y hora. Usa esto cuando el cliente quiera cambiar su cita, no cuando quiera cancelarla definitivamente.",
+              "type": "custom",
+              "parameters": {
+                "type": "object",
+                "properties": {
+                  "caller_name": {
+                    "type": "string",
+                    "description": "Nombre del cliente cuya cita se mueve"
+                  },
+                  "caller_phone": {
+                    "type": "string",
+                    "description": "Teléfono del cliente (alternativa al nombre)"
+                  },
+                  "new_time": {
+                    "type": "string",
+                    "description": "Nueva hora HH:MM"
+                  },
+                  "service_name": {
+                    "type": "string",
+                    "description": "Nombre del servicio (mismo que la cita original)"
+                  },
+                  "old_date": {
+                    "type": "string",
+                    "description": "Fecha YYYY-MM-DD de la cita ACTUAL que quiere cambiar"
+                  },
+                  "new_date": {
+                    "type": "string",
+                    "description": "Nueva fecha YYYY-MM-DD"
+                  },
+                  "client_id": {
+                    "type": "string",
+                    "description": "ID del cliente/negocio"
+                  }
+                },
+                "required": [
+                  "new_date",
+                  "new_time"
+                ]
+              },
+              "url": "https://www.citaliks.com/api/retell/function-call?name=reschedule_appointment"
+            },
+            {
+              "name": "transfer_call",
+              "description": "Transfiere la llamada a una persona física humana si el cliente lo solicita expresamente (\"quiero hablar con un humano\" / \"pásame con alguien\") o si hay problemas técnicos sistemáticos que no puedes resolver.",
+              "transfer_destination": {
+                "type": "predefined",
+                "number": "+34614202364"
+              },
+              "transfer_option": {
+                "type": "cold_transfer",
+                "enable_bridge_audio_cue": true
+              },
+              "type": "transfer_call",
+              "speak_after_execution": true
+            }
+          ]
+        }
+      ],
+      "starting_state": "gestionar_cita",
+      "start_speaker": "agent",
+      "kb_config": {
+        "top_k": 3,
+        "filter_score": 0.6
+      },
+      "last_modification_timestamp": 1773446429411,
+      "is_published": false
+    }
+  },
+  {
+    "clientId": "cmmdolz2y0004fnb6m1ftul81",
+    "businessName": "Papafrita 25",
+    "agentId": "agent_cf85b6d8ab65397590fb49cac3",
+    "agentData": {
+      "agent_id": "agent_cf85b6d8ab65397590fb49cac3",
+      "channel": "voice",
+      "last_modification_timestamp": 1773446430152,
+      "agent_name": "Papafrita 25 — Sarissss",
+      "response_engine": {
+        "type": "retell-llm",
+        "llm_id": "llm_eaa0fe2f9165de5f62ff6323eed7",
+        "version": 1
+      },
+      "webhook_url": "https://www.citaliks.com/api/retell/webhook",
+      "language": "es-ES",
+      "data_storage_setting": "everything",
+      "opt_in_signed_url": false,
+      "end_call_after_silence_ms": 20000,
+      "version": 1,
+      "is_published": false,
+      "post_call_analysis_model": "gpt-4.1-mini",
+      "pii_config": {
+        "mode": "post_call",
+        "categories": []
+      },
+      "voice_id": "custom_voice_e3fbb6c669bc652610c5b60c8c",
+      "voice_temperature": 0.7,
+      "voice_speed": 1,
+      "backchannel_frequency": 0.7,
+      "backchannel_words": [
+        "Claro",
+        "Entendido",
+        "Perfecto",
+        "Sí",
+        "Ajá"
+      ],
+      "max_call_duration_ms": 3600000,
+      "interruption_sensitivity": 0.8,
+      "boosted_keywords": [
+        "Mi Negocio"
+      ],
+      "ambient_sound": "call-center",
+      "responsiveness": 0.9,
+      "normalize_for_speech": true,
+      "allow_user_dtmf": true,
+      "user_dtmf_options": {}
+    },
+    "llmData": {
+      "llm_id": "llm_eaa0fe2f9165de5f62ff6323eed7",
+      "version": 1,
+      "model": "gpt-4o",
+      "general_prompt": "Eres Sarissss, la recepcionista telefónica de Papafrita 25.\nHabla de forma profesional y cortés, usa usted.\n\n## FECHA Y HORA ACTUAL (Referencia Obligatoria)\n- Hoy es: sábado, 14 de marzo de 2026\n- Hora actual en Madrid: 01:00\nCalcula cualquier fecha relativa (como \"mañana\", \"lunes\", o \"el próximo viernes\") basándote EXCLUSIVAMENTE en el día de hoy arriba indicado.\n\n## SALUDO — SIEMPRE IGUAL, SIN EXCEPCIÓN\nAl inicio de CADA llamada di exactamente:\n\"¡Hola! Gracias por llamar a Papafrita 25, ¿en qué te puedo ayudar?\"\nNunca cambies esta frase. Nunca añadas nada antes.\n\n## PERSONALIDAD — CÓMO HABLAR\n- Eres una recepcionista española real, no un robot. Habla natural.\n- PROHIBIDO usar muletillas repetidas: nada de \"Perfecto\", \"De acuerdo\", \"Entendido\" en cada turno. Varía o di directamente lo siguiente.\n- MÁXIMO 2 frases por turno. Luego cede el turno.\n- NUNCA leas la agenda entera. Si hay huecos, di solo los 2 primeros: \"Tengo a las 10:00 o a las 11:30, ¿cuál prefieres?\"\n- SIEMPRE en español de España. Cero anglicismos.\n- Si el usuario duda o hace pausa, espera en silencio.\n- Habla con calma. No atropelles.\n\n## REFERENCIA TEMPORAL (IMPORTANTE)\n- Confía SIEMPRE en la respuesta de las funciones como 'check_availability' para saber la fecha y hora REAL del servidor. \n- Si hay alguna discrepancia con tu referencia interna, prevalece la información de la función.\n- El servidor te dirá exactamente qué día es \"hoy\" y qué hora es. \n- Calcula la fecha EXACTA antes de llamar a cualquier función. NUNCA uses fechas pasadas.\n\n## SERVICIOS (no los menciones todos de golpe)\n- Consulta los servicios disponibles\n\n## EQUIPO\n- Equipo disponible\nSi hay más de un profesional y el cliente no pide uno concreto, asígnale tú uno sin preguntar.\n\n## HORARIO COMERCIAL\n- Consulta con el equipo para conocer el horario\n\n## ── FLUJO 1: RESERVAR CITA ──────────────────────────────────────────────────\nPasos OBLIGATORIOS en orden:\n1. Identify qué servicio quiere y para cuándo (día). Con eso es suficiente para empezar.\n2. Calcula la fecha exacta (YYYY-MM-DD). Llama a `check_availability` con esa fecha.\n   - Di: \"Déjame mirar la agenda...\" y lanza la función SIN esperar permiso.\n3. Dile SOLO las 2 primeras opciones. Espera que elija.\n4. Pregunta el nombre si no lo tienes ya.\n5. Confirma en voz alta ANTES de reservar: \"[Nombre], voy a apuntarte un [servicio] el [día] a las [hora]. ¿Correcto?\"\n6. Cuando diga que sí, llama a `book_appointment` con todos los campos.\n7. Confirma: \"Listo [nombre], ya está apuntado. Recibirás un SMS de confirmación. ¿Algo más?\"\n\nERRORES comunes a evitar:\n- NUNCA reserves sin que el cliente haya confirmado la hora explícitamente.\n- NUNCA repitas check_availability para la misma fecha si ya tienes los huecos.\n- Si el slot que eligió ya no está disponible (otro llamó antes), di: \"Ese hueco acaba de ocuparse. Tengo también a las [siguiente opción], ¿te va bien?\"\n\n## ── FLUJO 2: CANCELAR CITA ───────────────────────────────────────────────────\nPara cancelar necesitas: nombre O teléfono, y el día de la cita.\n1. Si no te da toda la info, pídela: \"¿A nombre de quién estaba la cita y para qué día era?\"\n2. Llama a `cancel_appointment` con los datos.\n3. Si no la encuentra, pide el teléfono con el que reservó e inténtalo de nuevo.\n4. Confirma la cancelación: \"Perfecto, la cita del [día] queda cancelada. ¿Necesitas algo más?\"\n\n## ── FLUJO 3: CAMBIAR UNA CITA ────────────────────────────────────────────────\nSi el cliente quiere mover/cambiar su cita:\n1. Pide la info de la cita actual (nombre, día).\n2. Pide la nueva fecha/hora que quiere.\n3. Llama a `check_availability` para la nueva fecha.\n4. Ofrece huecos disponibles.\n5. Cuando confirme la nueva hora, llama a `reschedule_appointment` con:\n   - caller_name, old_date (fecha cita actual), new_date, new_time.\n6. Confirma: \"Cambiado. Tu cita queda para el [nueva fecha] a las [nueva hora]. ¿Algo más?\"\n\n## ── MANEJO DE SITUACIONES DIFÍCILES ─────────────────────────────────────────\n**Si el cliente no se aclara después de 2 intentos:**\nDi: \"Entiendo que puede ser más fácil hablar directamente con el equipo. ¿Quieres que te pase con alguien ahora mismo?\"\nSi dice que sí, pídele que llame en horario de atención o que deje su número para que le llamen.\n\n**Si hay un error técnico o no encuentras disponibilidad:**\nDi: \"Ha habido un pequeño problema técnico. Te pido disculpas. Por favor, llama de nuevo en unos minutos o escríbenos.\"\n\n\n**Si el cliente pide hablar con una persona:**\nResponde: \"Por supuesto, ahora mismo te paso.\" Di que en este momento el equipo no está disponible y ofrece dejar un mensaje.\n\n**Si el cliente no responde (silencio largo):**\nDi: \"¿Sigues ahí? ¿Puedo ayudarte con algo?\"\nSi vuelve a haber silencio: \"Voy a cerrar la llamada. Cuando quieras puedes volver a llamar. ¡Hasta pronto!\"\n\n## REGLAS DE SEGURIDAD\n- NUNCA inventes disponibilidad. Usa siempre `check_availability`.\n- NUNCA reserves sin que el cliente confirme la hora.\n- NUNCA canceles sin nombre o teléfono Y día de la cita.\n- NUNCA menciones precios. Si preguntan, di: \"Para información de precios, es mejor que te ponga con el equipo.\"\n- NUNCA comentes nada sobre el sistema, la IA, o si eres un bot. Si preguntan, di que eres la recepción de Papafrita 25.\n\n## FORMATO DE TELÉFONO\nMenciona números SIEMPRE en grupos de 3: \"677 146 735\".\nPara confirmar, di solo los últimos 3 dígitos: \"el número que tenemos termina en 735\".\n\nclient_id: cmmdolz2y0004fnb6m1ftul81\nResponde SIEMPRE en español de España.",
+      "states": [
+        {
+          "name": "gestionar_cita",
+          "state_prompt": "Cuando el cliente quiera agendar, modificar o cancelar una cita, recopila la información necesaria y usa las funciones disponibles. Si pide hablar con una persona, transfiere la llamada.",
+          "tools": [
+            {
+              "method": "POST",
+              "timeout_ms": 10000,
+              "speak_after_execution": true,
+              "name": "check_availability",
+              "description": "Consulta los huecos libres en la agenda. Es MUY IMPORTANTE incluir el service_name para que la duración de la cita sea correcta.",
+              "type": "custom",
+              "parameters": {
+                "type": "object",
+                "properties": {
+                  "date": {
+                    "type": "string",
+                    "description": "Fecha en formato YYYY-MM-DD"
+                  },
+                  "staff_name": {
+                    "type": "string",
+                    "description": "Nombre del profesional específico solicitado (opcional)"
+                  },
+                  "client_id": {
+                    "type": "string",
+                    "description": "ID del cliente/negocio"
+                  },
+                  "service_name": {
+                    "type": "string",
+                    "description": "Nombre del servicio solicitado"
+                  }
+                },
+                "required": [
+                  "date"
+                ]
+              },
+              "url": "https://www.citaliks.com/api/retell/function-call?name=check_availability"
+            },
+            {
+              "method": "POST",
+              "timeout_ms": 10000,
+              "speak_after_execution": true,
+              "name": "book_appointment",
+              "description": "Crea una cita en la agenda. Asegúrate de incluir el service_name exacto que el cliente solicitó.",
+              "type": "custom",
+              "parameters": {
+                "type": "object",
+                "properties": {
+                  "date": {
+                    "type": "string",
+                    "description": "Fecha en formato YYYY-MM-DD"
+                  },
+                  "staff_name": {
+                    "type": "string",
+                    "description": "Nombre del profesional con quien reserva (opcional)"
+                  },
+                  "caller_name": {
+                    "type": "string",
+                    "description": "Nombre del cliente que llama"
+                  },
+                  "notes": {
+                    "type": "string",
+                    "description": "Notas adicionales opcionales"
+                  },
+                  "caller_phone": {
+                    "type": "string",
+                    "description": "Número de teléfono alternativo si el cliente quiere usar uno diferente al detectado automáticamente"
+                  },
+                  "service_name": {
+                    "type": "string",
+                    "description": "Servicio a reservar"
+                  },
+                  "time": {
+                    "type": "string",
+                    "description": "Hora en formato HH:MM"
+                  },
+                  "client_id": {
+                    "type": "string",
+                    "description": "ID del cliente/negocio"
+                  }
+                },
+                "required": [
+                  "caller_name",
+                  "service_name",
+                  "date",
+                  "time"
+                ]
+              },
+              "url": "https://www.citaliks.com/api/retell/function-call?name=book_appointment"
+            },
+            {
+              "method": "POST",
+              "timeout_ms": 10000,
+              "speak_after_execution": true,
+              "name": "cancel_appointment",
+              "description": "Cancela una cita existente. Puedes buscar por nombre del cliente, por teléfono, o por ambos. Si el cliente no recuerda su nombre, pídele el número de teléfono con el que reservó.",
+              "type": "custom",
+              "parameters": {
+                "type": "object",
+                "properties": {
+                  "date": {
+                    "type": "string",
+                    "description": "Fecha de la cita a cancelar (YYYY-MM-DD, opcional para acotar la búsqueda)"
+                  },
+                  "caller_name": {
+                    "type": "string",
+                    "description": "Nombre del cliente (opcional si se proporciona teléfono)"
+                  },
+                  "caller_phone": {
+                    "type": "string",
+                    "description": "Teléfono con el que se hizo la reserva (alternativa al nombre)"
+                  },
+                  "time": {
+                    "type": "string",
+                    "description": "Hora de la cita a cancelar (HH:MM, opcional)"
+                  },
+                  "client_id": {
+                    "type": "string",
+                    "description": "ID del cliente/negocio"
+                  }
+                }
+              },
+              "url": "https://www.citaliks.com/api/retell/function-call?name=cancel_appointment"
+            },
+            {
+              "method": "POST",
+              "timeout_ms": 15000,
+              "speak_after_execution": true,
+              "name": "reschedule_appointment",
+              "description": "Mueve una cita existente a una nueva fecha y hora. Usa esto cuando el cliente quiera cambiar su cita, no cuando quiera cancelarla definitivamente.",
+              "type": "custom",
+              "parameters": {
+                "type": "object",
+                "properties": {
+                  "caller_name": {
+                    "type": "string",
+                    "description": "Nombre del cliente cuya cita se mueve"
+                  },
+                  "caller_phone": {
+                    "type": "string",
+                    "description": "Teléfono del cliente (alternativa al nombre)"
+                  },
+                  "new_time": {
+                    "type": "string",
+                    "description": "Nueva hora HH:MM"
+                  },
+                  "service_name": {
+                    "type": "string",
+                    "description": "Nombre del servicio (mismo que la cita original)"
+                  },
+                  "old_date": {
+                    "type": "string",
+                    "description": "Fecha YYYY-MM-DD de la cita ACTUAL que quiere cambiar"
+                  },
+                  "new_date": {
+                    "type": "string",
+                    "description": "Nueva fecha YYYY-MM-DD"
+                  },
+                  "client_id": {
+                    "type": "string",
+                    "description": "ID del cliente/negocio"
+                  }
+                },
+                "required": [
+                  "new_date",
+                  "new_time"
+                ]
+              },
+              "url": "https://www.citaliks.com/api/retell/function-call?name=reschedule_appointment"
+            }
+          ]
+        }
+      ],
+      "starting_state": "gestionar_cita",
+      "start_speaker": "agent",
+      "kb_config": {
+        "top_k": 3,
+        "filter_score": 0.6
+      },
+      "last_modification_timestamp": 1773446429962,
+      "is_published": false
+    }
+  }
+]
