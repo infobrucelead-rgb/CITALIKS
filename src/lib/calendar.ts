@@ -738,10 +738,76 @@ export async function cancelAppointment(params: {
 }
 
 export async function listEvents(clientId: string, params?: any) {
-    // Basic local list
     const db = params?.prismaOverride || prisma;
-    return await (db as any).appointment.findMany({
-        where: { clientId, status: "CONFIRMED" },
+    const staffId = params?.staffId;
+    const staffName = params?.staffName;
+    const staffCalendarId = params?.staffCalendarId;
+
+    // 1. Fetch Local Appointments
+    const localAppointments = await (db as any).appointment.findMany({
+        where: { 
+            clientId, 
+            status: "CONFIRMED",
+            ...(staffName ? { staffName } : {}) 
+        },
         orderBy: { date: 'desc' }
     });
+
+    const formattedEvents = localAppointments.map((apt: any) => {
+        const startDateTime = `${apt.date}T${apt.time}:00`;
+        // Default to 30 mins if not specified, though local appointments don't have durationMin yet in DB
+        const duration = 30; 
+        const endDateTime = new Date(new Date(startDateTime).getTime() + duration * 60000).toISOString();
+
+        return {
+            id: apt.id,
+            summary: `${apt.serviceName} - ${apt.callerName}`,
+            start: { dateTime: startDateTime, timeZone: 'Europe/Madrid' },
+            end: { dateTime: endDateTime, timeZone: 'Europe/Madrid' },
+            source: 'local',
+            metadata: {
+                callerName: apt.callerName,
+                callerPhone: apt.callerPhone,
+                notes: apt.notes,
+                serviceName: apt.serviceName,
+                staffName: apt.staffName
+            }
+        };
+    });
+
+    // 2. Fetch External Events (Google/Microsoft) if a calendar ID is provided
+    if (staffCalendarId) {
+        try {
+            const { oAuth2Client, calendarId } = await getAuthenticatedGoogleClient(clientId, db, staffCalendarId);
+            const calendar = google.calendar({ version: "v3", auth: oAuth2Client });
+            
+            // Get events for the last 30 days and next 30 days
+            const timeMin = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString();
+            const timeMax = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString();
+
+            const res = await calendar.events.list({
+                calendarId,
+                timeMin,
+                timeMax,
+                singleEvents: true,
+                orderBy: 'startTime',
+            });
+
+            const googleEvents = (res.data.items || []).map((e: any) => ({
+                id: e.id,
+                summary: e.summary,
+                start: e.start,
+                end: e.end,
+                source: 'google',
+                description: e.description
+            }));
+
+            formattedEvents.push(...googleEvents);
+        } catch (err) {
+            console.warn("[calendar/listEvents] Google fetch failed", (err as any).message);
+        }
+    }
+
+    return formattedEvents;
 }
+

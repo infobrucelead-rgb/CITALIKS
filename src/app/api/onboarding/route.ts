@@ -186,6 +186,11 @@ export async function GET() {
                     callLogs: {
                         orderBy: { createdAt: "desc" },
                         take: 10
+                    },
+                    appointments: {
+                        where: { status: "CONFIRMED" },
+                        orderBy: { date: "asc" },
+                        take: 5
                     }
                 } as any,
             });
@@ -207,6 +212,11 @@ export async function GET() {
                 callLogs: {
                     orderBy: { createdAt: "desc" },
                     take: 10
+                },
+                appointments: {
+                    where: { status: "CONFIRMED" },
+                    orderBy: { date: "asc" },
+                    take: 5
                 }
             } as any,
         });

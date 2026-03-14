@@ -22,7 +22,7 @@ const BUSINESS_TYPES = [
     "Asesoría / Gestoría",
     "Otro",
 ];
-type TabType = "overview" | "calls" | "services" | "config" | "team" | "admin" | "support" | "integrations";
+type TabType = "overview" | "calls" | "operations" | "config" | "admin" | "support" | "integrations";
 
 export default function DashboardContent({ client: initialClient }: { client: any }) {
     const [client, setClient] = useState(initialClient);
@@ -52,13 +52,11 @@ export default function DashboardContent({ client: initialClient }: { client: an
     const renderContent = () => {
         switch (activeTab) {
             case "overview":
-                return <OverviewTab client={client} />;
+                return <OverviewTab client={client} setActiveTab={setActiveTab} />;
             case "calls":
                 return <CallsTab client={client} />;
-            case "services":
-                return <ServicesTab client={client} onUpdate={refreshData} selectedStaff={selectedStaff} setSelectedStaff={setSelectedStaff} />;
-            case "team":
-                return <TeamTab client={client} onUpdate={refreshData} onSelectStaff={(s) => { setSelectedStaff(s); setActiveTab("services"); }} />;
+            case "operations":
+                return <OperationsTab client={client} onUpdate={refreshData} selectedStaff={selectedStaff} setSelectedStaff={setSelectedStaff} />;
             case "config":
                 return <ConfigTab client={client} onUpdate={refreshData} />;
             case "support":
@@ -69,7 +67,7 @@ export default function DashboardContent({ client: initialClient }: { client: an
                     setActiveTab("support");
                 }} />;
             default:
-                return <OverviewTab client={client} />;
+                return <OverviewTab client={client} setActiveTab={setActiveTab} />;
         }
     };
 
@@ -99,15 +97,9 @@ export default function DashboardContent({ client: initialClient }: { client: an
                     />
                     <NavItem
                         icon={<Users size={20} />}
-                        label="Equipo"
-                        active={activeTab === "team"}
-                        onClick={() => setActiveTab("team")}
-                    />
-                    <NavItem
-                        icon={<Calendar size={20} />}
-                        label="Servicios & Horarios"
-                        active={activeTab === "services"}
-                        onClick={() => setActiveTab("services")}
+                        label="Gestión de Equipo"
+                        active={activeTab === "operations"}
+                        onClick={() => setActiveTab("operations")}
                     />
                     <NavItem
                         icon={<Settings size={20} />}
@@ -214,7 +206,7 @@ function Header({ title, subtitle, status, actions }: { title: string, subtitle:
     );
 }
 
-function OverviewTab({ client }: { client: any }) {
+function OverviewTab({ client, setActiveTab }: { client: any, setActiveTab: (t: TabType) => void }) {
     const logs = client?.callLogs || [];
     const totalCalls = logs.length;
     const booked = logs.filter((l: any) => l.actionTaken === 'booked').length;
@@ -281,9 +273,28 @@ function OverviewTab({ client }: { client: any }) {
             </div>
 
             <div className="grid grid-cols-1 xl:grid-cols-3 gap-8">
-                <div className="xl:col-span-2 space-y-6">
-                    <h2 className="text-xl font-bold">Últimas llamadas</h2>
-                    <CallsList logs={client?.callLogs?.slice(0, 5) || []} />
+                <div className="xl:col-span-2 space-y-8">
+                    <section className="space-y-4">
+                        <div className="flex items-center justify-between">
+                            <h2 className="text-xl font-bold flex items-center gap-2">
+                                <Calendar size={20} className="text-blue-400" /> Próximas Citas
+                            </h2>
+                            <button 
+                                onClick={() => setActiveTab("operations")}
+                                className="text-[10px] font-bold uppercase tracking-widest text-white/30 hover:text-blue-400 transition-colors"
+                            >
+                                Ver Agenda Completa
+                            </button>
+                        </div>
+                        <AppointmentsList appointments={client?.appointments || []} />
+                    </section>
+
+                    <section className="space-y-4">
+                        <h2 className="text-xl font-bold flex items-center gap-2">
+                            <Phone size={20} className="text-violet-400" /> Últimas llamadas
+                        </h2>
+                        <CallsList logs={client?.callLogs?.slice(0, 5) || []} />
+                    </section>
                 </div>
 
                 <div className="space-y-6">
@@ -336,10 +347,220 @@ function CallsTab({ client }: { client: any }) {
     );
 }
 
-function TeamTab({ client, onUpdate, onSelectStaff }: { client: any, onUpdate: () => void, onSelectStaff: (s: any) => void }) {
+function OperationsTab({ client, onUpdate, selectedStaff, setSelectedStaff }: { client: any, onUpdate: () => void, selectedStaff: any, setSelectedStaff: (s: any) => void }) {
+    const [view, setView] = useState<"team" | "services">("team");
+
+    // If staff is selected, we usually want to see services
+    useEffect(() => {
+        if (selectedStaff) setView("services");
+    }, [selectedStaff]);
+
+    return (
+        <div className="space-y-8 animate-in fade-in duration-500 pb-20">
+            <Header
+                title="Gestión del Negocio"
+                subtitle="Configura tu equipo, define tus servicios y sincroniza agendas."
+                actions={
+                    <div className="flex items-center gap-3">
+                         <div className="flex p-1 bg-white/5 rounded-xl border border-white/10 shrink-0">
+                            <button
+                                onClick={() => setView("team")}
+                                className={`px-4 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-tighter transition-all ${view === "team" ? "bg-blue-600 text-white shadow-lg" : "text-white/40 hover:text-white"}`}
+                            >
+                                <div className="flex items-center gap-2">
+                                    <Users size={12} /> Equipo
+                                </div>
+                            </button>
+                            <button
+                                onClick={() => setView("services")}
+                                className={`px-4 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-tighter transition-all ${view === "services" ? "bg-blue-600 text-white shadow-lg" : "text-white/40 hover:text-white"}`}
+                            >
+                                <div className="flex items-center gap-2">
+                                    <Activity size={12} /> Servicios
+                                </div>
+                            </button>
+                        </div>
+                        <StaffPanelSelector
+                            client={client}
+                            selectedStaff={selectedStaff}
+                            onSelectStaff={setSelectedStaff}
+                        />
+                    </div>
+                }
+            />
+
+            {view === "team" ? (
+                <div className="space-y-6">
+                    <div className="flex items-center justify-between">
+                        <h2 className="text-xl font-bold flex items-center gap-2">
+                            <Users size={20} className="text-blue-400" /> Plantilla de Profesionales
+                        </h2>
+                    </div>
+                    <TeamGrid client={client} onUpdate={onUpdate} onSelectStaff={(s) => { setSelectedStaff(s); setView("services"); }} />
+                </div>
+            ) : (
+                <div className={`grid grid-cols-1 ${selectedStaff ? 'lg:grid-cols-4' : 'grid-cols-1'} gap-8`}>
+                    {selectedStaff && (
+                        <div className="lg:col-span-1 space-y-6 animate-in slide-in-from-left-4">
+                            <div className="glass p-6 rounded-3xl border-blue-500/30 bg-blue-600/5 relative overflow-hidden group">
+                                <div className="absolute top-0 right-0 w-32 h-32 bg-blue-600/10 rounded-full blur-3xl -mr-16 -mt-16"></div>
+                                <div className="flex items-center gap-4 mb-6">
+                                    <div className="w-16 h-16 rounded-2xl bg-blue-600/20 flex items-center justify-center text-blue-400">
+                                        <Users size={32} />
+                                    </div>
+                                    <div className="flex-1 min-w-0">
+                                        <h3 className="text-xl font-bold truncate">{selectedStaff.name}</h3>
+                                        <p className="text-[10px] text-white/40 uppercase font-black tracking-widest truncate">{selectedStaff.email || "Sin email"}</p>
+                                    </div>
+                                </div>
+                                
+                                <div className="space-y-3 relative z-10">
+                                    <div className="p-4 rounded-2xl bg-white/5 border border-white/5">
+                                        <p className="text-[10px] uppercase font-bold text-white/20 mb-2 tracking-widest">Estado Sincronización</p>
+                                        <div className="flex items-center gap-2 text-blue-400 font-bold text-xs">
+                                            <Calendar size={14} /> Google Calendar Activo
+                                        </div>
+                                    </div>
+                                    <button 
+                                        onClick={() => setSelectedStaff(null)}
+                                        className="w-full py-3 bg-white/5 hover:bg-white/10 text-white/40 hover:text-white rounded-xl text-[10px] font-bold uppercase tracking-widest transition-all border border-white/5"
+                                    >
+                                        Ver Servicios Globales
+                                    </button>
+                                </div>
+                            </div>
+                            
+                            <div className="glass p-6 rounded-3xl border-white/5 bg-white/[0.02]">
+                                <h4 className="text-[10px] uppercase font-bold text-white/30 mb-4 tracking-widest">Otros Profesionales</h4>
+                                <div className="space-y-2">
+                                    {client?.staff?.filter((s:any) => s.id !== selectedStaff.id).slice(0, 3).map((s:any) => (
+                                        <button 
+                                            key={s.id}
+                                            onClick={() => setSelectedStaff(s)}
+                                            className="w-full flex items-center gap-3 p-2 rounded-xl hover:bg-white/5 transition-all text-left group"
+                                        >
+                                            <div className="w-8 h-8 rounded-lg bg-white/5 flex items-center justify-center text-xs font-bold text-white/20 group-hover:text-blue-400 transition-colors">
+                                                {s.name.substring(0,2).toUpperCase()}
+                                            </div>
+                                            <span className="text-xs font-medium text-white/40 group-hover:text-white transition-colors truncate">{s.name}</span>
+                                        </button>
+                                    ))}
+                                    <button 
+                                        onClick={() => setView("team")}
+                                        className="w-full text-center py-2 text-[9px] font-bold uppercase tracking-widest text-blue-400/40 hover:text-blue-400 transition-all mt-2"
+                                    >
+                                        Ver toda la lista
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    )}
+
+                    <div className={`${selectedStaff ? 'lg:col-span-3' : 'w-full'} space-y-8 animate-in slide-in-from-right-4`}>
+                        <ServicesTab client={client} onUpdate={onUpdate} selectedStaff={selectedStaff} setSelectedStaff={setSelectedStaff} />
+                    </div>
+                </div>
+            )}
+        </div>
+    );
+}
+
+function StaffPanelSelector({ client, selectedStaff, onSelectStaff }: { client: any, selectedStaff: any, onSelectStaff: (s: any) => void }) {
+    const [isOpen, setIsOpen] = useState(false);
+    return (
+        <div className="relative">
+            <button 
+                onClick={() => setIsOpen(!isOpen)}
+                className="flex items-center gap-3 px-4 py-2 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 transition-all group"
+            >
+                <div className="w-6 h-6 rounded-lg bg-blue-600/20 flex items-center justify-center text-blue-400 group-hover:scale-110 transition-transform">
+                    <Users size={14} />
+                </div>
+                <span className="text-sm font-bold truncate max-w-[120px]">
+                    {selectedStaff ? selectedStaff.name : "Seleccionar..."}
+                </span>
+                <ChevronDown size={14} className={`text-white/20 transition-transform ${isOpen ? 'rotate-180' : ''}`} />
+            </button>
+            
+            {isOpen && (
+                <div className="absolute top-full right-0 mt-2 w-64 glass rounded-2xl border border-white/10 shadow-2xl z-50 py-2 animate-in fade-in zoom-in-95 duration-200">
+                    <div className="px-3 py-2 text-[10px] uppercase font-bold text-white/20 tracking-widest border-b border-white/5 mb-1">
+                        Miembros del Equipo
+                    </div>
+                    {client?.staff?.map((s: any) => (
+                        <button
+                            key={s.id}
+                            onClick={() => { onSelectStaff(s); setIsOpen(false); }}
+                            className={`w-full flex items-center gap-3 px-4 py-2.5 hover:bg-white/5 transition-colors text-left ${selectedStaff?.id === s.id ? 'bg-blue-600/10 text-blue-400' : 'text-white/60'}`}
+                        >
+                            <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${selectedStaff?.id === s.id ? 'bg-blue-600/20' : 'bg-white/5'}`}>
+                                <span className="font-bold text-xs">{s.name.substring(0, 2).toUpperCase()}</span>
+                            </div>
+                            <span className="text-sm font-medium truncate">{s.name}</span>
+                        </button>
+                    ))}
+                    <button 
+                        onClick={() => { onSelectStaff(null); setIsOpen(false); }}
+                        className="w-full flex items-center gap-3 px-4 py-2.5 hover:bg-white/5 text-blue-400/60 hover:text-blue-400 transition-colors text-left border-t border-white/5 mt-1"
+                    >
+                        <LayoutDashboard size={14} />
+                        <span className="text-sm font-bold">Vista Global</span>
+                    </button>
+                </div>
+            )}
+        </div>
+    );
+}
+
+function TeamGrid({ client, onUpdate, onSelectStaff }: { client: any, onUpdate: () => void, onSelectStaff: (s: any) => void }) {
     const [isAdding, setIsAdding] = useState(false);
-    const [editingStaff, setEditingStaff] = useState<any>(null);
-    const [newData, setNewData] = useState({ name: "", email: "", googleCalendarId: "primary" });
+    return (
+        <>
+            {isAdding && (
+                <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-6">
+                    <div className="glass max-w-2xl w-full p-8 rounded-[2.5rem] border-white/10 animate-in zoom-in duration-300">
+                        <TeamForm client={client} onUpdate={() => { onUpdate(); setIsAdding(false); }} onCancel={() => setIsAdding(false)} />
+                    </div>
+                </div>
+            )}
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {(client?.staff || []).map((member: any) => (
+                    <div key={member.id} className="glass p-6 rounded-3xl group relative hover:border-blue-500/30 transition-all cursor-pointer" onClick={() => onSelectStaff(member)}>
+                        <div className="flex items-center gap-4 mb-4">
+                            <div className="w-12 h-12 rounded-2xl bg-blue-600/20 flex items-center justify-center text-blue-400 group-hover:scale-110 transition-transform">
+                                <Users size={24} />
+                            </div>
+                            <div className="flex-1">
+                                <h3 className="font-bold text-lg mb-1">{member.name}</h3>
+                                <p className="text-[10px] text-white/30 uppercase font-black tracking-widest">{member.email || "Sin email"}</p>
+                            </div>
+                        </div>
+
+                        <div className="space-y-3">
+                            <div className="w-full py-2 bg-white/5 text-blue-400 rounded-xl text-[10px] uppercase font-bold tracking-widest transition-all border border-white/5 group-hover:bg-blue-600/20 flex items-center justify-center gap-2">
+                                <Activity size={14} /> Gestionar Servicios
+                            </div>
+                        </div>
+                    </div>
+                ))}
+
+                <button 
+                    onClick={() => setIsAdding(true)}
+                    className="flex flex-col items-center justify-center p-6 rounded-3xl border-2 border-dashed border-white/5 hover:border-blue-500/30 hover:bg-blue-600/5 transition-all group"
+                >
+                    <div className="w-12 h-12 rounded-2xl bg-white/5 flex items-center justify-center text-white/20 group-hover:text-blue-400 group-hover:bg-blue-600/20 mb-3 transition-all">
+                        <Plus size={24} />
+                    </div>
+                    <p className="text-sm font-bold text-white/40 group-hover:text-white">Añadir Profesional</p>
+                </button>
+            </div>
+        </>
+    );
+}
+
+function TeamForm({ client, onUpdate, editingStaff, onCancel }: { client: any, onUpdate: () => void, editingStaff?: any, onCancel: () => void }) {
+    const [newData, setNewData] = useState(editingStaff || { name: "", email: "", googleCalendarId: "primary" });
     const [calendars, setCalendars] = useState<{ id: string, summary: string }[]>([]);
     const [loadingCalendars, setLoadingCalendars] = useState(false);
 
@@ -362,211 +583,81 @@ function TeamTab({ client, onUpdate, onSelectStaff }: { client: any, onUpdate: (
         fetchCalendars();
     }, [client.googleAccessToken]);
 
-    const handleAddStaff = async () => {
+    const handleSubmit = async () => {
         if (!newData.name) return;
         try {
+            const method = editingStaff ? 'PATCH' : 'POST';
             const res = await fetch('/api/staff', {
-                method: 'POST',
+                method,
                 body: JSON.stringify(newData)
             });
-            if (res.ok) {
-                setNewData({ name: "", email: "", googleCalendarId: "primary" });
-                setIsAdding(false);
-                onUpdate();
-            }
-        } catch (err) {
-            console.error(err);
-        }
-    };
-
-    const handleUpdateStaff = async () => {
-        if (!editingStaff || !editingStaff.name) return;
-        try {
-            const res = await fetch('/api/staff', {
-                method: 'PATCH',
-                body: JSON.stringify(editingStaff)
-            });
-            if (res.ok) {
-                setEditingStaff(null);
-                onUpdate();
-            }
-        } catch (err) {
-            console.error(err);
-        }
-    };
-
-    const handleDeleteStaff = async (id: string) => {
-        if (!confirm("¿Borrar profesional?")) return;
-        try {
-            await fetch(`/api/staff?id=${id}`, { method: 'DELETE' });
-            onUpdate();
+            if (res.ok) onUpdate();
         } catch (err) {
             console.error(err);
         }
     };
 
     return (
-        <>
-            <Header
-                title="Equipo & Profesionales"
-                subtitle="Gestiona el personal y sus calendarios individuales."
-                actions={
-                    <button
-                        onClick={() => setIsAdding(true)}
-                        className="bg-blue-600 hover:bg-violet-700 text-white px-4 py-2 rounded-xl text-sm font-bold flex items-center gap-2 shadow-lg shadow-blue-600/20 transition-all">
-                        <UserPlus size={18} /> Añadir Profesional
-                    </button>
-                }
-            />
-
-            {(isAdding || editingStaff) && (
-                <div className="glass p-8 rounded-3xl mb-8 border-blue-500/30 animate-in fade-in slide-in-from-top-4 space-y-4">
-                    <h3 className="text-lg font-bold">{editingStaff ? 'Editar Profesional' : 'Nuevo Profesional'}</h3>
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                        <div>
-                            <label className="text-[10px] uppercase font-bold text-white/30 block mb-2 px-1">Nombre</label>
-                            <input
-                                placeholder="Nombre completo"
-                                value={editingStaff ? editingStaff.name : newData.name}
-                                onChange={(e) => editingStaff
-                                    ? setEditingStaff({ ...editingStaff, name: e.target.value })
-                                    : setNewData({ ...newData, name: e.target.value })
-                                }
-                                className="w-full bg-white/5 border border-white/10 rounded-xl p-3 text-sm focus:border-blue-600 outline-none transition-all"
-                            />
-                        </div>
-                        <div>
-                            <label className="text-[10px] uppercase font-bold text-white/30 block mb-2 px-1">Email (Opcional)</label>
-                            <input
-                                placeholder="profesional@ejemplo.com"
-                                value={editingStaff ? (editingStaff.email || "") : newData.email}
-                                onChange={(e) => editingStaff
-                                    ? setEditingStaff({ ...editingStaff, email: e.target.value })
-                                    : setNewData({ ...newData, email: e.target.value })
-                                }
-                                className="w-full bg-white/5 border border-white/10 rounded-xl p-3 text-sm focus:border-blue-600 outline-none transition-all"
-                            />
-                        </div>
-                        <div>
-                            <div className="flex justify-between items-center mb-2 px-1">
-                                <label className="text-[10px] uppercase font-bold text-white/30 block">Google Calendar ID</label>
-                                {loadingCalendars && <Loader2 size={12} className="animate-spin text-blue-400" />}
-                            </div>
-                            {client?.googleAccessToken ? (
-                                <div className="relative">
-                                    <select
-                                        value={editingStaff ? (editingStaff.googleCalendarId || "primary") : newData.googleCalendarId}
-                                        onChange={(e) => editingStaff
-                                            ? setEditingStaff({ ...editingStaff, googleCalendarId: e.target.value })
-                                            : setNewData({ ...newData, googleCalendarId: e.target.value })
-                                        }
-                                        className="w-full bg-white/5 border border-white/10 rounded-xl p-3 pr-10 text-sm focus:border-blue-600 outline-none transition-all cursor-pointer appearance-none truncate"
-                                    >
-                                        {calendars.length === 0 && <option value="primary" className="bg-[#0f0f18] text-white">Cargando calendarios...</option>}
-                                        {calendars.map(c => (
-                                            <option key={c.id} value={c.id} className="bg-[#0f0f18] text-white text-sm">
-                                                {c.summary}
-                                            </option>
-                                        ))}
-                                    </select>
-                                    <ChevronDown size={14} className="absolute right-3 top-1/2 -translate-y-1/2 text-white/30 pointer-events-none" />
-                                </div>
-                            ) : (
-                                <>
-                                    <input
-                                        placeholder="primary o ID de calendario"
-                                        value={editingStaff ? (editingStaff.googleCalendarId || "") : newData.googleCalendarId}
-                                        onChange={(e) => editingStaff
-                                            ? setEditingStaff({ ...editingStaff, googleCalendarId: e.target.value })
-                                            : setNewData({ ...newData, googleCalendarId: e.target.value })
-                                        }
-                                        className="w-full bg-white/5 border border-white/10 rounded-xl p-3 text-sm focus:border-blue-600 outline-none transition-all"
-                                    />
-                                    <div className="mt-3 text-[10px] text-amber-500 font-bold bg-amber-500/5 p-3 rounded-xl border border-amber-500/20">
-                                        <p className="flex items-center gap-1 mb-2">
-                                            <span>⚠️</span> Conecta Google Calendar Central para ver las listas.
-                                        </p>
-                                        <button
-                                            onClick={(e) => { e.preventDefault(); window.location.href = '/api/google/connect'; }}
-                                            className="bg-amber-500 hover:bg-amber-600 text-black px-3 py-1.5 rounded-lg text-[9px] uppercase tracking-wider transition-colors shadow-lg shadow-amber-500/20"
-                                        >
-                                            Conectar Cuenta de Google Ahora
-                                        </button>
-                                        <p className="text-[9px] text-amber-500/70 mt-2 font-normal leading-relaxed">
-                                            (Nota: El <strong>Email (Opcional)</strong> escrito arriba es solo decorativo. Para vincular calendarios debes autorizar a CitaLiks haciendo clic en el botón de arriba).
-                                        </p>
-                                    </div>
-                                </>
-                            )}
-                        </div>
-                    </div>
-                    <div className="flex flex-wrap gap-2 md:gap-4 pt-2">
-                        <button
-                            onClick={editingStaff ? handleUpdateStaff : handleAddStaff}
-                            className="flex-1 md:flex-none bg-white text-black px-4 md:px-8 py-3 md:py-2 rounded-xl text-xs md:text-sm font-bold hover:bg-white/90 transition-all shadow-xl"
-                        >
-                            {editingStaff ? 'Guardar Cambios' : 'Guardar Profesional'}
-                        </button>
-                        <button
-                            onClick={() => { setIsAdding(false); setEditingStaff(null); }}
-                            className="flex-1 md:flex-none justify-center bg-white/5 md:bg-transparent text-white/40 hover:text-white px-4 py-3 md:py-2 rounded-xl md:rounded-none text-xs md:text-sm font-bold md:font-normal"
-                        >
-                            Cancelar
-                        </button>
-                    </div>
+        <div className="space-y-6">
+            <h3 className="text-2xl font-bold">{editingStaff ? 'Editar Profesional' : 'Registrar Nuevo Profesional'}</h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="space-y-2">
+                    <label className="text-[10px] uppercase font-bold text-white/30 ml-2">Nombre Completo</label>
+                    <input
+                        placeholder="Ej: Dr. García"
+                        value={newData.name}
+                        onChange={(e) => setNewData({ ...newData, name: e.target.value })}
+                        className="w-full bg-white/5 border border-white/10 rounded-2xl p-4 text-sm focus:border-blue-600 outline-none transition-all"
+                    />
                 </div>
-            )}
-
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {(client?.staff || []).map((member: any) => (
-                    <div key={member.id} className="glass p-6 rounded-3xl group relative">
-                        <div className="flex items-center gap-4 mb-4">
-                            <div className="w-12 h-12 rounded-2xl bg-blue-600/20 flex items-center justify-center text-blue-400">
-                                <Users size={24} />
-                            </div>
-                            <div className="flex-1">
-                                <h3 className="font-bold text-lg mb-1">{member.name}</h3>
-                                <p className="text-xs text-white/40">{member.email || "Sin email configurado"}</p>
-                            </div>
-                            <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-all scale-90 group-hover:scale-100">
-                                <button
-                                    onClick={(e) => { e.stopPropagation(); setEditingStaff(member); }}
-                                    className="p-2 text-white/40 hover:text-white hover:bg-white/5 rounded-xl transition-all">
-                                    <Settings size={16} />
-                                </button>
-                                <button
-                                    onClick={(e) => { e.stopPropagation(); handleDeleteStaff(member.id); }}
-                                    className="p-2 text-white/40 hover:text-red-400 hover:bg-red-500/10 rounded-xl transition-all">
-                                    <Trash2 size={16} />
-                                </button>
-                            </div>
-                        </div>
-
-                        <div className="space-y-3">
-                            <button
-                                onClick={() => onSelectStaff(member)}
-                                className="w-full py-2 bg-white/5 hover:bg-blue-600/20 text-white/60 hover:text-blue-400 rounded-xl text-[10px] uppercase font-bold tracking-widest transition-all border border-white/5 hover:border-blue-600/30 flex items-center justify-center gap-2">
-                                <Calendar size={14} /> Ver Agenda y Servicios
-                            </button>
-                            <div className="flex items-center justify-between text-[10px] text-white/20 uppercase font-bold tracking-widest border-t border-white/5 pt-3">
-                                <span>Calendario Google</span>
-                                <span className="text-blue-400">{member.googleCalendarId === 'primary' ? 'Principal' : 'Personalizado'}</span>
-                            </div>
-                        </div>
+                <div className="space-y-2">
+                    <label className="text-[10px] uppercase font-bold text-white/30 ml-2">Email Profesional</label>
+                    <input
+                        placeholder="email@ejemplo.com"
+                        value={newData.email || ""}
+                        onChange={(e) => setNewData({ ...newData, email: e.target.value })}
+                        className="w-full bg-white/5 border border-white/10 rounded-2xl p-4 text-sm focus:border-blue-600 outline-none transition-all"
+                    />
+                </div>
+                <div className="md:col-span-2 space-y-2">
+                    <div className="flex justify-between items-center ml-2 mr-2">
+                        <label className="text-[10px] uppercase font-bold text-white/30">Calendario de Google</label>
+                        {loadingCalendars && <Loader2 size={12} className="animate-spin text-blue-400" />}
                     </div>
-                ))}
-
-                {(client?.staff || []).length === 0 && (
-                    <div className="col-span-full py-20 text-center glass rounded-3xl border-dashed border-white/10">
-                        <Users size={48} className="text-white/5 mx-auto mb-4" />
-                        <p className="text-white/40">No hay profesionales registrados.</p>
-                        <button onClick={() => setIsAdding(true)} className="text-blue-400 text-sm font-bold mt-2 hover:underline">Registrar el primero</button>
-                    </div>
-                )}
+                    {client?.googleAccessToken ? (
+                        <select
+                            value={newData.googleCalendarId || "primary"}
+                            onChange={(e) => setNewData({ ...newData, googleCalendarId: e.target.value })}
+                            className="w-full bg-white/5 border border-white/10 rounded-2xl p-4 text-sm focus:border-blue-600 outline-none appearance-none cursor-pointer"
+                        >
+                            {calendars.map(c => <option key={c.id} value={c.id} className="bg-[#0f0f18] text-white">{c.summary}</option>)}
+                        </select>
+                    ) : (
+                        <div className="p-4 rounded-2xl bg-amber-500/5 border border-amber-500/20">
+                            <p className="text-xs text-amber-200/60 mb-3 italic">Debes conectar tu cuenta de Google en la pestaña de Integraciones para seleccionar calendarios específicos.</p>
+                            <input
+                                placeholder="primary"
+                                value={newData.googleCalendarId}
+                                onChange={(e) => setNewData({ ...newData, googleCalendarId: e.target.value })}
+                                className="w-full bg-white/5 border border-white/10 rounded-xl p-3 text-xs outline-none"
+                            />
+                        </div>
+                    )}
+                </div>
             </div>
-        </>
+            <div className="flex gap-4 pt-4">
+                <button onClick={onCancel} className="flex-1 py-4 rounded-2xl bg-white/5 font-bold hover:bg-white/10 transition-all">Cancelar</button>
+                <button onClick={handleSubmit} className="flex-1 py-4 rounded-2xl bg-blue-600 font-bold hover:bg-blue-500 transition-all shadow-xl shadow-blue-600/20">Guardar Cambios</button>
+            </div>
+        </div>
     );
 }
+
+function TeamTab({ client, onUpdate, onSelectStaff }: { client: any, onUpdate: () => void, onSelectStaff: (s: any) => void }) {
+    // Mantendremos esto por si se usa en otros sitios, pero lo redirigiremos conceptualmente
+    return <OperationsTab client={client} onUpdate={onUpdate} selectedStaff={null} setSelectedStaff={onSelectStaff} />;
+}
+
 
 function ServicesTab({ client, onUpdate, selectedStaff, setSelectedStaff }: { client: any, onUpdate: () => void, selectedStaff?: any, setSelectedStaff: (s: any) => void }) {
     const [isAdding, setIsAdding] = useState(false);
@@ -1637,6 +1728,41 @@ function ConfigTab({ client, onUpdate }: { client: any, onUpdate: () => void }) 
     );
 }
 
+function AppointmentsList({ appointments }: { appointments: any[] }) {
+    if (!appointments || appointments.length === 0) {
+        return (
+            <div className="glass p-8 rounded-3xl border border-white/5 bg-white/[0.02] text-center">
+                <p className="text-white/20 text-sm font-medium">No hay citas próximas agendadas.</p>
+            </div>
+        );
+    }
+
+    return (
+        <div className="grid gap-3">
+            {appointments.map((apt) => (
+                <div key={apt.id} className="glass p-4 rounded-2xl border border-white/5 bg-white/[0.02] hover:bg-white/5 transition-all flex items-center justify-between group">
+                    <div className="flex items-center gap-4">
+                        <div className="w-12 h-12 rounded-xl bg-blue-600/10 flex flex-col items-center justify-center border border-blue-600/20">
+                            <span className="text-blue-400 text-sm font-bold">{new Date(apt.date).getDate()}</span>
+                            <span className="text-[8px] uppercase font-black text-blue-400/60">{new Date(apt.date).toLocaleDateString('es-ES', { month: 'short' })}</span>
+                        </div>
+                        <div>
+                            <h4 className="font-bold text-sm text-white/90 group-hover:text-white transition-colors capitalize">{apt.serviceName}</h4>
+                            <div className="flex items-center gap-2 text-[10px] text-white/30">
+                                <Clock size={10} />
+                                <span>{apt.time.substring(0, 5)}</span>
+                                <span>•</span>
+                                <Users size={10} />
+                                <span className="font-medium">{apt.callerName}</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            ))}
+        </div>
+    );
+}
+
 function CallsList({ logs }: { logs: any[] }) {
     if (logs.length === 0) {
         return (
@@ -1759,8 +1885,7 @@ function MobileNav({ activeTab, setActiveTab, client }: { activeTab: TabType, se
     const tabs = [
         { id: "overview", label: "Inicio", icon: <LayoutDashboard size={20} /> },
         { id: "calls", label: "Llamadas", icon: <Phone size={20} /> },
-        { id: "team", label: "Equipo", icon: <Users size={20} /> },
-        { id: "services", label: "Agenda", icon: <Calendar size={20} /> },
+        { id: "operations", label: "Gestión", icon: <Users size={20} /> },
         { id: "integrations", label: "Intercambio", icon: <ExternalLink size={20} /> },
         ...(client?.role === "PLATFORM_ADMIN" ? [{ id: "admin_link", label: "Admin", icon: <ShieldCheck size={20} className="text-amber-400" /> }] : []),
         { id: "support", label: "Soporte", icon: <LifeBuoy size={20} /> },

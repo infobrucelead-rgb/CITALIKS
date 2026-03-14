@@ -28,7 +28,14 @@ export default async function DashboardPage() {
         }
     }
 
-    if (!masterClient || (!masterClient.onboardingDone && masterClient.role !== "PLATFORM_ADMIN")) {
+    // ALLOW ACCESS IF BUSINESS DATA EXISTS (even if onboarding not 100% done)
+    const canAccessDashboard = masterClient && (
+        masterClient.onboardingDone || 
+        masterClient.role === "PLATFORM_ADMIN" || 
+        (masterClient.businessName && masterClient.businessName.length > 0)
+    );
+
+    if (!masterClient || !canAccessDashboard) {
         redirect("/onboarding");
     }
 
