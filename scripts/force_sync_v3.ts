@@ -17,7 +17,7 @@ async function run() {
             console.log(`\n--- Procesando: ${client.businessName} (${client.retellAgentId}) ---`);
             
             const agent = await retell.agent.retrieve(client.retellAgentId!);
-            const llmId = agent.response_engine.llm_id;
+            const llmId = (agent.response_engine as any).llm_id;
             
             console.log(`LLM ID: ${llmId}`);
 
@@ -99,7 +99,7 @@ async function run() {
             } as any);
 
             console.log(`✅ Agente ${client.retellAgentId} actualizado con URLs limpias.`);
-        } catch (err) {
+        } catch (err: any) {
             console.error(`❌ Error en ${client.businessName}:`, err.message);
         }
     }
