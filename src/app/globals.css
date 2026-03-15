@@ -141,6 +141,10 @@ input[type=range].premium-slider::-webkit-slider-thumb {
   h5 {
     font-family: "Plus Jakarta Sans", sans-serif;
   }
+
+  .font-logo {
+    font-family: "Plus Jakarta Sans", sans-serif;
+  }
 }
 
 /* Scrollbar custom */

@@ -14,3 +14,4 @@ ngrok_err.log
 .github/workflows/sms-reminders.yml
 tsconfig.tsbuildinfo
 .vercel
+.env*.local

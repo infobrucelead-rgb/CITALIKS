@@ -27,7 +27,7 @@ export default async function HomePage() {
                 <div className="glass-nav px-8 py-4 rounded-full flex items-center justify-between shadow-sm">
                     <div className="flex items-center gap-2 md:gap-3 group cursor-pointer shrink-0">
                         <img src="/logo.png" alt="CitaLiks - Automatización de Citas con Inteligencia Artificial" className="w-8 h-8 md:w-10 md:h-10 object-contain logo-neon" />
-                        <span className="text-xl md:text-2xl font-black tracking-tighter text-primary">CitaLiks</span>
+                        <span className="text-xl md:text-2xl font-black tracking-tighter text-primary font-logo">CitaLiks</span>
                     </div>
                     <div className="hidden md:flex items-center gap-10">
                         <a className="text-sm font-black uppercase tracking-widest text-primary/60 hover:text-primary transition-all underline-offset-8 hover:underline" style={{ textShadow: '0 1px 1px rgba(0,0,0,0.5)' }} href="#features">Funcionalidades</a>

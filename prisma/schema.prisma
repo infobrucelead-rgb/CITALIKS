@@ -25,6 +25,7 @@ model Client {
   agentPrompt            String?
   onboardingStep         Int              @default(0)
   onboardingDone         Boolean          @default(false)
+  maxAutoGuests          Int              @default(6)
   isActive               Boolean          @default(true)
   stripeCustomerId       String?          @unique
   stripeSubscriptionId   String?          @unique
@@ -165,6 +166,7 @@ model Appointment {
   createdAt             DateTime  @default(now())
   updatedAt             DateTime  @updatedAt
   numGuests             Int?
+  source                String    @default("local") // "local", "bot", "google", "microsoft", "ical", "pms"
   client                Client    @relation(fields: [clientId], references: [id], onDelete: Cascade)
 
   @@map("appointments")

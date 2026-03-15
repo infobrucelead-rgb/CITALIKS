@@ -17,3 +17,7 @@ description: Convenciones de arquitectura, dependencias y reglas de integración
 
 ## 3. Interfaces Dinámicas
 *   Todo panel de Cliente debe prever un Panel "Espejo" de Administrador donde el Creador (Pablo) pueda sobreescribir variables (eMail, RetellAgentID, Webhooks) saltándose la UI del cliente final. Los campos profundos de los clientes deben estar bloqueados visualmente (read-only) con explicaciones claras de por qué lo están.
+
+## 4. Gestión de Precios y Pagos
+*   **Fuente Única de Verdad (`src/config/pricing.ts`):** Todos los planes comerciales, descripciones, precios recurrentes, costes de instalación (setup) y las IDs correspondientes de Stripe deben modificarse **únicamente** en este archivo.
+*   Ningún componente frontend (como la *Landing Page*) ni función backend (creación de checkouts, enlaces de cobro, respuestas del chatbot) debe tener precios o nombres de planes hardcodeados. Todo debe importar y consumir el array `PRICING_PLANS`.

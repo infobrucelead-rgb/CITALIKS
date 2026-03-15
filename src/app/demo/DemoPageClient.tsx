@@ -98,7 +98,7 @@ export default function DemoPageClient() {
                 <div className="glass-nav px-8 py-4 rounded-full flex items-center justify-between shadow-sm">
                     <Link href="/" className="flex items-center gap-3 group">
                         <img src="/logo.png" alt="CitaLiks Logo" className="w-10 h-10 object-contain logo-neon" />
-                        <span className="text-2xl font-black tracking-tighter text-primary">CitaLiks</span>
+                        <span className="text-2xl font-black tracking-tighter text-primary font-logo">CitaLiks</span>
                     </Link>
                     <div className="flex items-center gap-4">
                         <Link href="https://calendly.com/citaliks/30min" target="_blank" className="bg-primary text-black px-6 py-2 rounded-full text-sm font-black glow-hover transition-all">
