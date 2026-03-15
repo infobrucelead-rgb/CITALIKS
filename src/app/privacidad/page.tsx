@@ -6,17 +6,17 @@ export default function PrivacyPolicyPage() {
     return (
         <main className="bg-surface text-on-surface antialiased overflow-x-hidden font-body">
             {/* Top Navigation */}
-            <nav className="fixed top-0 w-full z-50 glass-nav border-b border-outline-variant/10">
-                <div className="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
+            <nav className="fixed top-6 left-1/2 -translate-x-1/2 z-50 w-[90%] max-w-7xl">
+                <div className="glass-nav px-8 py-4 rounded-full flex items-center justify-between shadow-sm">
                     <Link href="/" className="flex items-center gap-2">
-                        <img src="/logo.png" alt="CitaLiks Logo" className="w-8 h-8 object-contain" />
-                        <span className="text-2xl font-bold tracking-tight text-primary">CitaLiks</span>
+                        <img src="/logo.png" alt="CitaLiks Logo" className="w-8 h-8 md:w-10 md:h-10 object-contain logo-neon" />
+                        <span className="text-xl md:text-2xl font-black tracking-tighter text-primary font-logo">CitaLiks</span>
                     </Link>
-                    <div className="hidden md:flex items-center gap-8">
-                        <Link href="/#features" className="text-sm font-medium text-on-surface-variant hover:text-primary transition-colors">Funcionalidades</Link>
-                        <Link href="/#pricing" className="text-sm font-medium text-on-surface-variant hover:text-primary transition-colors">Precios</Link>
+                    <div className="hidden md:flex items-center gap-10">
+                        <Link href="/#features" className="text-sm font-black uppercase tracking-widest text-primary/60 hover:text-primary transition-all">Funcionalidades</Link>
+                        <Link href="/#pricing" className="text-sm font-black uppercase tracking-widest text-primary/60 hover:text-primary transition-all">Precios</Link>
                     </div>
-                    <Link href="/sign-up" className="bg-primary text-on-primary px-6 py-2.5 rounded-full text-sm font-medium hover:shadow-lg transition-all">
+                    <Link href="https://calendly.com/citaliks/30min" target="_blank" className="bg-primary text-black px-5 md:px-8 py-2 md:py-3 rounded-full text-[10px] md:text-sm font-black glow-hover transition-all uppercase tracking-widest whitespace-nowrap">
                         Probar Gratis
                     </Link>
                 </div>
@@ -56,7 +56,7 @@ export default function PrivacyPolicyPage() {
                         {/* Section 1 */}
                         <section className="scroll-mt-32" id="quienes-somos">
                             <div className="flex items-center gap-3 mb-6">
-                                <div className="p-2 bg-tertiary-fixed/20 rounded-lg text-secondary">
+                                <div className="p-3 bg-white/5 rounded-lg text-white">
                                     <Building2 size={24} />
                                 </div>
                                 <h2 className="text-3xl font-bold tracking-tight">1. Quiénes somos</h2>
@@ -72,7 +72,7 @@ export default function PrivacyPolicyPage() {
                         {/* Section 2 */}
                         <section className="scroll-mt-32" id="datos">
                             <div className="flex items-center gap-3 mb-8">
-                                <div className="p-2 bg-tertiary-fixed/20 rounded-lg text-secondary">
+                                <div className="p-3 bg-white/5 rounded-lg text-white">
                                     <Database size={24} />
                                 </div>
                                 <h2 className="text-3xl font-bold tracking-tight">2. Qué datos personales recogemos y por qué</h2>
@@ -99,7 +99,7 @@ export default function PrivacyPolicyPage() {
                         {/* Section 3 */}
                         <section className="scroll-mt-32" id="seguridad">
                             <div className="flex items-center gap-3 mb-6">
-                                <div className="p-2 bg-tertiary-fixed/20 rounded-lg text-secondary">
+                                <div className="p-3 bg-white/5 rounded-lg text-white">
                                     <ShieldCheck size={24} />
                                 </div>
                                 <h2 className="text-3xl font-bold tracking-tight">3. Seguridad de datos</h2>
@@ -122,7 +122,7 @@ export default function PrivacyPolicyPage() {
                         {/* Section 4 */}
                         <section className="scroll-mt-32" id="derechos">
                             <div className="flex items-center gap-3 mb-6">
-                                <div className="p-2 bg-tertiary-fixed/20 rounded-lg text-secondary">
+                                <div className="p-3 bg-white/5 rounded-lg text-white">
                                     <Gavel size={24} />
                                 </div>
                                 <h2 className="text-3xl font-bold tracking-tight">4. Tus Derechos</h2>
@@ -157,7 +157,7 @@ export default function PrivacyPolicyPage() {
                         <div className="grid md:grid-cols-2 gap-12">
                             <section className="scroll-mt-32" id="conservacion">
                                 <div className="flex items-center gap-3 mb-6">
-                                    <div className="p-2 bg-tertiary-fixed/20 rounded-lg text-secondary">
+                                    <div className="p-3 bg-white/5 rounded-lg text-white">
                                         <History size={20} />
                                     </div>
                                     <h2 className="text-2xl font-bold tracking-tight">5. Conservación</h2>
@@ -168,7 +168,7 @@ export default function PrivacyPolicyPage() {
                             </section>
                             <section className="scroll-mt-32" id="terceros">
                                 <div className="flex items-center gap-3 mb-6">
-                                    <div className="p-2 bg-tertiary-fixed/20 rounded-lg text-secondary">
+                                    <div className="p-3 bg-white/5 rounded-lg text-white">
                                         <Languages size={20} />
                                     </div>
                                     <h2 className="text-2xl font-bold tracking-tight">6. Terceros</h2>
@@ -210,19 +210,26 @@ export default function PrivacyPolicyPage() {
             </section>
 
             {/* Footer */}
-            <footer className="bg-surface-container-low py-20 border-t border-outline-variant/10">
+            <footer className="bg-black py-24 border-t border-white/5">
                 <div className="max-w-7xl mx-auto px-6">
-                    <div className="flex flex-col md:flex-row justify-between items-center gap-8">
-                        <div className="text-2xl font-bold text-primary italic">CitaLiks</div>
-                        <div className="flex flex-wrap justify-center gap-8 text-sm font-medium">
-                            <Link className="text-on-surface-variant hover:text-primary" href="/#features">Funciones</Link>
-                            <Link className="text-on-surface-variant hover:text-primary" href="/#pricing">Precios</Link>
-                            <Link className="text-primary font-bold underline decoration-tertiary-fixed decoration-2 underline-offset-4" href="/privacidad">Privacidad</Link>
-                            <Link className="text-on-surface-variant hover:text-primary" href="/condiciones">Términos</Link>
+                    <div className="flex flex-col md:flex-row justify-between items-center gap-12 border-b border-white/5 pb-16 mb-16">
+                        <div className="flex items-center gap-3">
+                            <img src="/logo.png" alt="CitaLiks Logo" className="w-10 h-10 object-contain logo-neon" />
+                            <span className="text-2xl font-black tracking-tighter text-white">CitaLiks</span>
+                        </div>
+                        <div className="flex flex-wrap justify-center gap-12 text-[10px] font-black uppercase tracking-[0.2em] text-white/60">
+                            <Link href="/#features" className="hover:text-primary transition-colors">Funciones</Link>
+                            <Link href="/#pricing" className="hover:text-primary transition-colors">Precios</Link>
+                            <Link href="/privacidad" className="hover:text-primary transition-colors">Privacidad</Link>
+                            <Link href="/condiciones" className="hover:text-primary transition-colors">Términos</Link>
                         </div>
                     </div>
-                    <div className="mt-16 text-center text-xs text-on-surface-variant/60 tracking-widest uppercase">
-                        © {new Date().getFullYear()} Neural 360 SL. Todos los derechos reservados.
+                    <div className="flex flex-col md:flex-row justify-between items-center text-xs font-bold text-white/40 uppercase tracking-widest">
+                        <p>© {new Date().getFullYear()} CitaLiks Solution. Todos los derechos reservados.</p>
+                        <div className="flex gap-10 mt-8 md:mt-0">
+                            <Link className="hover:text-primary transition-colors" href="/privacidad">Legal</Link>
+                            <Link className="hover:text-primary transition-colors" href="/condiciones">Cookies</Link>
+                        </div>
                     </div>
                 </div>
             </footer>

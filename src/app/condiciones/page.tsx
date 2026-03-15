@@ -6,17 +6,17 @@ export default function TermsOfServicePage() {
     return (
         <main className="bg-surface text-on-surface antialiased overflow-x-hidden font-body selection:bg-tertiary-fixed selection:text-on-tertiary-fixed">
             {/* Top Navigation */}
-            <nav className="fixed top-0 w-full z-50 glass-nav border-b border-outline-variant border-opacity-10">
-                <div className="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
+            <nav className="fixed top-6 left-1/2 -translate-x-1/2 z-50 w-[90%] max-w-7xl">
+                <div className="glass-nav px-8 py-4 rounded-full flex items-center justify-between shadow-sm">
                     <Link href="/" className="flex items-center gap-2">
-                        <img src="/logo.png" alt="CitaLiks Logo" className="w-8 h-8 object-contain" />
-                        <span className="text-2xl font-bold tracking-tighter text-primary">CitaLiks</span>
+                        <img src="/logo.png" alt="CitaLiks Logo" className="w-8 h-8 md:w-10 md:h-10 object-contain logo-neon" />
+                        <span className="text-xl md:text-2xl font-black tracking-tighter text-primary font-logo">CitaLiks</span>
                     </Link>
-                    <div className="hidden md:flex items-center gap-8">
-                        <Link href="/#features" className="text-sm font-medium hover:text-primary transition-colors">Funcionalidades</Link>
-                        <Link href="/#pricing" className="text-sm font-medium hover:text-primary transition-colors">Precios</Link>
+                    <div className="hidden md:flex items-center gap-10">
+                        <Link href="/#features" className="text-sm font-black uppercase tracking-widest text-primary/60 hover:text-primary transition-all">Funcionalidades</Link>
+                        <Link href="/#pricing" className="text-sm font-black uppercase tracking-widest text-primary/60 hover:text-primary transition-all">Precios</Link>
                     </div>
-                    <Link href="/sign-up" className="bg-primary text-on-primary px-6 py-2.5 rounded-full text-sm font-semibold hover:shadow-lg transition-all">
+                    <Link href="https://calendly.com/citaliks/30min" target="_blank" className="bg-primary text-black px-5 md:px-8 py-2 md:py-3 rounded-full text-[10px] md:text-sm font-black glow-hover transition-all uppercase tracking-widest whitespace-nowrap">
                         Probar Gratis
                     </Link>
                 </div>
@@ -57,7 +57,7 @@ export default function TermsOfServicePage() {
                         <section className="scroll-mt-32" id="aceptacion">
                             <div className="bg-surface-container-lowest p-8 md:p-12 rounded-xl shadow-sm border border-outline-variant border-opacity-5">
                                 <div className="flex items-center gap-4 mb-6">
-                                    <div className="w-10 h-10 rounded-lg bg-primary-container flex items-center justify-center text-tertiary-fixed">
+                                    <div className="w-10 h-10 rounded-lg bg-white/5 flex items-center justify-center text-white">
                                         <Gavel size={20} />
                                     </div>
                                     <h2 className="text-2xl font-bold tracking-tight">1. Aceptación de los Términos</h2>
@@ -73,7 +73,7 @@ export default function TermsOfServicePage() {
                         <section className="scroll-mt-32" id="uso">
                             <div className="bg-surface-container-low p-8 md:p-12 rounded-xl">
                                 <div className="flex items-center gap-4 mb-6">
-                                    <div className="w-10 h-10 rounded-lg bg-primary-container flex items-center justify-center text-tertiary-fixed">
+                                    <div className="w-10 h-10 rounded-lg bg-white/5 flex items-center justify-center text-white">
                                         <Mic size={20} />
                                     </div>
                                     <h2 className="text-2xl font-bold tracking-tight">2. Descripción y Uso del Servicio</h2>
@@ -93,7 +93,7 @@ export default function TermsOfServicePage() {
                         <section className="scroll-mt-32" id="propiedad">
                             <div className="bg-surface-container-lowest p-8 md:p-12 rounded-xl border border-outline-variant border-opacity-5">
                                 <div className="flex items-center gap-4 mb-6">
-                                    <div className="w-10 h-10 rounded-lg bg-primary-container flex items-center justify-center text-tertiary-fixed">
+                                    <div className="w-10 h-10 rounded-lg bg-white/5 flex items-center justify-center text-white">
                                         <ShieldCheck size={20} />
                                     </div>
                                     <h2 className="text-2xl font-bold tracking-tight">3. Propiedad Intelectual</h2>
@@ -126,7 +126,7 @@ export default function TermsOfServicePage() {
                         <section className="scroll-mt-32" id="modificaciones">
                             <div className="bg-surface-container-lowest p-8 md:p-12 rounded-xl border border-outline-variant border-opacity-5">
                                 <div className="flex items-center gap-4 mb-6">
-                                    <div className="w-10 h-10 rounded-lg bg-primary-container flex items-center justify-center text-tertiary-fixed">
+                                    <div className="w-10 h-10 rounded-lg bg-white/5 flex items-center justify-center text-white">
                                         <SquarePen size={24} />
                                     </div>
                                     <h2 className="text-2xl font-bold tracking-tight">6. Modificaciones</h2>
@@ -155,16 +155,27 @@ export default function TermsOfServicePage() {
             </main>
 
             {/* Footer */}
-            <footer className="bg-surface-container-lowest border-t border-outline-variant border-opacity-20 py-20 px-6">
-                <div className="max-w-7xl mx-auto">
-                    <div className="flex flex-col md:flex-row justify-between items-center pb-12 border-b border-outline-variant border-opacity-10 gap-6">
-                        <span className="text-2xl font-bold tracking-tighter italic">CitaLiks</span>
-                        <div className="flex gap-8 text-sm font-medium">
-                            <Link className="text-on-surface-variant hover:text-primary" href="/privacidad">Privacidad</Link>
-                            <Link className="text-primary font-bold underline decoration-tertiary-fixed decoration-2 underline-offset-4" href="/condiciones">Términos</Link>
+            <footer className="bg-black py-24 border-t border-white/5">
+                <div className="max-w-7xl mx-auto px-6">
+                    <div className="flex flex-col md:flex-row justify-between items-center gap-12 border-b border-white/5 pb-16 mb-16">
+                        <div className="flex items-center gap-3">
+                            <img src="/logo.png" alt="CitaLiks Logo" className="w-10 h-10 object-contain logo-neon" />
+                            <span className="text-2xl font-black tracking-tighter text-white">CitaLiks</span>
+                        </div>
+                        <div className="flex flex-wrap justify-center gap-12 text-[10px] font-black uppercase tracking-[0.2em] text-white/60">
+                            <Link href="/#features" className="hover:text-primary transition-colors">Funciones</Link>
+                            <Link href="/#pricing" className="hover:text-primary transition-colors">Precios</Link>
+                            <Link href="/privacidad" className="hover:text-primary transition-colors">Privacidad</Link>
+                            <Link href="/condiciones" className="hover:text-primary transition-colors">Términos</Link>
                         </div>
                     </div>
-                    <p className="mt-12 text-center text-xs text-on-surface-variant opacity-60">© {new Date().getFullYear()} Neural 360 SL. Todos los derechos reservados.</p>
+                    <div className="flex flex-col md:flex-row justify-between items-center text-xs font-bold text-white/40 uppercase tracking-widest">
+                        <p>© {new Date().getFullYear()} CitaLiks Solution. Todos los derechos reservados.</p>
+                        <div className="flex gap-10 mt-8 md:mt-0">
+                            <Link className="hover:text-primary transition-colors" href="/privacidad">Legal</Link>
+                            <Link className="hover:text-primary transition-colors" href="/condiciones">Cookies</Link>
+                        </div>
+                    </div>
                 </div>
             </footer>
         </main>

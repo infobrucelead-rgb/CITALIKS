@@ -14,11 +14,12 @@ export async function POST(req: NextRequest) {
         
         const demoAgentId = agentType === "pablo" 
             ? process.env.RETELL_PABLO_AGENT_ID 
-            : process.env.RETELL_CAROLINA_AGENT_ID;
+            : process.env.RETELL_DEMO_AGENT_ID;
 
         if (!demoAgentId) {
+            console.error(`[Demo/StartCall] Missing agent ID for ${agentType}. Available agents: PABLO=${!!process.env.RETELL_PABLO_AGENT_ID}, DEMO=${!!process.env.RETELL_DEMO_AGENT_ID}`);
             return NextResponse.json(
-                { error: `El agente '${agentType}' no está configurado.` },
+                { error: `El asistente de demostración no está configurado correctamente en el servidor.` },
                 { status: 503 }
             );
         }

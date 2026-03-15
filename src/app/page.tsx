@@ -49,12 +49,18 @@ export default async function HomePage() {
                 
                 <div className="max-w-7xl mx-auto grid lg:grid-cols-2 gap-20 items-center relative z-10">
                     <div className="space-y-10 mobile-portrait-center flex flex-col items-center lg:items-start text-center lg:text-left">
-                        <div className="inline-flex items-center gap-2 py-2 px-5 rounded-full bg-white/5 border border-white/10 text-primary text-[10px] font-black tracking-[0.2em] uppercase">
-                            <span className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse" />
-                            IA de Próxima Generación
+                        <div className="flex flex-col items-center lg:items-start gap-4">
+                            <div className="text-primary text-[10px] md:text-xs font-black tracking-[0.3em] uppercase mb-2">
+                                Excelencia técnica a tu servicio
+                            </div>
+                            <div className="inline-flex items-center gap-2 py-2 px-5 rounded-full bg-white/5 border border-white/10 text-primary text-[10px] font-black tracking-[0.2em] uppercase">
+                                <span className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse" />
+                                IA de Próxima Generación
+                            </div>
                         </div>
                         <h1 className="text-4xl md:text-8xl font-black text-white leading-[0.95] tracking-tightest uppercase italic">
-                            Asistente de Voz con IA: <span className="text-primary italic">Agenda</span> <br/>
+                            Recepcionista virtual para <br/>
+                            <span className="text-primary italic text-6xl md:text-9xl">Tu Negocio</span> <br/>
                             <span className="text-primary italic">24/7</span>
                         </h1>
                         <p className="text-lg md:text-xl text-white/50 max-w-xl leading-relaxed font-medium">
