@@ -144,6 +144,32 @@ input[type=range].premium-slider::-webkit-slider-thumb {
 
   .font-logo {
     font-family: "Plus Jakarta Sans", sans-serif;
+    font-weight: 800;
+    letter-spacing: -0.05em;
+    text-shadow: 0 0 20px rgba(32, 185, 95, 0.2);
+  }
+}
+
+/* Mobile App Optimization */
+.app-touch-target {
+  min-height: 52px;
+  min-width: 52px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.active-feedback:active {
+  transform: scale(0.96);
+  filter: brightness(1.1);
+  transition: transform 0.1s ease;
+}
+
+.mobile-portrait-center {
+  @media (max-width: 768px) {
+    text-align: center !important;
+    align-items: center !important;
+    justify-content: center !important;
   }
 }
 

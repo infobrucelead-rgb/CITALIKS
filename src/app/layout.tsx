@@ -4,9 +4,9 @@ import { esES } from "@clerk/localizations";
 import "./globals.css";
 
 export const metadata: Metadata = {
-    title: "CitaLiks: El Asistente de Voz con IA — Automatiza tus Citas 24/7",
+    title: "CitaLiks: Asistente de Voz con IA — Agenda Online 24/7 sin Complicaciones",
     description:
-        "Ahorra tiempo con CitaLiks, el mejor asistente de voz con IA en español. Gestiona llamadas, agenda citas automáticamente y mejora la atención al cliente de tu negocio 24/7.",
+        "Automatiza tu recepción con CitaLiks, el mejor software de reservas con IA. Asistente de voz 24/7, integración con Google Calendar y precisión vocal del 99%.",
     verification: {
         google: "HQLjY9WbHPOvRP_NTUezf-rxLUV9PiMm5foamCT_M3g",
     },

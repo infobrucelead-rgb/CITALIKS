@@ -8,6 +8,8 @@ import LostCallsCalculator from "@/components/LostCallsCalculator";
 import InteractiveDemo from "@/components/InteractiveDemo";
 import DashboardPreview from "@/components/DashboardPreview";
 import PulsatingLogo from "@/components/PulsatingLogo";
+import PricingCheckoutButton from "@/components/PricingCheckoutButton";
+import MobileBottomNav from "@/components/MobileBottomNav";
 import { Play } from "lucide-react";
 
 export default async function HomePage() {
@@ -21,7 +23,8 @@ export default async function HomePage() {
     const calendlyUrl = process.env.CALENDLY_URL || "https://calendly.com/citaliks/30min";
 
     return (
-        <main className="bg-surface text-on-surface antialiased overflow-x-hidden font-body">
+        <main className="bg-surface text-on-surface antialiased overflow-x-hidden font-body safe-bottom">
+            <MobileBottomNav />
             {/* Top Navigation */}
             <nav className="fixed top-6 left-1/2 -translate-x-1/2 z-50 w-[90%] max-w-7xl">
                 <div className="glass-nav px-8 py-4 rounded-full flex items-center justify-between shadow-sm">
@@ -35,33 +38,33 @@ export default async function HomePage() {
                     </div>
                     <div className="flex items-center gap-2 md:gap-4">
                         <Link href="/sign-in" className="hidden lg:block text-xs md:text-sm font-black uppercase tracking-widest bg-white/10 text-white/80 px-4 py-2 rounded-lg border border-black hover:bg-white/20 hover:text-white transition-all">Iniciar Sesión</Link>
-                        <Link href={calendlyUrl} target="_blank" className="bg-primary text-black px-5 md:px-8 py-2 md:py-3 rounded-full text-[10px] md:text-sm font-black glow-hover transition-all uppercase tracking-widest whitespace-nowrap">Pruébalo Gratis</Link>
+                        <Link href={calendlyUrl} target="_blank" className="bg-primary text-black px-5 md:px-8 py-2 md:py-3 rounded-full text-[10px] md:text-sm font-black glow-hover transition-all uppercase tracking-widest whitespace-nowrap app-touch-target active-feedback">Pruébalo Gratis</Link>
                     </div>
                 </div>
             </nav>
 
             {/* Hero Section */}
-            <section className="pt-52 pb-32 px-6 bg-surface relative overflow-hidden">
+            <section className="pt-40 md:pt-52 pb-32 px-6 bg-surface relative overflow-hidden">
                 <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-[800px] bg-gradient-to-b from-primary/10 via-transparent to-transparent opacity-50 pointer-events-none" />
                 
                 <div className="max-w-7xl mx-auto grid lg:grid-cols-2 gap-20 items-center relative z-10">
-                    <div className="space-y-10">
+                    <div className="space-y-10 mobile-portrait-center flex flex-col items-center lg:items-start text-center lg:text-left">
                         <div className="inline-flex items-center gap-2 py-2 px-5 rounded-full bg-white/5 border border-white/10 text-primary text-[10px] font-black tracking-[0.2em] uppercase">
                             <span className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse" />
                             IA de Próxima Generación
                         </div>
-                        <h1 className="text-6xl md:text-8xl font-black text-white leading-[0.95] tracking-tightest uppercase italic">
-                            Tu agenda <br/>
-                            <span className="text-primary italic">Sin límites</span>
+                        <h1 className="text-4xl md:text-8xl font-black text-white leading-[0.95] tracking-tightest uppercase italic">
+                            Asistente de Voz con IA: <span className="text-primary italic">Agenda</span> <br/>
+                            <span className="text-primary italic">24/7</span>
                         </h1>
-                        <p className="text-xl text-white/50 max-w-xl leading-relaxed font-medium">
-                            Automatiza tu recepción con tu asistente personalizado. Agenda citas, resuelve dudas y capta clientes 24/7 con la voz más humana jamás creada.
+                        <p className="text-lg md:text-xl text-white/50 max-w-xl leading-relaxed font-medium">
+                            Automatiza tu recepción con el software de reservas con IA más avanzado. Agenda citas, resuelve dudas y capta clientes automáticamente.
                         </p>
-                        <div className="flex flex-col gap-4 pt-6">
-                            <Link href={calendlyUrl} target="_blank" className="w-full bg-primary text-black px-10 py-5 rounded-2xl text-lg font-black shadow-[0_20px_40px_rgba(32,185,95,0.3)] hover:scale-105 transition-all text-center uppercase tracking-widest active:scale-95 glow-hover">
-                                Empezar 20 días gratis
+                        <div className="flex flex-col sm:flex-row gap-4 pt-6 w-full">
+                            <Link href={calendlyUrl} target="_blank" className="w-full sm:w-auto bg-primary text-black px-10 py-5 rounded-2xl text-lg font-black shadow-[0_20px_40px_rgba(32,185,95,0.3)] hover:scale-105 transition-all text-center uppercase tracking-widest active:scale-95 glow-hover app-touch-target active-feedback">
+                                Probar 20 días gratis
                             </Link>
-                            <Link href="/demo" className="w-full bg-white/5 border border-white/10 px-10 py-5 rounded-2xl text-lg font-black text-white transition-all flex items-center justify-center gap-3 hover:bg-white/10 active:scale-95">
+                            <Link href="/demo" className="w-full sm:w-auto bg-white/5 border border-white/10 px-10 py-5 rounded-2xl text-lg font-black text-white transition-all flex items-center justify-center gap-3 hover:bg-white/10 active:scale-95 app-touch-target active-feedback">
                                 <Play size={24} className="text-primary" />
                                 Demo en vivo
                             </Link>
@@ -111,9 +114,9 @@ export default async function HomePage() {
             {/* Problem Section */}
             <section id="features" className="py-24 bg-surface-container-low">
                 <div className="max-w-7xl mx-auto px-6">
-                    <div className="mb-16">
+                    <div className="mb-16 mobile-portrait-center flex flex-col items-center lg:items-start text-center lg:text-left">
                         <span className="text-label text-on-secondary-fixed-variant font-bold tracking-widest uppercase text-sm">El Desafío</span>
-                        <h2 className="text-4xl font-bold mt-4 tracking-tight">¿Por qué usar un Asistente de Voz con IA?</h2>
+                        <h2 className="text-3xl md:text-4xl font-bold mt-4 tracking-tight">Software de Reservas con IA: ¿Por qué usarlo?</h2>
                     </div>
                     <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
                         <div className="bg-surface-container-lowest p-8 rounded-xl flex flex-col items-center text-center space-y-4 shadow-sm border border-white/5 hover:border-primary/20 transition-all">
@@ -145,7 +148,7 @@ export default async function HomePage() {
                 <div className="max-w-7xl mx-auto px-6">
                     <div className="text-center mb-24 space-y-6">
                         <p className="text-[10px] font-black text-primary uppercase tracking-[0.4em] opacity-80">Excelencia técnica a tu servicio</p>
-                        <h2 className="text-5xl md:text-7xl font-black tracking-tight text-white">Asistente de Voz con IA: Funcionalidades Pro</h2>
+                        <h2 className="text-4xl md:text-7xl font-black tracking-tight text-white uppercase italic">Recepcionista Virtual para Negocios</h2>
                     </div>
                     <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
                         {[
@@ -309,9 +312,11 @@ export default async function HomePage() {
                             <p className="text-white/50 text-sm leading-relaxed mb-8 flex-1 font-medium">
                                 Ideal para negocios pequeños. Incluye hasta <span className="text-white font-bold">100 llamadas/mes</span>.
                             </p>
-                            <Link href={calendlyUrl} target="_blank" className="w-full py-4 border-2 border-primary/30 rounded-xl font-black text-primary hover:bg-primary hover:text-black transition-all text-center uppercase tracking-widest text-xs">
-                                Empezar con Basic
-                            </Link>
+                            <PricingCheckoutButton 
+                                planId="basic" 
+                                label="Empezar con Basic" 
+                                variant="secondary" 
+                            />
                         </div>
                         {/* Plan Business */}
                         <div className="bg-white/10 border-2 border-primary/50 p-10 rounded-2xl flex flex-col relative scale-105 shadow-2xl z-10">
@@ -329,9 +334,11 @@ export default async function HomePage() {
                             <p className="text-white/80 text-sm leading-relaxed mb-8 flex-1 font-semibold">
                                 El equilibrio perfecto. Incluye hasta <span className="text-white font-bold">300 llamadas/mes</span>. El favorito de nuestros clientes.
                             </p>
-                            <Link href={calendlyUrl} target="_blank" className="w-full py-4 bg-primary text-black rounded-xl font-black glow-hover transition-all text-center uppercase tracking-widest text-xs shadow-xl shadow-primary/20">
-                                Empezar con Business
-                            </Link>
+                            <PricingCheckoutButton 
+                                planId="business" 
+                                label="Empezar con Business" 
+                                variant="primary" 
+                            />
                         </div>
                         {/* Plan Premium */}
                         <div className="bg-white/5 border border-white/10 p-10 rounded-2xl flex flex-col group hover:bg-white/10 transition-all duration-300">
@@ -346,9 +353,11 @@ export default async function HomePage() {
                             <p className="text-white/50 text-sm leading-relaxed mb-6 flex-1 font-medium">
                                 Máxima capacidad. Incluye hasta <span className="text-white font-bold">1000 llamadas/mes</span> y soporte prioritario.
                             </p>
-                            <Link href={calendlyUrl} target="_blank" className="w-full py-4 border-2 border-primary/30 rounded-xl font-black text-primary hover:bg-primary hover:text-black transition-all text-center uppercase tracking-widest text-xs">
-                                Empezar con Premium
-                            </Link>
+                            <PricingCheckoutButton 
+                                planId="premium" 
+                                label="Empezar con Premium" 
+                                variant="secondary" 
+                            />
                         </div>
                     </div>
                 </div>

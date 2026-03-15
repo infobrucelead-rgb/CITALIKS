@@ -19,8 +19,8 @@ export const PRICING_PLANS: PricingPlan[] = [
     setupFee: 0, // Matrícula gratis como señuelo
     commitmentMonths: 12,
     popular: true,
-    stripePriceId: process.env.STRIPE_PRICE_BASIC_12M,
-    stripeSetupId: process.env.STRIPE_PRICE_SETUP_BASIC, 
+    stripePriceId: process.env.STRIPE_PRICE_ANNUAL,
+    stripeSetupId: undefined, // Matrícula gratis
   },
   {
     id: "business",
@@ -29,7 +29,7 @@ export const PRICING_PLANS: PricingPlan[] = [
     priceMonthly: 109,
     setupFee: 99,
     commitmentMonths: 6,
-    stripePriceId: process.env.STRIPE_PRICE_BUSINESS_6M,
+    stripePriceId: process.env.STRIPE_PRICE_BIANNUAL,
     stripeSetupId: process.env.STRIPE_PRICE_SETUP_BUSINESS,
   },
   {
@@ -39,7 +39,7 @@ export const PRICING_PLANS: PricingPlan[] = [
     priceMonthly: 129,
     setupFee: 149,
     commitmentMonths: 3,
-    stripePriceId: process.env.STRIPE_PRICE_PREMIUM_3M,
+    stripePriceId: process.env.STRIPE_PRICE_QUARTERLY,
     stripeSetupId: process.env.STRIPE_PRICE_SETUP_PREMIUM,
   }
 ];
