@@ -6,20 +6,29 @@ import { retell } from "@/lib/retell";
  * Creates a Retell web call for the public demo page.
  * Returns an access_token that the browser SDK uses to start the call.
  * No authentication required — this is a public endpoint.
+ *
+ * Agent IDs are hardcoded here as a fallback to guarantee production availability.
+ * They can be overridden via environment variables if needed.
  */
+
+// Hardcoded IDs to guarantee production availability regardless of env var configuration
+const AGENT_IDS = {
+    pablo: process.env.RETELL_PABLO_AGENT_ID || "agent_0b57229b14ce99e87505e1a635",
+    carolina: process.env.RETELL_DEMO_AGENT_ID || process.env.RETELL_CAROLINA_AGENT_ID || "agent_b6be22968dd533329d023f6959",
+};
+
 export async function POST(req: NextRequest) {
     try {
         const body = await req.json().catch(() => ({}));
         const agentType = body.agentType || "carolina"; // default to carolina
-        
-        const demoAgentId = agentType === "pablo" 
-            ? process.env.RETELL_PABLO_AGENT_ID 
-            : process.env.RETELL_DEMO_AGENT_ID;
+
+        const demoAgentId = agentType === "pablo" ? AGENT_IDS.pablo : AGENT_IDS.carolina;
+
+        console.log(`[Demo/StartCall] Using agent ID: ${demoAgentId} for type: ${agentType}`);
 
         if (!demoAgentId) {
-            console.error(`[Demo/StartCall] Missing agent ID for ${agentType}. Available agents: PABLO=${!!process.env.RETELL_PABLO_AGENT_ID}, DEMO=${!!process.env.RETELL_DEMO_AGENT_ID}`);
             return NextResponse.json(
-                { error: `El asistente de demostración no está configurado correctamente en el servidor.` },
+                { error: `El asistente de demostración no está configurado.` },
                 { status: 503 }
             );
         }
