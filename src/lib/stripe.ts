@@ -87,11 +87,7 @@ export async function createCheckoutSession(params: {
         { price: params.priceId, quantity: 1 }
     ];
 
-    if (params.setupPriceId) {
-        lineItems.push({ price: params.setupPriceId, quantity: 1 });
-    }
-
-    const session = await stripe.checkout.sessions.create({
+    const sessionParams: Stripe.Checkout.SessionCreateParams = {
         customer: params.customerId,
         customer_email: !params.customerId ? params.customerEmail : undefined,
         mode: "subscription",
@@ -113,7 +109,25 @@ export async function createCheckoutSession(params: {
         },
         allow_promotion_codes: true,
         billing_address_collection: "auto",
-    });
+    };
+
+    // Si hay matrícula (setup fee), decidimos si cobrarla ahora o después
+    if (params.setupPriceId) {
+        if (params.trialDays && params.trialDays > 0) {
+            // IMPORTANTE: Si hay días de prueba, queremos "Total a pagar hoy: 0€".
+            // Al añadirlo a add_invoice_items, Stripe lo suma a la PRIMERA factura cobrarle (tras el trial).
+            // Usamos cast a any porque las definiciones de tipos de Stripe pueden variar segun la version, 
+            // pero el parametro de la API es add_invoice_items.
+            (sessionParams.subscription_data as any).add_invoice_items = [
+                { price: params.setupPriceId, quantity: 1 }
+            ];
+        } else {
+            // Si no hay trial, lo cobramos en el momento del checkout
+            lineItems.push({ price: params.setupPriceId, quantity: 1 });
+        }
+    }
+
+    const session = await stripe.checkout.sessions.create(sessionParams);
 
     if (!session.url) throw new Error("Stripe did not return a checkout URL");
     return session.url;
