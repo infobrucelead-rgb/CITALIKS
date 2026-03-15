@@ -16,6 +16,7 @@ export default function InteractiveDemo() {
     const [retellClient, setRetellClient] = useState<any>(null);
 
     const startCall = async () => {
+        if (callStatus === "connecting" || callStatus === "active") return;
         setCallStatus("connecting");
         try {
             const res = await fetch("/api/demo/start-call", { 

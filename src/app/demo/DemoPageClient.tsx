@@ -3,6 +3,7 @@
 import React from "react";
 import Link from "next/link";
 import SalesChatWidget from "@/components/SalesChatWidget";
+import { Calendar, MessageSquare, PhoneForwarded, LayoutDashboard } from "lucide-react";
 
 type CallStatus = "idle" | "connecting" | "active" | "ended" | "error";
 
@@ -21,6 +22,7 @@ export default function DemoPageClient() {
     }, []);
 
     const startCall = async () => {
+        if (callStatus === "connecting" || callStatus === "active") return;
         setCallStatus("connecting");
         setErrorMsg("");
 
@@ -233,17 +235,19 @@ export default function DemoPageClient() {
 
             {/* Features below */}
             <section className="max-w-4xl mx-auto px-6 py-12">
-                <p className="text-center text-white/30 text-sm mb-8">Lo que incluye tu asistente personalizado</p>
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <p className="text-center text-white/30 text-sm mb-12 uppercase tracking-[0.2em] font-black">Lo que incluye tu asistente personalizado</p>
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
                     {[
-                        { icon: "📅", label: "Google Calendar" },
-                        { icon: "📱", label: "SMS automáticos" },
-                        { icon: "🔀", label: "Desvío a humano" },
-                        { icon: "📊", label: "Dashboard completo" },
+                        { icon: <Calendar size={32} />, label: "Google Calendar" },
+                        { icon: <MessageSquare size={32} />, label: "SMS automáticos" },
+                        { icon: <PhoneForwarded size={32} />, label: "Desvío a humano" },
+                        { icon: <LayoutDashboard size={32} />, label: "Dashboard completo" },
                     ].map(f => (
-                        <div key={f.label} className="rounded-2xl bg-white/[0.03] border border-white/5 p-4 text-center">
-                            <span className="text-2xl block mb-2">{f.icon}</span>
-                            <span className="text-white/50 text-xs font-medium">{f.label}</span>
+                        <div key={f.label} className="group rounded-[2rem] bg-white/[0.02] border border-white/5 p-8 text-center relief-premium hover:scale-105 transition-all duration-300">
+                            <div className="w-20 h-20 rounded-[1.5rem] bg-primary/10 border border-primary/20 flex items-center justify-center text-primary mx-auto mb-6 logo-neon group-hover:scale-110 transition-transform">
+                                {f.icon}
+                            </div>
+                            <span className="text-primary text-[10px] font-black uppercase tracking-widest">{f.label}</span>
                         </div>
                     ))}
                 </div>

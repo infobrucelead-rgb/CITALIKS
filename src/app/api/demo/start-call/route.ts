@@ -13,8 +13,8 @@ import { retell } from "@/lib/retell";
 
 // Hardcoded IDs to guarantee production availability regardless of env var configuration
 const AGENT_IDS = {
-    pablo: process.env.RETELL_PABLO_AGENT_ID || "agent_0b57229b14ce99e87505e1a635",
-    carolina: process.env.RETELL_DEMO_AGENT_ID || process.env.RETELL_CAROLINA_AGENT_ID || "agent_b6be22968dd533329d023f6959",
+    pablo: "agent_0b57229b14ce99e87505e1a635",
+    carolina: "agent_b6be22968dd533329d023f6959",
 };
 
 export async function POST(req: NextRequest) {
