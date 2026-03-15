@@ -1,167 +1,232 @@
 import React from "react";
 import Link from "next/link";
-import { Shield, ArrowLeft, Mail, Lock, Eye, Globe, UserCheck, Share2, Clock, AlertTriangle } from "lucide-react";
+import { Scale, ShieldCheck, Mail, Gavel, Database, Building2, History, Languages, AlertTriangle, Eye, SquarePen, Trash2 } from "lucide-react";
 
 export default function PrivacyPolicyPage() {
     return (
-        <div className="min-h-screen bg-[#0a0a0f] text-white font-sans selection:bg-violet-500/30">
-            {/* Background Decorations */}
-            <div className="fixed inset-0 overflow-hidden pointer-events-none">
-                <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-violet-600/10 rounded-full blur-[120px]" />
-                <div className="absolute bottom-[10%] right-[-5%] w-[30%] h-[30%] bg-blue-600/10 rounded-full blur-[100px]" />
-            </div>
-
-            <div className="relative max-w-4xl mx-auto px-6 py-12 md:py-20">
-                {/* Header Navigation */}
-                <nav className="mb-12 animate-fade-in">
-                    <Link
-                        href="/"
-                        className="inline-flex items-center gap-2 text-white/40 hover:text-white transition-colors group text-sm font-medium"
-                    >
-                        <ArrowLeft size={16} className="group-hover:-translate-x-1 transition-transform" />
-                        Volver al inicio
+        <main className="bg-surface text-on-surface antialiased overflow-x-hidden font-body">
+            {/* Top Navigation */}
+            <nav className="fixed top-0 w-full z-50 glass-nav border-b border-outline-variant/10">
+                <div className="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
+                    <Link href="/" className="flex items-center gap-2">
+                        <img src="/logo.png" alt="CitaLiks Logo" className="w-8 h-8 object-contain" />
+                        <span className="text-2xl font-bold tracking-tight text-primary">CitaLiks</span>
                     </Link>
-                </nav>
-
-                {/* Hero Section */}
-                <header className="mb-16 animate-fade-in">
-                    <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-violet-500/10 border border-violet-500/20 text-violet-400 text-xs font-bold uppercase tracking-widest mb-6">
-                        <Shield size={12} /> Legal & Privacidad
+                    <div className="hidden md:flex items-center gap-8">
+                        <Link href="/#features" className="text-sm font-medium text-on-surface-variant hover:text-primary transition-colors">Funcionalidades</Link>
+                        <Link href="/#pricing" className="text-sm font-medium text-on-surface-variant hover:text-primary transition-colors">Precios</Link>
                     </div>
-                    <h1 className="text-4xl md:text-6xl font-black tracking-tight mb-6">Política de <span className="text-transparent bg-clip-text bg-gradient-to-r from-violet-400 to-blue-400">Privacidad</span></h1>
-                    <p className="text-white/50 text-lg leading-relaxed max-w-2xl">
-                        En CitaLiks (Neural 360 SL), nos tomamos muy en serio la protección de tus datos. Esta política explica cómo recopilamos, usamos y protegemos tu información.
-                    </p>
-                </header>
-
-                {/* Content Sections */}
-                <div className="space-y-12 animate-fade-in delay-200">
-
-                    {/* Section 1: Quiénes somos */}
-                    <section className="glass rounded-[2rem] p-8 md:p-10 border-white/5 relative overflow-hidden group hover:border-violet-500/20 transition-all">
-                        <div className="flex items-start gap-6">
-                            <div className="p-4 rounded-2xl bg-violet-600/10 text-violet-400">
-                                <Globe size={24} />
-                            </div>
-                            <div className="space-y-4">
-                                <h2 className="text-xl font-bold">1. Quiénes somos</h2>
-                                <div className="space-y-4 text-white/60 text-sm leading-relaxed">
-                                    <p>
-                                        La dirección de nuestra web es: <a href="https://neuralads360.com" className="text-violet-400 hover:underline">https://neuralads360.com</a>
-                                    </p>
-                                    <ul className="space-y-2">
-                                        <li><strong className="text-white/80">Titular del sitio web:</strong> Neural 360 SL</li>
-                                        <li><strong className="text-white/80">Dirección:</strong> C/ Oriente 2, 28817, Los Santos de la Humosa, Madrid, España</li>
-                                        <li><strong className="text-white/80">Correo electrónico de contacto:</strong> info@neuralads360.com</li>
-                                    </ul>
-                                    <p>
-                                        Neural 360 SL es una consultora especializada en sistemas de crecimiento, automatización e inteligencia artificial aplicada al negocio.
-                                    </p>
-                                </div>
-                            </div>
-                        </div>
-                    </section>
-
-                    {/* Section 2: Datos que recopilamos */}
-                    <section className="glass rounded-[2rem] p-8 md:p-10 border-white/5 relative overflow-hidden group hover:border-blue-500/20 transition-all">
-                        <div className="flex items-start gap-6">
-                            <div className="p-4 rounded-2xl bg-blue-600/10 text-blue-400">
-                                <Eye size={24} />
-                            </div>
-                            <div className="space-y-6">
-                                <h2 className="text-xl font-bold">2. Qué datos personales recogemos y por qué</h2>
-                                <p className="text-white/60 text-sm leading-relaxed">
-                                    Recogemos datos personales únicamente cuando son necesarios para prestar nuestros servicios o responder a solicitudes legítimas de los usuarios.
-                                </p>
-
-                                <div className="grid md:grid-cols-2 gap-6">
-                                    <div className="space-y-3">
-                                        <h3 className="text-xs uppercase font-black tracking-widest text-white/30">Tipos de datos</h3>
-                                        <ul className="space-y-2 text-xs text-white/60 list-disc pl-4">
-                                            <li>Nombre y apellidos</li>
-                                            <li>Dirección de correo electrónico</li>
-                                            <li>Teléfono (si se facilita)</li>
-                                            <li>Empresa o proyecto (opcional)</li>
-                                            <li>Mensajes enviados a través de formularios</li>
-                                            <li>Datos técnicos (IP, navegador, dispositivo)</li>
-                                        </ul>
-                                    </div>
-                                    <div className="space-y-3">
-                                        <h3 className="text-xs uppercase font-black tracking-widest text-white/30">Finalidad</h3>
-                                        <ul className="space-y-2 text-xs text-white/60 list-disc pl-4">
-                                            <li>Responder consultas y solicitudes</li>
-                                            <li>Gestionar comunicaciones profesionales</li>
-                                            <li>Analizar el uso del sitio para mejorarlo</li>
-                                            <li>Seguridad y prevención de abusos</li>
-                                        </ul>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </section>
-
-                    {/* Section 3-7: Dynamic Content */}
-                    <div className="grid md:grid-cols-2 gap-8">
-                        <div className="glass rounded-[2rem] p-8 border-white/5 space-y-4">
-                            <div className="p-3 rounded-xl bg-orange-500/10 text-orange-400 w-fit">
-                                <Lock size={20} />
-                            </div>
-                            <h2 className="text-lg font-bold">Seguridad de datos</h2>
-                            <p className="text-white/50 text-xs leading-relaxed">
-                                Aplicamos medidas técnicas como cifrado SSL, accesos restringidos y monitorización constante para proteger tu información de accesos no autorizados.
-                            </p>
-                        </div>
-                        <div className="glass rounded-[2rem] p-8 border-white/5 space-y-4">
-                            <div className="p-3 rounded-xl bg-emerald-500/10 text-emerald-400 w-fit">
-                                <UserCheck size={20} />
-                            </div>
-                            <h2 className="text-lg font-bold">Tus Derechos</h2>
-                            <p className="text-white/50 text-xs leading-relaxed">
-                                Tienes derecho a acceder, rectificar, suprimir u oponerte al tratamiento de tus datos. Escríbenos a info@neuralads360.com para ejercerlos.
-                            </p>
-                        </div>
-                    </div>
-
-                    {/* Main Text Content */}
-                    <article className="prose prose-invert prose-sm max-w-none glass rounded-[2.5rem] p-8 md:p-12 border-white/5 space-y-8">
-                        <div className="space-y-4">
-                            <h3 className="text-white font-bold flex items-center gap-2"><Clock size={16} className="text-violet-400" /> Conservación de datos</h3>
-                            <p className="text-white/50 leading-relaxed">
-                                Los datos de formularios de contacto se conservan hasta 12 meses. Los comentarios se conservan indefinidamente para el seguimiento de la conversación. Los datos técnicos según la configuración de cookies (12-24 meses).
-                            </p>
-                        </div>
-
-                        <div className="space-y-4">
-                            <h3 className="text-white font-bold flex items-center gap-2"><Share2 size={16} className="text-blue-400" /> Terceros y Transferencias</h3>
-                            <p className="text-white/50 leading-relaxed">
-                                No compartimos datos personales con terceros salvo servicios esenciales (hosting, analítica, seguridad). Algunos servicios pueden implicar transferencias fuera de la UE con las garantías legales adecuadas (cláusulas contractuales tipo).
-                            </p>
-                        </div>
-
-                        <div className="space-y-4">
-                            <h3 className="text-white font-bold flex items-center gap-2"><AlertTriangle size={16} className="text-orange-400" /> Brechas de Seguridad</h3>
-                            <p className="text-white/50 leading-relaxed">
-                                Disponemos de protocolos internos para la detección, comunicación y mitigación inmediata en caso de cualquier incidente de seguridad que afecte a los datos.
-                            </p>
-                        </div>
-                    </article>
-
-                    {/* Footer Contact */}
-                    <footer className="text-center py-12">
-                        <p className="text-white/30 text-xs uppercase font-black tracking-widest mb-6">¿Tienes alguna duda?</p>
-                        <a
-                            href="mailto:info@neuralads360.com"
-                            className="inline-flex items-center gap-3 px-8 py-4 rounded-2xl bg-white/5 border border-white/10 hover:bg-white/10 transition-all group lg:text-xl font-bold"
-                        >
-                            <Mail size={20} className="text-violet-400 group-hover:scale-110 transition-transform" />
-                            info@neuralads360.com
-                        </a>
-                        <p className="text-white/20 text-[10px] mt-12 italic">
-                            Última actualización: Marzo 2026
-                        </p>
-                    </footer>
+                    <Link href="/sign-up" className="bg-primary text-on-primary px-6 py-2.5 rounded-full text-sm font-medium hover:shadow-lg transition-all">
+                        Probar Gratis
+                    </Link>
                 </div>
-            </div>
-        </div>
+            </nav>
+
+            {/* Hero Section */}
+            <header className="pt-40 pb-20 hero-gradient text-white overflow-hidden relative">
+                <div className="max-w-7xl mx-auto px-6 relative z-10">
+                    <div className="max-w-3xl">
+                        <span className="inline-block px-4 py-1 rounded-full bg-tertiary-fixed/20 text-tertiary-fixed text-xs font-bold tracking-widest uppercase mb-6">Legal & Transparencia</span>
+                        <h1 className="text-5xl md:text-7xl font-bold tracking-tighter mb-8 leading-[1.1]">Política de Privacidad</h1>
+                        <p className="text-xl text-primary-fixed-dim leading-relaxed font-light">
+                            En CitaLiks, la seguridad de su voz y sus datos es nuestra prioridad fundamental. Este documento detalla nuestro compromiso con la transparencia y el cumplimiento normativo.
+                        </p>
+                    </div>
+                </div>
+                <div className="absolute -bottom-24 -right-24 w-96 h-96 bg-tertiary-fixed/10 blur-[120px] rounded-full"></div>
+            </header>
+
+            <main className="max-w-7xl mx-auto px-6 py-24">
+                <div className="grid grid-cols-1 lg:grid-cols-12 gap-16">
+                    {/* Sidebar Navigation */}
+                    <aside className="lg:col-span-3 hidden lg:block sticky top-32 h-fit">
+                        <nav className="flex flex-col gap-4 border-l border-outline-variant/30 pl-6 text-sm">
+                            <a className="font-medium text-on-surface-variant hover:text-primary transition-colors" href="#quienes-somos">1. Quiénes somos</a>
+                            <a className="font-medium text-on-surface-variant hover:text-primary transition-colors" href="#datos">2. Recogida de datos</a>
+                            <a className="font-medium text-on-surface-variant hover:text-primary transition-colors" href="#seguridad">3. Seguridad</a>
+                            <a className="font-medium text-on-surface-variant hover:text-primary transition-colors" href="#derechos">4. Sus Derechos</a>
+                            <a className="font-medium text-on-surface-variant hover:text-primary transition-colors" href="#conservacion">5. Conservación</a>
+                            <a className="font-medium text-on-surface-variant hover:text-primary transition-colors" href="#terceros">6. Transferencias</a>
+                            <a className="font-medium text-on-surface-variant hover:text-primary transition-colors" href="#brechas">7. Brechas de Seguridad</a>
+                        </nav>
+                    </aside>
+
+                    {/* Content Area */}
+                    <div className="lg:col-span-9 space-y-24">
+                        {/* Section 1 */}
+                        <section className="scroll-mt-32" id="quienes-somos">
+                            <div className="flex items-center gap-3 mb-6">
+                                <div className="p-2 bg-tertiary-fixed/20 rounded-lg text-secondary">
+                                    <Building2 size={24} />
+                                </div>
+                                <h2 className="text-3xl font-bold tracking-tight">1. Quiénes somos</h2>
+                            </div>
+                            <div className="bg-surface-container-low p-8 rounded-xl leading-relaxed text-on-surface-variant space-y-4">
+                                <p>CitaLiks, operando bajo la matriz tecnológica de Neural 360 SL, es el responsable del tratamiento de sus datos personales. Nuestra misión es proporcionar soluciones de inteligencia artificial de voz líderes en la industria manteniendo los más altos estándares de privacidad.</p>
+                                <p><strong>Titular:</strong> Neural 360 SL</p>
+                                <p><strong>Dirección:</strong> C/ Oriente 2, 28817, Los Santos de la Humosa, Madrid, España</p>
+                                <p>Para cualquier consulta legal o de privacidad, puede contactar con nuestro Delegado de Protección de Datos en: <strong className="text-primary">admin@citaliks.com</strong></p>
+                            </div>
+                        </section>
+
+                        {/* Section 2 */}
+                        <section className="scroll-mt-32" id="datos">
+                            <div className="flex items-center gap-3 mb-8">
+                                <div className="p-2 bg-tertiary-fixed/20 rounded-lg text-secondary">
+                                    <Database size={24} />
+                                </div>
+                                <h2 className="text-3xl font-bold tracking-tight">2. Qué datos personales recogemos y por qué</h2>
+                            </div>
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <div className="bg-surface-container-lowest p-8 rounded-xl border border-outline-variant/10 shadow-sm">
+                                    <h3 className="text-xl font-bold mb-4">Datos de Audio</h3>
+                                    <p className="text-on-surface-variant text-sm leading-relaxed mb-4">Procesamos grabaciones de voz para convertirlas en texto o generar respuestas mediante IA. Estos datos son cifrados inmediatamente.</p>
+                                    <span className="text-xs font-bold text-secondary-fixed-variant uppercase tracking-widest">Base legal: Ejecución de contrato</span>
+                                </div>
+                                <div className="bg-surface-container-lowest p-8 rounded-xl border border-outline-variant/10 shadow-sm">
+                                    <h3 className="text-xl font-bold mb-4">Identificadores</h3>
+                                    <p className="text-on-surface-variant text-sm leading-relaxed mb-4">Nombre, correo electrónico y credenciales de acceso para gestionar su cuenta y personalizar su experiencia en la plataforma.</p>
+                                    <span className="text-xs font-bold text-secondary-fixed-variant uppercase tracking-widest">Base legal: Consentimiento</span>
+                                </div>
+                                <div className="bg-surface-container-lowest p-8 rounded-xl border border-outline-variant/10 shadow-sm md:col-span-2">
+                                    <h3 className="text-xl font-bold mb-4">Uso de la Plataforma</h3>
+                                    <p className="text-on-surface-variant text-sm leading-relaxed mb-4">Recopilamos metadatos sobre cómo interactúa con nuestro sistema para mejorar algoritmos de latencia y precisión vocal. No vendemos estos datos a terceros bajo ninguna circunstancia.</p>
+                                    <span className="text-xs font-bold text-secondary-fixed-variant uppercase tracking-widest">Base legal: Interés legítimo</span>
+                                </div>
+                            </div>
+                        </section>
+
+                        {/* Section 3 */}
+                        <section className="scroll-mt-32" id="seguridad">
+                            <div className="flex items-center gap-3 mb-6">
+                                <div className="p-2 bg-tertiary-fixed/20 rounded-lg text-secondary">
+                                    <ShieldCheck size={24} />
+                                </div>
+                                <h2 className="text-3xl font-bold tracking-tight">3. Seguridad de datos</h2>
+                            </div>
+                            <div className="bg-primary-container text-white p-10 rounded-2xl relative overflow-hidden">
+                                <div className="relative z-10 grid md:grid-cols-2 gap-8">
+                                    <div>
+                                        <h3 className="text-xl font-semibold mb-4 text-tertiary-fixed">Cifrado de grado militar</h3>
+                                        <p className="text-primary-fixed-dim leading-relaxed">Implementamos protocolos AES-256 para datos en reposo y TLS 1.3 para datos en tránsito. Su voz nunca viaja sin protección.</p>
+                                    </div>
+                                    <div>
+                                        <h3 className="text-xl font-semibold mb-4 text-tertiary-fixed">Infraestructura Aislada</h3>
+                                        <p className="text-primary-fixed-dim leading-relaxed">Los modelos de entrenamiento están aislados físicamente de los datos de producción identificables de los usuarios.</p>
+                                    </div>
+                                </div>
+                                <div className="absolute top-0 right-0 w-64 h-64 bg-white/5 blur-3xl rounded-full -mr-20 -mt-20"></div>
+                            </div>
+                        </section>
+
+                        {/* Section 4 */}
+                        <section className="scroll-mt-32" id="derechos">
+                            <div className="flex items-center gap-3 mb-6">
+                                <div className="p-2 bg-tertiary-fixed/20 rounded-lg text-secondary">
+                                    <Gavel size={24} />
+                                </div>
+                                <h2 className="text-3xl font-bold tracking-tight">4. Tus Derechos</h2>
+                            </div>
+                            <p className="text-on-surface-variant mb-8 font-medium">Usted tiene el control total sobre su información:</p>
+                            <div className="space-y-4">
+                                <div className="flex items-start gap-4 p-4 hover:bg-surface-container-low transition-colors rounded-xl group">
+                                    <Eye className="text-outline group-hover:text-primary shrink-0" />
+                                    <div>
+                                        <h4 className="font-bold">Acceso y Portabilidad</h4>
+                                        <p className="text-sm text-on-surface-variant">Solicite una copia de todos los datos que tenemos sobre usted en un formato estructurado.</p>
+                                    </div>
+                                </div>
+                                <div className="flex items-start gap-4 p-4 hover:bg-surface-container-low transition-colors rounded-xl group">
+                                    <SquarePen className="text-outline group-hover:text-primary shrink-0" />
+                                    <div>
+                                        <h4 className="font-bold">Rectificación</h4>
+                                        <p className="text-sm text-on-surface-variant">Corrija cualquier información inexacta o incompleta en su perfil.</p>
+                                    </div>
+                                </div>
+                                <div className="flex items-start gap-4 p-4 hover:bg-surface-container-low transition-colors rounded-xl group">
+                                    <Trash2 className="text-outline group-hover:text-error shrink-0" />
+                                    <div>
+                                        <h4 className="font-bold">Derecho al Olvido</h4>
+                                        <p className="text-sm text-on-surface-variant">Solicite la eliminación permanente de sus grabaciones y datos personales de nuestros servidores.</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </section>
+
+                        {/* Section 5 & 6 Row */}
+                        <div className="grid md:grid-cols-2 gap-12">
+                            <section className="scroll-mt-32" id="conservacion">
+                                <div className="flex items-center gap-3 mb-6">
+                                    <div className="p-2 bg-tertiary-fixed/20 rounded-lg text-secondary">
+                                        <History size={20} />
+                                    </div>
+                                    <h2 className="text-2xl font-bold tracking-tight">5. Conservación</h2>
+                                </div>
+                                <p className="text-sm text-on-surface-variant leading-relaxed">
+                                    Mantenemos sus datos solo mientras sea necesario para prestar el servicio o cumplir con obligaciones legales. Las grabaciones temporales se eliminan tras 30 días.
+                                </p>
+                            </section>
+                            <section className="scroll-mt-32" id="terceros">
+                                <div className="flex items-center gap-3 mb-6">
+                                    <div className="p-2 bg-tertiary-fixed/20 rounded-lg text-secondary">
+                                        <Languages size={20} />
+                                    </div>
+                                    <h2 className="text-2xl font-bold tracking-tight">6. Terceros</h2>
+                                </div>
+                                <p className="text-sm text-on-surface-variant leading-relaxed">
+                                    Podemos utilizar proveedores de infraestructura (como AWS o Google Cloud) localizados en regiones seguras. No compartimos datos con redes publicitarias.
+                                </p>
+                            </section>
+                        </div>
+
+                        {/* Section 7 */}
+                        <section className="scroll-mt-32 border-t border-outline-variant/30 pt-16" id="brechas">
+                            <div className="flex items-center gap-3 mb-6">
+                                <div className="p-2 bg-error-container/30 rounded-lg text-error">
+                                    <AlertTriangle size={24} />
+                                </div>
+                                <h2 className="text-3xl font-bold tracking-tight">7. Brechas de Seguridad</h2>
+                            </div>
+                            <div className="bg-surface-container-low p-8 rounded-xl border border-error/10">
+                                <p className="text-on-surface-variant leading-relaxed">
+                                    En el caso de una brecha de seguridad que afecte a sus datos, CitaLiks se compromete a notificar a las autoridades y a los usuarios afectados en un plazo de <span className="font-bold text-primary">72 horas</span>.
+                                </p>
+                            </div>
+                        </section>
+                    </div>
+                </div>
+            </main>
+
+            {/* Bottom Action Area */}
+            <section className="max-w-7xl mx-auto px-6 mb-24">
+                <div className="bg-tertiary-fixed text-on-tertiary-fixed p-12 rounded-[2rem] text-center shadow-lg">
+                    <h2 className="text-3xl font-bold mb-4">¿Preguntas sobre su privacidad?</h2>
+                    <p className="mb-8 opacity-80 max-w-xl mx-auto text-lg leading-relaxed">Nuestro equipo legal está disponible para resolver cualquier duda sobre el tratamiento de sus datos.</p>
+                    <a className="inline-flex items-center gap-3 bg-primary text-black px-12 py-5 rounded-full font-black uppercase tracking-widest hover:scale-105 transition-transform shadow-[0_20px_40px_rgba(32,185,95,0.3)] glow-hover" href="mailto:admin@citaliks.com">
+                        <Mail size={24} />
+                        CONTACTA
+                    </a>
+                </div>
+            </section>
+
+            {/* Footer */}
+            <footer className="bg-surface-container-low py-20 border-t border-outline-variant/10">
+                <div className="max-w-7xl mx-auto px-6">
+                    <div className="flex flex-col md:flex-row justify-between items-center gap-8">
+                        <div className="text-2xl font-bold text-primary italic">CitaLiks</div>
+                        <div className="flex flex-wrap justify-center gap-8 text-sm font-medium">
+                            <Link className="text-on-surface-variant hover:text-primary" href="/#features">Funciones</Link>
+                            <Link className="text-on-surface-variant hover:text-primary" href="/#pricing">Precios</Link>
+                            <Link className="text-primary font-bold underline decoration-tertiary-fixed decoration-2 underline-offset-4" href="/privacidad">Privacidad</Link>
+                            <Link className="text-on-surface-variant hover:text-primary" href="/condiciones">Términos</Link>
+                        </div>
+                    </div>
+                    <div className="mt-16 text-center text-xs text-on-surface-variant/60 tracking-widest uppercase">
+                        © {new Date().getFullYear()} Neural 360 SL. Todos los derechos reservados.
+                    </div>
+                </div>
+            </footer>
+        </main>
     );
 }
+

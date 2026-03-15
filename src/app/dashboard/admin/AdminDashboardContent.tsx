@@ -25,7 +25,7 @@ export default function AdminDashboardContent({ clients: initialClients, admin: 
         email: "",
         name: "",
         phone: "",
-        plan: "biannual",
+        plan: "business",
         notes: "",
         type: "stripe" as "stripe" | "free"
     });
@@ -1067,10 +1067,9 @@ export default function AdminDashboardContent({ clients: initialClients, admin: 
                                                 onChange={e => setInviteForm({ ...inviteForm, plan: e.target.value })}
                                                 className="w-full bg-white/5 border border-white/10 rounded-2xl px-4 py-3 text-sm focus:border-blue-600 outline-none appearance-none cursor-pointer pr-10"
                                             >
-                                                <option value="monthly" className="bg-[#0f0f18] text-white">Mensual (Setup Incl.)</option>
-                                                <option value="quarterly" className="bg-[#0f0f18] text-white">Trimestral</option>
-                                                <option value="biannual" className="bg-[#0f0f18] text-white">Semestral</option>
-                                                <option value="annual" className="bg-[#0f0f18] text-white">Anual</option>
+                                                <option value="basic" className="bg-[#0f0f18] text-white">Basic (Anual - 99€/mes)</option>
+                                                <option value="business" className="bg-[#0f0f18] text-white">Business (Semestral - Setup Inic.)</option>
+                                                <option value="premium" className="bg-[#0f0f18] text-white">Premium (Trimestral - Setup Inic.)</option>
                                             </select>
                                             <ChevronDown size={14} className="absolute right-4 top-1/2 -translate-y-1/2 text-white/30 pointer-events-none" />
                                         </div>
@@ -1812,7 +1811,7 @@ function SubscriptionTab({ client, onCreateCheckout, onOpenPortal, creatingCheck
     creatingCheckout: boolean;
     openingPortal: boolean;
 }) {
-    const [selectedPlan, setSelectedPlan] = React.useState("biannual");
+    const [selectedPlan, setSelectedPlan] = React.useState("business");
 
     const statusColors: Record<string, string> = {
         active: "bg-emerald-500/10 text-emerald-400 border-emerald-500/20",
@@ -1829,10 +1828,9 @@ function SubscriptionTab({ client, onCreateCheckout, onOpenPortal, creatingCheck
     };
 
     const planLabels: Record<string, string> = {
-        monthly: "Mensual",
-        quarterly: "Trimestral",
-        biannual: "Semestral",
-        annual: "Anual",
+        basic: "Basic (Anual)",
+        business: "Business (Semestral)",
+        premium: "Premium (Trimestral)",
     };
 
     const status = client.subscriptionStatus || "inactive";
@@ -1898,10 +1896,10 @@ function SubscriptionTab({ client, onCreateCheckout, onOpenPortal, creatingCheck
             ) : (
                 <div className="rounded-2xl bg-white/[0.03] border border-white/5 p-5 space-y-4">
                     <h3 className="font-black text-sm">Crear Suscripción</h3>
-                    <p className="text-white/40 text-xs text-balance">Selecciona un plan. Solo en el **Plan Mensual** se añadirá automáticamente el <strong className="text-blue-400">Setup de 899€</strong>.</p>
+                    <p className="text-white/40 text-xs text-balance">Selecciona un plan. Los planes Business y Premium incluyen un pago inicial de <strong className="text-blue-400">Setup de 899€</strong>.</p>
 
-                    <div className="grid grid-cols-2 lg:grid-cols-4 gap-2">
-                        {(["monthly", "quarterly", "biannual", "annual"] as const).map(plan => (
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
+                        {(["basic", "business", "premium"] as const).map(plan => (
                             <button
                                 key={plan}
                                 onClick={() => setSelectedPlan(plan)}

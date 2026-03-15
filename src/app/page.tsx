@@ -1,223 +1,434 @@
+import React from "react";
 import { auth } from "@clerk/nextjs/server";
 import { redirect } from "next/navigation";
 import Link from "next/link";
+import SalesChatWidget from "@/components/SalesChatWidget";
+import { getPlanById } from "@/config/pricing";
+import LostCallsCalculator from "@/components/LostCallsCalculator";
+import InteractiveDemo from "@/components/InteractiveDemo";
+import DashboardPreview from "@/components/DashboardPreview";
+import PulsatingLogo from "@/components/PulsatingLogo";
+import { Play } from "lucide-react";
 
 export default async function HomePage() {
+    // Client Component transition complete
     const { userId } = await auth();
     if (userId) redirect("/dashboard");
 
+    const basicPlan = getPlanById('basic');
+    const businessPlan = getPlanById('business');
+    const premiumPlan = getPlanById('premium');
+    const calendlyUrl = process.env.CALENDLY_URL || "https://calendly.com/citaliks/30min";
+
     return (
-        <main className="min-h-screen bg-gradient-animated text-white overflow-hidden">
-            {/* Nav */}
-            <nav className="flex flex-wrap flex-col sm:flex-row items-center justify-center sm:justify-between gap-4 px-8 py-6 max-w-7xl mx-auto">
-                <Link href="/" className="flex items-center gap-2 hover:opacity-80 transition-opacity shrink-0">
-                    <img src="/logo.png" alt="CitaLiks Logo" className="w-10 h-10 object-contain drop-shadow-lg" />
-                    <span className="text-xl font-bold">Cita <span className="gradient-text">Liks</span></span>
-                </Link>
-                <div className="flex items-center gap-4">
-                    <Link href="/sign-in" className="text-sm text-white/60 hover:text-white transition-colors">
-                        Iniciar sesión
-                    </Link>
-                    <Link
-                        href="/sign-up"
-                        className="px-4 py-2 rounded-xl bg-violet-600 hover:bg-violet-500 text-sm font-medium transition-all hover:shadow-lg hover:shadow-violet-500/25"
-                    >
-                        Empezar gratis
-                    </Link>
+        <main className="bg-surface text-on-surface antialiased overflow-x-hidden font-body">
+            {/* Top Navigation */}
+            <nav className="fixed top-6 left-1/2 -translate-x-1/2 z-50 w-[90%] max-w-7xl">
+                <div className="glass-nav px-8 py-4 rounded-full flex items-center justify-between shadow-sm">
+                    <div className="flex items-center gap-2 md:gap-3 group cursor-pointer shrink-0">
+                        <img src="/logo.png" alt="CitaLiks - Automatización de Citas con Inteligencia Artificial" className="w-8 h-8 md:w-10 md:h-10 object-contain logo-neon" />
+                        <span className="text-xl md:text-2xl font-black tracking-tighter text-primary">CitaLiks</span>
+                    </div>
+                    <div className="hidden md:flex items-center gap-10">
+                        <a className="text-sm font-black uppercase tracking-widest text-primary/60 hover:text-primary transition-all underline-offset-8 hover:underline" style={{ textShadow: '0 1px 1px rgba(0,0,0,0.5)' }} href="#features">Funcionalidades</a>
+                        <a className="text-sm font-black uppercase tracking-widest text-primary/60 hover:text-primary transition-all underline-offset-8 hover:underline" style={{ textShadow: '0 1px 1px rgba(0,0,0,0.5)' }} href="#pricing">Precios</a>
+                    </div>
+                    <div className="flex items-center gap-2 md:gap-4">
+                        <Link href="/sign-in" className="hidden lg:block text-xs md:text-sm font-black uppercase tracking-widest bg-white/10 text-white/80 px-4 py-2 rounded-lg border border-black hover:bg-white/20 hover:text-white transition-all">Iniciar Sesión</Link>
+                        <Link href={calendlyUrl} target="_blank" className="bg-primary text-black px-5 md:px-8 py-2 md:py-3 rounded-full text-[10px] md:text-sm font-black glow-hover transition-all uppercase tracking-widest whitespace-nowrap">Pruébalo Gratis</Link>
+                    </div>
                 </div>
             </nav>
 
-            {/* Hero */}
-            <section className="max-w-5xl mx-auto px-8 pt-24 pb-16 text-center">
-                <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full glass text-sm text-violet-300 mb-8 animate-fade-in">
-                    <span className="w-2 h-2 rounded-full bg-green-400 animate-pulse" />
-                    Tu asistente de voz ya está disponible
-                </div>
-                <h1 className="text-6xl md:text-7xl font-bold mb-6 leading-tight animate-fade-in">
-                    Tu agenda, gestionada{" "}
-                    <span className="gradient-text">por IA</span>
-                </h1>
-                <p className="text-xl text-white/60 max-w-2xl mx-auto mb-10 animate-fade-in">
-                    Un asistente telefónico en Español que atiende llamadas, reserva citas y gestiona tu Google Calendar — 24 horas al día, sin que tú intervengas.
-                </p>
-                <div className="flex items-center justify-center gap-4 animate-fade-in">
-                    <Link
-                        href="/sign-up"
-                        className="px-8 py-4 rounded-2xl bg-violet-600 hover:bg-violet-500 font-semibold text-lg transition-all hover:shadow-xl hover:shadow-violet-500/30 glow-purple"
-                    >
-                        Crear mi asistente →
-                    </Link>
-                    <span className="text-white/40 text-sm">Sin tarjeta de crédito</span>
-                </div>
-            </section>
-
-            {/* Features grid */}
-            <section className="max-w-6xl mx-auto px-8 py-16 grid grid-cols-1 md:grid-cols-3 gap-6">
-                {[
-                    { icon: "📞", title: "Número +34 propio", desc: "Cada cliente recibe un número de teléfono español exclusivo para su negocio." },
-                    { icon: "🤖", title: "IA en Español natural", desc: "Tu agente habla Español de España con voz realista. Nadie sabrá que es IA." },
-                    { icon: "📅", title: "Google Calendar sincronizado", desc: "Crea, modifica y cancela citas directamente en tu agenda de Google." },
-                    { icon: "🔀", title: "Transferencia a humano", desc: "Si el cliente lo necesita, la llamada se transfiere a ti automáticamente." },
-                    { icon: "📊", title: "Dashboard de llamadas", desc: "Consulta transcripciones, resúmenes y estadísticas de todas las llamadas." },
-                    { icon: "⚡", title: "Listo en 5 minutos", desc: "Onboarding guiado paso a paso. Tu agente activo en minutos, no días." },
-                ].map((f) => (
-                    <div key={f.title} className="glass rounded-2xl p-6 hover:border-violet-500/30 transition-all group">
-                        <span className="text-3xl mb-4 block">{f.icon}</span>
-                        <h3 className="font-semibold text-lg mb-2 group-hover:text-violet-300 transition-colors">{f.title}</h3>
-                        <p className="text-white/50 text-sm leading-relaxed">{f.desc}</p>
+            {/* Hero Section */}
+            <section className="pt-52 pb-32 px-6 bg-surface relative overflow-hidden">
+                <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-[800px] bg-gradient-to-b from-primary/10 via-transparent to-transparent opacity-50 pointer-events-none" />
+                
+                <div className="max-w-7xl mx-auto grid lg:grid-cols-2 gap-20 items-center relative z-10">
+                    <div className="space-y-10">
+                        <div className="inline-flex items-center gap-2 py-2 px-5 rounded-full bg-white/5 border border-white/10 text-primary text-[10px] font-black tracking-[0.2em] uppercase">
+                            <span className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse" />
+                            IA de Próxima Generación
+                        </div>
+                        <h1 className="text-6xl md:text-8xl font-black text-white leading-[0.95] tracking-tightest uppercase italic">
+                            Tu agenda <br/>
+                            <span className="text-primary italic">Sin límites</span>
+                        </h1>
+                        <p className="text-xl text-white/50 max-w-xl leading-relaxed font-medium">
+                            Automatiza tu recepción con tu asistente personalizado. Agenda citas, resuelve dudas y capta clientes 24/7 con la voz más humana jamás creada.
+                        </p>
+                        <div className="flex flex-col gap-4 pt-6">
+                            <Link href={calendlyUrl} target="_blank" className="w-full bg-primary text-black px-10 py-5 rounded-2xl text-lg font-black shadow-[0_20px_40px_rgba(32,185,95,0.3)] hover:scale-105 transition-all text-center uppercase tracking-widest active:scale-95 glow-hover">
+                                Empezar 20 días gratis
+                            </Link>
+                            <Link href="/demo" className="w-full bg-white/5 border border-white/10 px-10 py-5 rounded-2xl text-lg font-black text-white transition-all flex items-center justify-center gap-3 hover:bg-white/10 active:scale-95">
+                                <Play size={24} className="text-primary" />
+                                Demo en vivo
+                            </Link>
+                        </div>
+                        
+                        <div className="flex items-center justify-center gap-12 pt-12 border-t border-white/5">
+                            <div className="space-y-1 text-center">
+                                <p className="text-[28px] md:text-[32px] font-black text-white tracking-tighter leading-none">99%</p>
+                                <p className="text-[11px] uppercase font-black tracking-widest text-white/40">Precisión vocal</p>
+                            </div>
+                            <div className="space-y-1 text-center">
+                                <p className="text-[28px] md:text-[32px] font-black text-white tracking-tighter leading-none">5 min</p>
+                                <p className="text-[11px] uppercase font-black tracking-widest text-white/40">Instalación rápida</p>
+                            </div>
+                            <div className="space-y-1 text-center">
+                                <p className="text-[28px] md:text-[32px] font-black text-white tracking-tighter leading-none">24/7</p>
+                                <p className="text-[11px] uppercase font-black tracking-widest text-white/40">Atención total</p>
+                            </div>
+                        </div>
                     </div>
-                ))}
+
+                    <div className="relative group">
+                        <div className="absolute -inset-10 bg-primary/20 rounded-[5rem] blur-[120px] opacity-20 pointer-events-none group-hover:opacity-40 transition-opacity" />
+                        <div className="aspect-[4/3] rounded-[4rem] overflow-hidden relief-premium relative z-10 border border-white/10">
+                            <img 
+                                alt="Futuristic AI interface" 
+                                className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-[3000ms]" 
+                                src="https://images.unsplash.com/photo-1677442136019-21780ecad995?auto=format&fit=crop&q=80" 
+                            />
+                            <div className="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent opacity-60" />
+                            <div className="absolute bottom-12 left-12 right-12 flex items-center justify-between">
+                                <div className="space-y-1">
+                                    <p className="text-white font-black uppercase text-[10px] tracking-widest opacity-60">Status</p>
+                                    <p className="text-primary font-black text-sm uppercase tracking-widest">Carolina Conectada</p>
+                                </div>
+                                <div className="flex gap-2 h-8 items-end pb-1">
+                                    {[...Array(6)].map((_, i) => (
+                                        <div key={i} className="w-1 bg-primary/40 rounded-full h-[40%] animate-pulse" style={{ animationDelay: `${i * 0.2}s` }} />
+                                    ))}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </section>
 
-            {/* Pricing */}
-            <section className="max-w-6xl mx-auto px-8 py-20">
-                <div className="text-center mb-14">
-                    <h2 className="text-4xl font-bold mb-4">Planes y precios</h2>
-                    <p className="text-white/50 text-lg max-w-xl mx-auto">
-                        Mismas funcionalidades en todos los planes. La diferencia está en la duración del contrato y el coste de implementación.
-                    </p>
+            {/* Problem Section */}
+            <section id="features" className="py-24 bg-surface-container-low">
+                <div className="max-w-7xl mx-auto px-6">
+                    <div className="mb-16">
+                        <span className="text-label text-on-secondary-fixed-variant font-bold tracking-widest uppercase text-sm">El Desafío</span>
+                        <h2 className="text-4xl font-bold mt-4 tracking-tight">¿Por qué usar un Asistente de Voz con IA?</h2>
+                    </div>
+                    <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
+                        <div className="bg-surface-container-lowest p-8 rounded-xl flex flex-col items-center text-center space-y-4 shadow-sm border border-white/5 hover:border-primary/20 transition-all">
+                            <span className="material-symbols-outlined text-primary text-6xl">phone_missed</span>
+                            <h3 className="text-xl font-bold text-primary">Pierdes llamadas cuando estás ocupado</h3>
+                            <p className="text-on-surface-variant leading-relaxed text-sm">Cada llamada perdida es un cliente potencial que se va a la competencia.</p>
+                        </div>
+                        <div className="bg-surface-container-lowest p-8 rounded-xl flex flex-col items-center text-center space-y-4 shadow-sm border border-white/5 hover:border-primary/20 transition-all">
+                            <span className="material-symbols-outlined text-primary text-6xl">calendar_today</span>
+                            <h3 className="text-xl font-bold text-primary">Clientes no pueden reservar</h3>
+                            <p className="text-on-surface-variant leading-relaxed text-sm">Dificultad para encontrar huecos o esperar a que alguien responda.</p>
+                        </div>
+                        <div className="bg-surface-container-lowest p-8 rounded-xl flex flex-col items-center text-center space-y-4 shadow-sm border border-white/5 hover:border-primary/20 transition-all">
+                            <span className="material-symbols-outlined text-primary text-6xl">event_busy</span>
+                            <h3 className="text-xl font-bold text-primary">Cancelaciones sin aviso</h3>
+                            <p className="text-on-surface-variant leading-relaxed text-sm">Huecos en la agenda que nadie avisó y que suponen pérdida de ingresos.</p>
+                        </div>
+                        <div className="bg-surface-container-lowest p-8 rounded-xl flex flex-col items-center text-center space-y-4 shadow-sm border border-white/5 hover:border-primary/20 transition-all">
+                            <span className="material-symbols-outlined text-primary text-6xl">view_agenda</span>
+                            <h3 className="text-xl font-bold text-primary">Agenda desorganizada</h3>
+                            <p className="text-on-surface-variant leading-relaxed text-sm">Papeles, chats sueltos y falta de control sobre tus próximos servicios.</p>
+                        </div>
+                    </div>
                 </div>
+            </section>
 
-                {/* Core features shared by all plans */}
-                <div className="glass rounded-2xl px-8 py-6 mb-10 border border-white/10">
-                    <p className="text-xs uppercase font-black text-white/30 tracking-widest mb-4">✅ Incluido en todos los planes</p>
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm text-white/60">
+            {/* Bento Features Section */}
+            <section className="py-32 bg-surface">
+                <div className="max-w-7xl mx-auto px-6">
+                    <div className="text-center mb-24 space-y-6">
+                        <p className="text-[10px] font-black text-primary uppercase tracking-[0.4em] opacity-80">Excelencia técnica a tu servicio</p>
+                        <h2 className="text-5xl md:text-7xl font-black tracking-tight text-white">Asistente de Voz con IA: Funcionalidades Pro</h2>
+                    </div>
+                    <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
                         {[
-                            "Asistente de voz IA en Español",
-                            "Número +34 exclusivo",
-                            "Reserva, cancela y reagenda citas",
-                            "Sincronización Google Calendar",
-                            "SMS de confirmación automático",
-                            "Recordatorios automáticos de cita",
-                            "Transferencia de llamada al equipo",
-                            "Alertas SMS de oportunidades de venta",
-                            "Múltiples profesionales / agenda",
-                            "Dashboard de llamadas y transcripciones",
-                            "Soporte por email",
-                            "Sin límite de llamadas",
-                        ].map((f) => (
-                            <div key={f} className="flex items-start gap-2">
-                                <span className="text-green-400 shrink-0 mt-0.5">✓</span>
-                                <span>{f}</span>
+                            { 
+                                name: "Google Calendar", 
+                                desc: "Sincronización bidireccional en tiempo real.",
+                                icon: (
+                                    <svg viewBox="0 0 24 24" className="w-16 h-16" fill="none" stroke="currentColor" strokeWidth="1.5">
+                                        <rect x="3" y="4" width="18" height="18" rx="4" />
+                                        <path d="M16 2v4M8 2v4M3 10h18" strokeLinecap="round" />
+                                        <path d="M7 14h2m2 0h2m2 0h2M7 18h2m2 0h2" strokeLinecap="round" opacity="0.5" />
+                                    </svg>
+                                ), 
+                                color: "#20B95F" 
+                            },
+                            { 
+                                name: "Auditorías de Voz", 
+                                desc: "Transcripciones y análisis de sentimiento.",
+                                icon: (
+                                    <svg viewBox="0 0 24 24" className="w-16 h-16" fill="none" stroke="currentColor" strokeWidth="1.5">
+                                        <path d="M12 2a3 3 0 00-3 3v7a3 3 0 006 0V5a3 3 0 00-3-3z" />
+                                        <path d="M19 10v1a7 7 0 01-14 0v-1M12 18v4M8 22h8" strokeLinecap="round" />
+                                    </svg>
+                                ), 
+                                color: "#20B95F" 
+                            },
+                            { 
+                                name: "IA Bespoke", 
+                                desc: "Entrenada específicamente con tus datos.",
+                                icon: (
+                                    <svg viewBox="0 0 24 24" className="w-16 h-16" fill="none" stroke="currentColor" strokeWidth="1.5">
+                                        <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" strokeLinecap="round" />
+                                    </svg>
+                                ), 
+                                color: "#20B95F" 
+                            },
+                            { 
+                                name: "Dashboard Pro", 
+                                desc: "Control total de tu negocio desde un panel.",
+                                icon: (
+                                    <svg viewBox="0 0 24 24" className="w-16 h-16" fill="none" stroke="currentColor" strokeWidth="1.5">
+                                        <rect x="3" y="3" width="18" height="18" rx="4" />
+                                        <path d="M3 11h18M9 11v10" strokeLinecap="round" />
+                                    </svg>
+                                ), 
+                                color: "#20B95F" 
+                            },
+                        ].map((item) => (
+                            <div key={item.name} className="group bg-surface-container-low p-12 rounded-[3.5rem] relief-premium hover:scale-[1.02] transition-all duration-500 flex flex-col items-center text-center space-y-10 border border-white/5">
+                                <div className="w-28 h-28 rounded-[2.5rem] flex items-center justify-center transition-all duration-500 shadow-inner group-hover:scale-110 logo-neon bg-primary/10 text-primary">
+                                    {React.cloneElement(item.icon as React.ReactElement, { className: "w-14 h-14" })}
+                                </div>
+                                <div className="space-y-4">
+                                    <h4 className="font-black text-base uppercase tracking-widest text-primary">{item.name}</h4>
+                                    <p className="text-sm text-white/40 leading-relaxed font-medium">{item.desc}</p>
+                                </div>
                             </div>
                         ))}
                     </div>
                 </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6 items-stretch">
-                    {/* BASIC */}
-                    <div className="glass rounded-3xl p-8 flex flex-col gap-6 border border-white/10 hover:border-violet-500/30 transition-all">
-                        <div>
-                            <span className="text-xs uppercase font-black text-white/30 tracking-widest">Basic</span>
-                            <div className="mt-3 flex items-end gap-2">
-                                <span className="text-5xl font-black">99€</span>
-                                <span className="text-white/40 mb-1 text-sm">implementación</span>
-                            </div>
-                            <p className="text-white/40 text-xs mt-1">+ 99€/mes · Contrato 12 meses</p>
-                        </div>
-                        <div className="flex-1">
-                            <p className="text-sm text-white/40 mb-3">
-                                Ideal para negocios que buscan el mejor precio comprometiéndose a largo plazo.
-                            </p>
-                            <div className="rounded-xl bg-white/5 px-4 py-3 text-xs text-white/50">
-                                🎯 Todas las funcionalidades incluidas · Ahorro máximo en implementación
-                            </div>
-                        </div>
-                        <Link href="/sign-up" className="block text-center px-6 py-3 rounded-2xl border border-violet-500/40 hover:border-violet-400 hover:bg-violet-500/10 font-semibold transition-all text-sm">
-                            Empezar con Basic →
-                        </Link>
-                    </div>
-
-                    {/* BUSINESS */}
-                    <div className="glass rounded-3xl p-8 flex flex-col gap-6 border border-violet-500/60 relative shadow-xl shadow-violet-500/10 hover:border-violet-400/80 transition-all">
-                        <div className="absolute -top-4 left-1/2 -translate-x-1/2">
-                            <span className="px-4 py-1.5 rounded-full bg-violet-600 text-xs font-black uppercase tracking-widest shadow-lg shadow-violet-500/40">Más popular</span>
-                        </div>
-                        <div>
-                            <span className="text-xs uppercase font-black text-violet-400 tracking-widest">Business</span>
-                            <div className="mt-3 flex items-end gap-2">
-                                <span className="text-5xl font-black">119€</span>
-                                <span className="text-white/40 mb-1 text-sm">implementación</span>
-                            </div>
-                            <p className="text-white/40 text-xs mt-1">+ 99€/mes · Contrato 6 meses</p>
-                        </div>
-                        <div className="flex-1">
-                            <p className="text-sm text-white/40 mb-3">
-                                El equilibrio perfecto entre flexibilidad y ahorro. El favorito de nuestros clientes.
-                            </p>
-                            <div className="rounded-xl bg-violet-500/10 border border-violet-500/20 px-4 py-3 text-xs text-violet-300">
-                                🎯 Todas las funcionalidades incluidas · 6 meses de compromiso
-                            </div>
-                        </div>
-                        <Link href="/sign-up" className="block text-center px-6 py-3 rounded-2xl bg-violet-600 hover:bg-violet-500 font-semibold transition-all text-sm glow-purple shadow-lg shadow-violet-500/30">
-                            Empezar con Business →
-                        </Link>
-                    </div>
-
-                    {/* PREMIUM */}
-                    <div className="glass rounded-3xl p-8 flex flex-col gap-6 border border-white/10 hover:border-amber-500/30 transition-all">
-                        <div>
-                            <span className="text-xs uppercase font-black text-amber-400/70 tracking-widest">Premium</span>
-                            <div className="mt-3 flex items-end gap-2">
-                                <span className="text-5xl font-black">149€</span>
-                                <span className="text-white/40 mb-1 text-sm">implementación</span>
-                            </div>
-                            <p className="text-white/40 text-xs mt-1">+ 99€/mes · Contrato 3 meses</p>
-                        </div>
-                        <div className="flex-1">
-                            <p className="text-sm text-white/40 mb-3">
-                                Máxima flexibilidad con soporte técnico avanzado e integraciones a medida.
-                            </p>
-                            <div className="rounded-xl bg-amber-500/5 border border-amber-500/20 px-4 py-3 text-xs text-amber-300/80 flex flex-col gap-1.5">
-                                <span className="font-semibold">⭐ Todo lo anterior, más:</span>
-                                <span>🔗 Integraciones CRM / ERP a medida</span>
-                                <span>🎫 Soporte técnico prioritario por tickets</span>
-                                <span>📞 Onboarding por videollamada</span>
-                            </div>
-                        </div>
-                        <Link href="/sign-up" className="block text-center px-6 py-3 rounded-2xl border border-amber-500/40 hover:border-amber-400 hover:bg-amber-500/10 font-semibold transition-all text-sm">
-                            Empezar con Premium →
-                        </Link>
-                    </div>
-                </div>
-
-                <p className="text-center text-white/30 text-xs mt-10">
-                    ¿Necesitas integraciones especiales?{" "}
-                    <a href="mailto:neuralads.mkt@gmail.com" className="text-violet-400 hover:text-violet-300 underline">
-                        Contáctanos
-                    </a>{" "}
-                    y te preparamos un presupuesto a medida.
-                </p>
             </section>
 
-            {/* CTA final */}
-            <section className="max-w-3xl mx-auto px-8 pt-8 pb-24 text-center">
-                <div className="glass rounded-3xl p-10">
-                    <h2 className="text-3xl font-bold mb-4">¿Listo para empezar?</h2>
-                    <p className="text-white/60 mb-8">Configura tu asistente en 5 minutos. Sin contratos, cancela cuando quieras.</p>
-                    <Link
-                        href="/sign-up"
-                        className="inline-block px-10 py-4 rounded-2xl bg-violet-600 hover:bg-violet-500 font-semibold text-lg transition-all hover:shadow-xl hover:shadow-violet-500/30"
-                    >
-                        Empezar ahora →
-                    </Link>
+            {/* How it Works & Interactive Demo */}
+            <section className="py-32 bg-surface">
+                <div className="max-w-7xl mx-auto px-6">
+                    <div className="grid lg:grid-cols-2 gap-20 items-center">
+                        <div className="space-y-12">
+                            <h2 className="text-4xl font-bold tracking-tight">Cómo funciona la Automatización de Citas</h2>
+                            <p className="text-white/60 text-lg leading-relaxed font-medium">
+                                CitaLiks es un **asistente de voz con IA** diseñado para revolucionar tu recepción. Carolina utiliza algoritmos avanzados para entender y procesar cada llamada, integrándose con tu agenda de forma fluida y natural, actuando como un miembro más de tu equipo humano 24/7.
+                            </p>
+                            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-tertiary-fixed/20 text-on-tertiary-fixed-variant text-xs font-bold uppercase tracking-wider">
+                                <span className="material-symbols-outlined text-sm">phone_android</span>
+                                y sin cambiar de número de teléfono
+                            </div>
+                            <div className="space-y-10">
+                                <div className="flex gap-6">
+                                    <div className="w-12 h-12 rounded-full bg-primary-container text-white flex items-center justify-center font-bold shrink-0">1</div>
+                                    <div>
+                                        <h4 className="text-xl font-bold mb-2">Conecta tu agenda en minutos</h4>
+                                        <p className="text-on-surface-variant">Sincronización total con Google Calendar, Outlook o tu software de gestión actual.</p>
+                                    </div>
+                                </div>
+                                <div className="flex gap-6">
+                                    <div className="w-12 h-12 rounded-full bg-primary-container text-white flex items-center justify-center font-bold shrink-0">2</div>
+                                    <div>
+                                        <h4 className="text-xl font-bold mb-2">El asistente responde y gestiona</h4>
+                                        <p className="text-on-surface-variant">Atiende llamadas, responde dudas frecuentes y propone huecos libres automáticamente.</p>
+                                    </div>
+                                </div>
+                                <div className="flex gap-6">
+                                    <div className="w-12 h-12 rounded-full bg-primary-container text-white flex items-center justify-center font-bold shrink-0">3</div>
+                                    <div>
+                                        <h4 className="text-xl font-bold mb-2">Reservas organizadas</h4>
+                                        <p className="text-on-surface-variant">Recibe notificaciones instantáneas de cada nueva cita confirmada en tu panel.</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <Link href={calendlyUrl} target="_blank" className="bg-primary text-black px-8 py-4 rounded-xl text-lg font-black glow-hover mt-4 inline-block uppercase tracking-widest active:scale-95">
+                                Probar gratis 20 días
+                            </Link>
+                        </div>
+                        <InteractiveDemo />
+                    </div>
+                </div>
+            </section>
+
+            {/* Calculator Section */}
+            <section className="py-24 bg-surface-container-low overflow-hidden">
+                <div className="max-w-7xl mx-auto px-6">
+                    <LostCallsCalculator />
+                </div>
+            </section>
+
+            {/* Dashboard Demo Area */}
+            <section className="py-32 bg-surface">
+                <div className="max-w-7xl mx-auto px-6 text-center space-y-16">
+                    <h2 className="text-4xl md:text-5xl font-bold tracking-tight">Tu Gestión de Citas organizada en un solo panel</h2>
+                    <DashboardPreview />
+                </div>
+            </section>
+
+            {/* Pricing Section */}
+            <section id="pricing" className="py-32 bg-primary-container text-white">
+                <div className="max-w-7xl mx-auto px-6">
+                    <div className="text-center mb-16">
+                        <h2 className="text-4xl font-black uppercase italic tracking-tightest mb-4">Planes transparentes</h2>
+                        <p className="text-white/60 max-w-2xl mx-auto font-medium">Soluciones escalables para que tu negocio nunca deje de crecer.</p>
+                    </div>
+                    {/* Included in all plans */}
+                    <div className="bg-white/5 border border-white/10 rounded-2xl p-8 mb-16">
+                        <div className="flex items-center gap-2 mb-8 border-b border-white/10 pb-4">
+                            <span className="material-symbols-outlined text-primary">check_box</span>
+                            <span className="text-sm font-black uppercase tracking-widest text-white/80">INCLUIDO EN TODOS LOS PLANES</span>
+                        </div>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-y-4 gap-x-8">
+                            {[
+                                "Asistente de voz IA en Español", "Número +34 exclusivo", "Reserva, cancela y reagenda citas",
+                                "Sincronización Google Calendar", "SMS de confirmación automático", "Recordatorios automáticos de cita",
+                                "Transferencia de llamada al equipo", "Alertas SMS de oportunidades", "Múltiples profesionales / agenda",
+                                "Dashboard y transcripciones", "Soporte por email", "Llamadas extra a precio reducido"
+                            ].map((f) => (
+                                <div key={f} className="flex items-start gap-3 text-sm">
+                                    <span className="material-symbols-outlined text-primary text-sm mt-0.5">check</span>
+                                    <span className="text-white/70 font-medium">{f}</span>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                    <div className="grid lg:grid-cols-3 gap-8 items-stretch">
+                        {/* Plan Basic */}
+                        <div className="bg-white/5 border border-white/10 p-10 rounded-2xl flex flex-col group hover:bg-white/10 transition-all duration-300">
+                            <div className="mb-8">
+                                <span className="text-xs font-black tracking-widest uppercase opacity-60">BASIC</span>
+                                <div className="mt-4 flex items-baseline gap-1">
+                                    <span className="text-5xl font-extrabold tracking-tight">{basicPlan?.setupFee}€</span>
+                                    <span className="text-sm text-on-primary-container">implementación</span>
+                                </div>
+                                <p className="text-xs font-black text-primary mt-2 group-hover:animate-pulse">+ {basicPlan?.priceMonthly}€/mes · Contrato {basicPlan?.commitmentMonths} meses</p>
+                            </div>
+                            <p className="text-white/50 text-sm leading-relaxed mb-8 flex-1 font-medium">
+                                Ideal para negocios pequeños. Incluye hasta <span className="text-white font-bold">100 llamadas/mes</span>.
+                            </p>
+                            <Link href={calendlyUrl} target="_blank" className="w-full py-4 border-2 border-primary/30 rounded-xl font-black text-primary hover:bg-primary hover:text-black transition-all text-center uppercase tracking-widest text-xs">
+                                Empezar con Basic
+                            </Link>
+                        </div>
+                        {/* Plan Business */}
+                        <div className="bg-white/10 border-2 border-primary/50 p-10 rounded-2xl flex flex-col relative scale-105 shadow-2xl z-10">
+                            <div className="absolute -top-4 left-1/2 -translate-x-1/2 bg-primary text-black text-[10px] font-black px-4 py-1.5 rounded-full uppercase tracking-[0.2em] shadow-[0_0_20px_rgba(32,185,95,0.4)]">
+                                MÁS POPULAR
+                            </div>
+                            <div className="mb-8">
+                                <span className="text-xs font-black tracking-widest uppercase text-primary">BUSINESS</span>
+                                <div className="mt-4 flex items-baseline gap-1">
+                                    <span className="text-5xl font-extrabold tracking-tight">{businessPlan?.setupFee}€</span>
+                                    <span className="text-sm text-on-primary-container">implementación</span>
+                                </div>
+                                <p className="text-xs font-black text-primary mt-2">+ {businessPlan?.priceMonthly}€/mes · Contrato {businessPlan?.commitmentMonths} meses</p>
+                            </div>
+                            <p className="text-white/80 text-sm leading-relaxed mb-8 flex-1 font-semibold">
+                                El equilibrio perfecto. Incluye hasta <span className="text-white font-bold">300 llamadas/mes</span>. El favorito de nuestros clientes.
+                            </p>
+                            <Link href={calendlyUrl} target="_blank" className="w-full py-4 bg-primary text-black rounded-xl font-black glow-hover transition-all text-center uppercase tracking-widest text-xs shadow-xl shadow-primary/20">
+                                Empezar con Business
+                            </Link>
+                        </div>
+                        {/* Plan Premium */}
+                        <div className="bg-white/5 border border-white/10 p-10 rounded-2xl flex flex-col group hover:bg-white/10 transition-all duration-300">
+                            <div className="mb-8">
+                                <span className="text-xs font-black tracking-widest uppercase opacity-60">PREMIUM</span>
+                                <div className="mt-4 flex items-baseline gap-1">
+                                    <span className="text-5xl font-extrabold tracking-tight">{premiumPlan?.setupFee}€</span>
+                                    <span className="text-sm text-on-primary-container">implementación</span>
+                                </div>
+                                <p className="text-xs font-black text-primary mt-2">+ {premiumPlan?.priceMonthly}€/mes · Contrato {premiumPlan?.commitmentMonths} meses</p>
+                            </div>
+                            <p className="text-white/50 text-sm leading-relaxed mb-6 flex-1 font-medium">
+                                Máxima capacidad. Incluye hasta <span className="text-white font-bold">1000 llamadas/mes</span> y soporte prioritario.
+                            </p>
+                            <Link href={calendlyUrl} target="_blank" className="w-full py-4 border-2 border-primary/30 rounded-xl font-black text-primary hover:bg-primary hover:text-black transition-all text-center uppercase tracking-widest text-xs">
+                                Empezar con Premium
+                            </Link>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            {/* Final CTA Section */}
+            <section className="py-44 relative overflow-hidden bg-surface">
+                <div className="max-w-6xl mx-auto px-6">
+                    <div className="bg-surface-container rounded-[4rem] p-16 md:p-32 text-center relative overflow-hidden relief-premium">
+                        <div className="absolute top-0 right-0 w-96 h-96 bg-primary/20 rounded-full blur-[140px] opacity-30 -translate-y-1/2 translate-x-1/2" />
+                        
+                        <div className="relative z-10 space-y-12">
+                            <div className="flex flex-col items-center space-y-6">
+                                <PulsatingLogo />
+                                <div className="inline-flex items-center gap-2 py-2 px-5 rounded-full bg-white/5 border border-white/10 text-white/40 text-[10px] font-black tracking-[0.3em] uppercase">
+                                    Oferta de lanzamiento
+                                </div>
+                            </div>
+                            
+                            <div className="space-y-6">
+                                <h2 className="text-5xl md:text-8xl font-black text-white tracking-tightest uppercase italic leading-none">
+                                    Tu asistente <br/>
+                                    <span className="text-primary italic">está listo</span>
+                                </h2>
+                                <p className="text-white/60 text-xl font-medium max-w-2xl mx-auto leading-relaxed">
+                                    Configuración asistida en 5 minutos. Tu asistente personalizado con el nombre de tu negocio y la voz de Carolina.
+                                </p>
+                            </div>
+
+                            <div className="flex flex-col md:flex-row items-center justify-center gap-10">
+                                <div className="relative group">
+                                    <div className="absolute -inset-1 bg-primary rounded-3xl blur opacity-25 group-hover:opacity-50 transition duration-1000"></div>
+                                    <Link 
+                                        href={calendlyUrl} 
+                                        target="_blank"
+                                        className="relative bg-white text-black px-16 py-7 rounded-2xl text-2xl font-black hover:scale-105 transition-transform flex items-center gap-4 uppercase tracking-widest shadow-2xl"
+                                    >
+                                        Empezar ahora
+                                    </Link>
+                                </div>
+                                <div className="flex flex-col items-start gap-1">
+                                    <div className="flex items-center gap-2 text-primary">
+                                        {[...Array(5)].map((_, i) => <span key={i} className="material-symbols-outlined text-sm" style={{ fontVariationSettings: "'FILL' 1" }}>star</span>)}
+                                    </div>
+                                    <span className="text-white font-black text-sm uppercase tracking-widest leading-none">20 días totalmente gratis</span>
+                                    <span className="text-white/30 text-[9px] font-bold uppercase tracking-widest mt-1">Sin tarjeta de crédito</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </section>
 
             {/* Footer */}
-            <footer className="border-t border-white/10 mt-auto py-8">
-                <div className="max-w-7xl mx-auto px-8 flex flex-col md:flex-row items-center justify-between gap-4 text-sm text-white/40">
-                    <p>© {new Date().getFullYear()} NeuralAds360. Todos los derechos reservados.</p>
-                    <div className="flex items-center gap-6">
-                        <Link href="/privacidad" className="hover:text-white transition-colors">
-                            Política de Privacidad
-                        </Link>
-                        <Link href="/condiciones" className="hover:text-white transition-colors">
-                            Condiciones del Servicio
-                        </Link>
+            <footer className="bg-black py-24 border-t border-white/5">
+                <div className="max-w-7xl mx-auto px-6">
+                    <div className="flex flex-col md:flex-row justify-between items-center gap-12 border-b border-white/5 pb-16 mb-16">
+                        <div className="flex items-center gap-3">
+                            <img src="/logo.png" alt="CitaLiks - Asistente de Voz con Inteligencia Artificial para Reservas" className="w-10 h-10 object-contain logo-neon" />
+                            <span className="text-2xl font-black tracking-tighter text-white">CitaLiks</span>
+                        </div>
+                        <div className="flex flex-wrap justify-center gap-12 text-[10px] font-black uppercase tracking-[0.2em] text-white/60">
+                            <a href="#features" className="hover:text-primary transition-colors">Funciones</a>
+                            <a href="#pricing" className="hover:text-primary transition-colors">Precios</a>
+                            <Link href="/privacidad" className="hover:text-primary transition-colors">Privacidad</Link>
+                            <Link href="/condiciones" className="hover:text-primary transition-colors">Términos</Link>
+                        </div>
+                    </div>
+                    <div className="flex flex-col md:flex-row justify-between items-center text-xs font-bold text-white/40 uppercase tracking-widest">
+                        <p>© {new Date().getFullYear()} CitaLiks Solution. Todos los derechos reservados.</p>
+                        <div className="flex gap-10 mt-8 md:mt-0">
+                            <Link className="hover:text-primary transition-colors" href="/privacidad">Legal</Link>
+                            <Link className="hover:text-primary transition-colors" href="/condiciones">Cookies</Link>
+                        </div>
                     </div>
                 </div>
             </footer>
+
+            <SalesChatWidget />
         </main>
     );
 }
+

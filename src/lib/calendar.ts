@@ -480,6 +480,7 @@ export async function bookAppointment(params: {
     prismaOverride?: any;
     notes?: string;
     staffCalendarId?: string;
+    source?: string;
 }) {
     const db = params.prismaOverride || prisma;
     const durationMin = params.durationMin || 30;
@@ -497,7 +498,8 @@ export async function bookAppointment(params: {
             serviceName: params.serviceName,
             date: params.date,
             time: params.time.substring(0, 5),
-            status: "CONFIRMED"
+            status: "CONFIRMED",
+            source: params.source || "bot"
         }
     });
 
@@ -764,7 +766,7 @@ export async function listEvents(clientId: string, params?: any) {
             summary: `${apt.serviceName} - ${apt.callerName}`,
             start: { dateTime: startDateTime, timeZone: 'Europe/Madrid' },
             end: { dateTime: endDateTime, timeZone: 'Europe/Madrid' },
-            source: 'local',
+            source: apt.source || 'bot',
             metadata: {
                 callerName: apt.callerName,
                 callerPhone: apt.callerPhone,

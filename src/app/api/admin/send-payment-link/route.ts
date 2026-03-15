@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@clerk/nextjs/server";
 import { prisma } from "@/lib/db";
-import { createCheckoutSession, getPriceId } from "@/lib/stripe";
+import { createCheckoutSession } from "@/lib/stripe";
+import { getPlanById } from "@/config/pricing";
 import { sendEmail } from "@/lib/email";
 
 /**
@@ -27,23 +28,29 @@ export async function POST(req: NextRequest) {
 
   try {
     const appUrl = process.env.NEXT_PUBLIC_APP_URL || "https://www.citaliks.com";
-    const priceId = getPriceId(plan);
+    const selectedPlan = getPlanById(plan);
 
-    // Setup fee ONLY for monthly plan as per rules
-    const setupPriceId = plan === "monthly" ? process.env.STRIPE_PRICE_SETUP : undefined;
+    if (!selectedPlan) {
+      return NextResponse.json({ error: "Plan seleccionado no existe" }, { status: 400 });
+    }
+
+    if (!selectedPlan.stripePriceId) {
+      return NextResponse.json({ error: "El plan seleccionado no está configurado para pagos" }, { status: 500 });
+    }
 
     // 1. Create Checkout Session for the Prospect
     const checkoutUrl = await createCheckoutSession({
-      priceId,
-      plan,
+      priceId: selectedPlan.stripePriceId,
+      plan: selectedPlan.id,
       customerEmail: email,
-      setupPriceId: setupPriceId || undefined,
+      setupPriceId: selectedPlan.stripeSetupId, // Se omite si es null/undefined
       successUrl: `${appUrl}/onboarding?session_id={CHECKOUT_SESSION_ID}`,
       cancelUrl: `${appUrl}/pricing`,
       metadata: {
         prospect_email: email,
         prospect_name: name,
-        plan,
+        plan: selectedPlan.id,
+        commitment_months: selectedPlan.commitmentMonths.toString()
       }
     });
 
@@ -86,7 +93,7 @@ export async function POST(req: NextRequest) {
                     <div style="background-color: #f9fafb; padding: 15px; border-radius: 8px; margin: 20px 0; border: 1px solid #e5e7eb;">
                         <h3 style="margin-top: 0; font-size: 14px; text-transform: uppercase; color: #6b7280;">Resumen del Acuerdo</h3>
                         <ul style="font-size: 14px; color: #374151;">
-                            <li><strong>Asistente:</strong> Sofía (IA avanzada)</li>
+                            <li><strong>Asistente:</strong> Carolina (IA avanzada)</li>
                             <li><strong>Plan:</strong> ${plan}</li>
                             <li><strong>Soporte:</strong> Priority Support incluido</li>
                             <li><strong>Setup:</strong> ${plan === 'monthly' ? '899€ (Pago único inicial)' : 'Incluido en el plan'}</li>

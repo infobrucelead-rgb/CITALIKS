@@ -1290,13 +1290,13 @@ function StaffCalendar({ staffId, staffName }: { staffId: string, staffName: str
                                                 width: 'calc(100% - 4px)',
                                                 left: '2px'
                                             }}
-                                            className={`absolute p-2 rounded-lg text-[10px] font-bold border flex flex-col justify-center overflow-hidden transition-all hover:scale-[1.01] hover:brightness-125 hover:z-50 cursor-pointer shadow-lg ${event.source === 'local'
+                                            className={`absolute p-2 rounded-lg text-[10px] font-bold border flex flex-col justify-center overflow-hidden transition-all hover:scale-[1.01] hover:brightness-125 hover:z-50 cursor-pointer shadow-lg ${event.source === 'bot'
                                                 ? 'bg-emerald-600 border-emerald-400 text-white' // Bot = Verde
                                                 : 'bg-indigo-600 border-indigo-400 text-white'   // Google Manual = Azul
                                                 }`}
                                         >
                                             <div className="flex items-center gap-1 mb-0.5">
-                                                {event.source === 'local' ? <Brain size={8} /> : <Calendar size={8} />}
+                                                {event.source === 'bot' ? <Brain size={8} /> : <Calendar size={8} />}
                                                 <span className="truncate">{event.summary || '(Sin título)'}</span>
                                             </div>
                                             <span className="opacity-60 text-[8px] font-mono">
@@ -1332,7 +1332,7 @@ function StaffCalendar({ staffId, staffName }: { staffId: string, staffName: str
                                                 <div
                                                     key={idx}
                                                     onClick={() => setSelectedEvent(e)}
-                                                    className={`text-[8px] p-1 rounded-md truncate cursor-pointer transition-colors ${e.source === 'local'
+                                                    className={`text-[8px] p-1 rounded-md truncate cursor-pointer transition-colors ${e.source === 'bot'
                                                         ? 'bg-emerald-600/80 text-white hover:bg-emerald-500'
                                                         : 'bg-indigo-600/80 text-white hover:bg-indigo-500'
                                                         }`}
@@ -1364,18 +1364,18 @@ function StaffCalendar({ staffId, staffName }: { staffId: string, staffName: str
                                         <div
                                             key={idx}
                                             onClick={() => setSelectedEvent(e)}
-                                            className={`flex items-stretch p-3 rounded-2xl border cursor-pointer active:scale-95 transition-all shadow-md ${e.source === 'local' ? 'bg-emerald-950/20 border-emerald-900/50' : 'bg-indigo-950/20 border-indigo-900/50'}`}
+                                            className={`flex items-stretch p-3 rounded-2xl border cursor-pointer active:scale-95 transition-all shadow-md ${e.source === 'bot' ? 'bg-emerald-950/20 border-emerald-900/50' : 'bg-indigo-950/20 border-indigo-900/50'}`}
                                         >
                                             <div className="flex flex-col items-center justify-center w-14 shrink-0 border-r border-white/5 pr-3 mr-3">
                                                 <span className="text-xl font-black text-white">{date.getDate()}</span>
-                                                <span className={`text-[9px] uppercase font-black ${e.source === 'local' ? 'text-emerald-400' : 'text-indigo-400'}`}>{DAY_NAMES[date.getDay() === 0 ? 6 : date.getDay() - 1].substring(0, 3)}</span>
+                                                <span className={`text-[9px] uppercase font-black ${e.source === 'bot' ? 'text-emerald-400' : 'text-indigo-400'}`}>{DAY_NAMES[date.getDay() === 0 ? 6 : date.getDay() - 1].substring(0, 3)}</span>
                                             </div>
                                             <div className="flex-1 min-w-0 py-1">
                                                 <h4 className="text-sm font-bold text-white truncate">{e.summary || '(Sin título)'}</h4>
                                                 <div className="flex items-center gap-2 mt-1">
                                                     <span className="text-[10px] text-white/50 font-mono shrink-0">{date.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' })}</span>
-                                                    <div className={`w-1 h-1 rounded-full shrink-0 ${e.source === 'local' ? 'bg-emerald-500' : 'bg-indigo-500'}`} />
-                                                    <span className="text-[9px] uppercase tracking-widest text-white/40 truncate">{e.source === 'local' ? 'Cita automática' : 'Google Calendar'}</span>
+                                                    <div className={`w-1 h-1 rounded-full shrink-0 ${e.source === 'bot' ? 'bg-emerald-500' : 'bg-indigo-500'}`} />
+                                                    <span className="text-[9px] uppercase tracking-widest text-white/40 truncate">{e.source === 'bot' ? 'Cita automática' : 'Google Calendar'}</span>
                                                 </div>
                                             </div>
                                         </div>
@@ -1425,13 +1425,13 @@ function StaffCalendar({ staffId, staffName }: { staffId: string, staffName: str
                             </button>
 
                             <div className="flex items-center gap-4 mb-8">
-                                <div className={`p-4 rounded-2xl ${selectedEvent.source === 'local' ? 'bg-emerald-500/20 text-emerald-400' : 'bg-indigo-600/20 text-indigo-400'}`}>
-                                    {selectedEvent.source === 'local' ? <Brain size={24} /> : <Calendar size={24} />}
+                                <div className={`p-4 rounded-2xl ${selectedEvent.source === 'bot' ? 'bg-emerald-500/20 text-emerald-400' : 'bg-indigo-600/20 text-indigo-400'}`}>
+                                    {selectedEvent.source === 'bot' ? <Brain size={24} /> : <Calendar size={24} />}
                                 </div>
                                 <div>
                                     <h4 className="text-xl font-bold text-white mb-1">{selectedEvent.summary}</h4>
                                     <p className="text-xs text-white/40 uppercase font-black tracking-widest">
-                                        {selectedEvent.source === 'local' ? 'Cita del Bot' : 'Google Calendar'}
+                                        {selectedEvent.source === 'bot' ? 'Cita del Bot' : 'Google Calendar'}
                                     </p>
                                 </div>
                             </div>

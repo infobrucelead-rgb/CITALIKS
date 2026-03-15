@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@clerk/nextjs/server";
 import { prisma } from "@/lib/db";
-import { getOrCreateStripeCustomer, createCheckoutSession, getPriceId } from "@/lib/stripe";
+import { getOrCreateStripeCustomer, createCheckoutSession } from "@/lib/stripe";
+import { getPlanById } from "@/config/pricing";
 
 /**
  * POST /api/stripe/checkout
@@ -17,8 +18,9 @@ export async function POST(req: NextRequest) {
     const body = await req.json();
     const { plan, targetClientId } = body; // targetClientId only for admin use
 
-    if (!plan || !["monthly", "quarterly", "biannual", "annual"].includes(plan)) {
-        return NextResponse.json({ error: "Plan inválido. Usa: monthly, quarterly, biannual, annual" }, { status: 400 });
+    const selectedPlan = getPlanById(plan);
+    if (!plan || !selectedPlan) {
+        return NextResponse.json({ error: "Plan inválido. Usa: basic, business, premium" }, { status: 400 });
     }
 
     try {
@@ -56,16 +58,18 @@ export async function POST(req: NextRequest) {
         }
 
         const appUrl = process.env.NEXT_PUBLIC_APP_URL || "https://www.citaliks.com";
-        const priceId = getPriceId(plan);
-        // Only add setup fee for monthly plan
-        const setupPriceId = plan === "monthly" ? process.env.STRIPE_PRICE_SETUP : undefined;
+        
+        if (!selectedPlan.stripePriceId) {
+            return NextResponse.json({ error: "El plan seleccionado no está configurado para pagos" }, { status: 500 });
+        }
 
         const checkoutUrl = await createCheckoutSession({
             customerId: stripeCustomerId,
-            priceId,
-            plan,
+            priceId: selectedPlan.stripePriceId,
+            plan: selectedPlan.id,
             clientId: client.id,
-            setupPriceId: setupPriceId || undefined,
+            setupPriceId: selectedPlan.stripeSetupId,
+
             successUrl: `${appUrl}/dashboard?subscription=success&plan=${plan}`,
             cancelUrl: `${appUrl}/dashboard?subscription=cancelled`,
         });

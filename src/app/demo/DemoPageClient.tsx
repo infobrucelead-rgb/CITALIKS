@@ -2,6 +2,7 @@
 
 import React from "react";
 import Link from "next/link";
+import SalesChatWidget from "@/components/SalesChatWidget";
 
 type CallStatus = "idle" | "connecting" | "active" | "ended" | "error";
 
@@ -25,7 +26,10 @@ export default function DemoPageClient() {
 
         try {
             // Get access token from our API
-            const res = await fetch("/api/demo/start-call", { method: "POST" });
+            const res = await fetch("/api/demo/start-call", { 
+                method: "POST",
+                body: JSON.stringify({ agentType: "carolina" })
+            });
             const data = await res.json();
 
             if (!res.ok) {
@@ -90,30 +94,31 @@ export default function DemoPageClient() {
     return (
         <main className="min-h-screen bg-[#0a0a0f] text-white overflow-hidden">
             {/* Nav */}
-            <nav className="flex items-center justify-between px-6 py-5 max-w-6xl mx-auto">
-                <Link href="/" className="flex items-center gap-2">
-                    <div className="w-8 h-8 rounded-lg bg-violet-500 flex items-center justify-center text-sm font-bold">C</div>
-                    <span className="text-xl font-bold">Cita<span className="text-violet-400">Liks</span></span>
-                </Link>
-                <div className="flex items-center gap-3">
-                    <span className="text-white/40 text-sm hidden sm:block">¿Te ha convencido?</span>
-                    <Link href="/sign-up" className="px-4 py-2 rounded-xl bg-violet-600 hover:bg-violet-500 text-sm font-semibold transition-all">
-                        Contratar →
+            <nav className="fixed top-6 left-1/2 -translate-x-1/2 z-50 w-[90%] max-w-6xl">
+                <div className="glass-nav px-8 py-4 rounded-full flex items-center justify-between shadow-sm">
+                    <Link href="/" className="flex items-center gap-3 group">
+                        <img src="/logo.png" alt="CitaLiks Logo" className="w-10 h-10 object-contain logo-neon" />
+                        <span className="text-2xl font-black tracking-tighter text-primary">CitaLiks</span>
                     </Link>
+                    <div className="flex items-center gap-4">
+                        <Link href="https://calendly.com/citaliks/30min" target="_blank" className="bg-primary text-black px-6 py-2 rounded-full text-sm font-black glow-hover transition-all">
+                            Probar Gratis
+                        </Link>
+                    </div>
                 </div>
             </nav>
 
             {/* Hero */}
             <section className="max-w-4xl mx-auto px-6 pt-12 pb-8 text-center">
-                <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-violet-500/10 border border-violet-500/20 text-sm text-violet-300 mb-6">
-                    <span className="w-2 h-2 rounded-full bg-green-400 animate-pulse" />
+                <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 border border-primary/20 text-sm text-primary mb-6">
+                    <span className="w-2 h-2 rounded-full bg-primary animate-pulse" />
                     Demo en vivo — Sin registro
                 </div>
                 <h1 className="text-4xl md:text-5xl font-black mb-4 leading-tight">
-                    Habla con <span className="text-violet-400">Sofía</span>
+                    Habla con <span className="text-primary">Carolina</span>
                 </h1>
                 <p className="text-white/50 text-lg max-w-xl mx-auto">
-                    Sofía es la asistente de demostración de CitaLiks. Está simulando ser la recepción de una clínica. Prueba a reservar una cita.
+                    Carolina es la asistente de demostración de CitaLiks. Está simulando ser la recepción de una clínica. Prueba a reservar una cita.
                 </p>
             </section>
 
@@ -122,9 +127,9 @@ export default function DemoPageClient() {
                 <div className="rounded-3xl bg-white/[0.03] border border-white/10 p-8 text-center">
 
                     {/* Avatar */}
-                    <div className="relative inline-flex mb-6">
-                        <div className={`w-28 h-28 rounded-full bg-gradient-to-br from-violet-600 to-indigo-600 flex items-center justify-center text-5xl shadow-2xl shadow-violet-500/30 transition-all ${callStatus === "active" ? "scale-110" : ""}`}>
-                            🤖
+                    <div className="relative inline-flex mb-8">
+                        <div className={`w-32 h-32 rounded-[2.5rem] bg-surface-container border border-white/10 flex items-center justify-center text-5xl shadow-2xl shadow-primary/10 transition-all logo-neon ${callStatus === "active" ? "scale-110 rotate-3" : ""}`}>
+                            <img src="/logo.png" alt="CitaLiks - Carolina, el futuro de la atención al cliente por voz" className="w-20 h-20 object-contain" />
                         </div>
                         {callStatus === "active" && (
                             <span className="absolute -bottom-1 -right-1 w-8 h-8 bg-green-500 rounded-full border-4 border-[#0a0a0f] flex items-center justify-center">
@@ -136,15 +141,15 @@ export default function DemoPageClient() {
                         )}
                     </div>
 
-                    <h2 className="text-xl font-black mb-1">Sofía</h2>
-                    <p className="text-white/40 text-sm mb-6">Asistente de CitaLiks · Demo</p>
+                    <h2 className="text-xl font-black mb-1" style={{ textShadow: '0 1px 2px rgba(0,0,0,0.8)' }}>Carolina</h2>
+                    <p className="text-white/40 text-sm mb-6" style={{ textShadow: '0 1px 1px rgba(0,0,0,0.5)' }}>Asistente de CitaLiks · Demo</p>
 
                     {/* Status */}
                     {callStatus === "idle" && (
                         <p className="text-white/30 text-sm mb-6">Pulsa el botón para iniciar la llamada de demo</p>
                     )}
                     {callStatus === "connecting" && (
-                        <p className="text-violet-300 text-sm mb-6 animate-pulse">Conectando con Sofía...</p>
+                        <p className="text-primary text-sm mb-6 animate-pulse font-black uppercase tracking-widest">Conectando con Carolina...</p>
                     )}
                     {callStatus === "active" && (
                         <div className="mb-6">
@@ -160,7 +165,7 @@ export default function DemoPageClient() {
                     {callStatus === "ended" && (
                         <div className="mb-6">
                             <p className="text-white/50 text-sm">Llamada finalizada · {formatDuration(callDuration)}</p>
-                            <p className="text-violet-300 text-sm mt-1">¿Qué te ha parecido?</p>
+                            <p className="text-primary text-sm mt-1 font-bold uppercase tracking-widest">¿Qué te ha parecido?</p>
                         </div>
                     )}
                     {callStatus === "error" && (
@@ -171,22 +176,22 @@ export default function DemoPageClient() {
                     {(callStatus === "idle" || callStatus === "error") && (
                         <button
                             onClick={startCall}
-                            className="w-full py-4 rounded-2xl bg-violet-600 hover:bg-violet-500 font-bold text-lg transition-all hover:shadow-xl hover:shadow-violet-500/30 flex items-center justify-center gap-3"
+                            className="w-full py-4 rounded-2xl bg-primary text-black hover:bg-green-400 font-bold text-lg transition-all hover:shadow-xl hover:shadow-primary/30 flex items-center justify-center gap-3 active:scale-95"
                         >
                             <span className="text-2xl">📞</span>
-                            Llamar a Sofía
+                            Llamar a Carolina
                         </button>
                     )}
                     {callStatus === "connecting" && (
-                        <button disabled className="w-full py-4 rounded-2xl bg-violet-600/50 font-bold text-lg cursor-not-allowed flex items-center justify-center gap-3">
-                            <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                        <button disabled className="w-full py-4 rounded-2xl bg-primary/20 text-primary border border-primary/30 font-black text-lg cursor-not-allowed flex items-center justify-center gap-3">
+                            <div className="w-5 h-5 border-2 border-primary border-t-transparent rounded-full animate-spin" />
                             Conectando...
                         </button>
                     )}
                     {callStatus === "active" && (
                         <button
                             onClick={endCall}
-                            className="w-full py-4 rounded-2xl bg-red-600 hover:bg-red-500 font-bold text-lg transition-all flex items-center justify-center gap-3"
+                            className="w-full py-4 rounded-2xl bg-red-600/20 text-red-400 border border-red-500/30 hover:bg-red-600 hover:text-white font-bold text-lg transition-all flex items-center justify-center gap-3 active:scale-95"
                         >
                             <span className="text-2xl">📵</span>
                             Colgar
@@ -200,8 +205,8 @@ export default function DemoPageClient() {
                             >
                                 Llamar de nuevo
                             </button>
-                            <Link href="/sign-up"
-                                className="w-full py-3 rounded-2xl bg-violet-600 hover:bg-violet-500 font-bold transition-all flex items-center justify-center gap-2"
+                            <Link href="https://calendly.com/citaliks/30min" target="_blank"
+                                className="w-full py-3 rounded-2xl bg-primary text-black font-black uppercase tracking-widest text-xs transition-all flex items-center justify-center gap-2 glow-hover"
                             >
                                 Quiero esto para mi negocio →
                             </Link>
@@ -246,16 +251,18 @@ export default function DemoPageClient() {
 
             {/* Final CTA */}
             <section className="max-w-2xl mx-auto px-6 pb-20 text-center">
-                <div className="rounded-3xl bg-gradient-to-br from-violet-600/20 to-indigo-600/10 border border-violet-500/20 p-10">
-                    <h2 className="text-2xl font-black mb-3">¿Listo para tener tu propio asistente?</h2>
-                    <p className="text-white/50 text-sm mb-6">Configuración en 5 minutos. Tu asistente personalizado con el nombre de tu negocio.</p>
-                    <Link href="/sign-up"
-                        className="inline-block px-8 py-4 rounded-2xl bg-violet-600 hover:bg-violet-500 font-bold text-lg transition-all hover:shadow-xl hover:shadow-violet-500/30"
+                <div className="rounded-[3rem] bg-surface-container border border-white/10 p-12 relief-premium">
+                    <h2 className="text-3xl font-black mb-3 text-white uppercase italic tracking-tighter">¿Listo para tener tu propio asistente?</h2>
+                    <p className="text-white/50 text-sm mb-10 max-w-md mx-auto">Configuración asistida en 5 minutos. Tu asistente personalizado con el nombre de tu negocio.</p>
+                    <Link href="https://calendly.com/citaliks/30min" target="_blank"
+                        className="inline-block px-12 py-5 rounded-2xl bg-primary text-black font-black text-xl transition-all glow-hover uppercase tracking-widest active:scale-95"
                     >
                         Empezar ahora →
                     </Link>
                 </div>
             </section>
+            
+            <SalesChatWidget />
         </main>
     );
 }

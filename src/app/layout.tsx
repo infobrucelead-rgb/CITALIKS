@@ -4,9 +4,9 @@ import { esES } from "@clerk/localizations";
 import "./globals.css";
 
 export const metadata: Metadata = {
-    title: "CitaLiks — Asistente de voz con IA para tu negocio",
+    title: "CitaLiks: El Asistente de Voz con IA — Automatiza tus Citas 24/7",
     description:
-        "Gestiona tu agenda automáticamente con un asistente de voz en español. Recibe llamadas, crea y cancela citas 24/7.",
+        "Ahorra tiempo con CitaLiks, el mejor asistente de voz con IA en español. Gestiona llamadas, agenda citas automáticamente y mejora la atención al cliente de tu negocio 24/7.",
     verification: {
         google: "HQLjY9WbHPOvRP_NTUezf-rxLUV9PiMm5foamCT_M3g",
     },
@@ -59,6 +59,9 @@ export default function RootLayout({
             }}
         >
             <html lang="es" suppressHydrationWarning>
+                <head>
+                    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet" />
+                </head>
                 <body suppressHydrationWarning>{children}</body>
             </html>
         </ClerkProvider>

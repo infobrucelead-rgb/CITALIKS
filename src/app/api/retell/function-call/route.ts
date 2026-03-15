@@ -359,6 +359,14 @@ export async function POST(req: NextRequest) {
                     break;
                 }
 
+                if (num_guests > (masterClient.maxAutoGuests || 6)) {
+                    result = {
+                        confirmed: false,
+                        error: `Lo siento, para grupos de más de ${masterClient.maxAutoGuests || 6} personas necesitamos gestionar la reserva manualmente. ¿Quieres que te pase con el restaurante o prefieres dejarnos tus datos y que te llamemos?`
+                    };
+                    break;
+                }
+
                 const resPhone = callerPhoneFromRetell ?? caller_phone ?? null;
 
                 const bookingRes = await bookRestaurantTable({
@@ -790,6 +798,31 @@ export async function POST(req: NextRequest) {
                     functionName: "notificar_equipo",
                     inputArgs: args,
                     resultJson: { notified: !!adminPhone, adminPhone: adminPhone ? "***" : null },
+                    durationMs: Date.now() - startMs,
+                    webhookUrl,
+                });
+                break;
+            }
+
+            case "get_current_time": {
+                const now = new Date();
+                const serverTime = {
+                    date: now.toLocaleDateString("es-ES", { year: "numeric", month: "2-digit", day: "2-digit", timeZone: "Europe/Madrid" }).split("/").reverse().join("-"),
+                    time: now.toLocaleTimeString("es-ES", { hour: "2-digit", minute: "2-digit", hour12: false, timeZone: "Europe/Madrid" }),
+                    weekday: now.toLocaleDateString("es-ES", { weekday: "long", timeZone: "Europe/Madrid" }),
+                    readable: now.toLocaleDateString("es-ES", { weekday: "long", day: "numeric", month: "long", year: "numeric", timeZone: "Europe/Madrid" })
+                };
+
+                result = {
+                    ...serverTime,
+                    message: `Hoy es ${serverTime.readable} y son las ${serverTime.time} en Madrid.`
+                };
+
+                await saveBotLog({
+                    clientId,
+                    functionName: "get_current_time",
+                    inputArgs: args,
+                    resultJson: result,
                     durationMs: Date.now() - startMs,
                     webhookUrl,
                 });

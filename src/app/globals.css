@@ -20,13 +20,107 @@
     --muted-foreground: 240 5% 55%;
     --accent: 221 83% 53%;
     --accent-foreground: 0 0% 98%;
-    --destructive: 0 72% 51%;
-    --destructive-foreground: 0 0% 98%;
+    /* Tone adjustment for a more premium, subtle feel (Tenuous) */
+  --md-sys-color-surface: 0 0% 98%; /* Very light grey/cream */
+  --md-sys-color-on-surface: 0 0% 12%;
+  --md-sys-color-surface-container-low: 0 0% 96%;
+  --md-sys-color-surface-container: 0 0% 94%;
+  --md-sys-color-surface-container-high: 0 0% 92%;
+  --md-sys-color-surface-container-highest: 0 0% 90%;
     --border: 240 6% 16%;
     --input: 240 6% 16%;
     --ring: 175 95% 36%;
     --radius: 0.75rem;
+
+    /* Unified Brand Palette: #20B95F */
+    --primary: 145 70% 43%; /* #20B95F */
+    --primary-hex: #20B95F;
+    --on-primary: #000000;
+    --primary-container: #131b2e;
+    --on-primary-container: #20B95F;
+    
+    --surface: #0a0a0c;
+    --on-surface: #fcfcfc;
+    --surface-container: #141416;
+    --surface-container-highest: #1c1c1f;
+    --outline: #2d2d30;
+    
+    --radius: 1rem;
   }
+}
+
+@layer utilities {
+  .glass-nav {
+    background: rgba(255, 255, 255, 0.7);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+  }
+  /* Tone adjustment for a more premium, subtle feel (Tenuous) */
+  .text-hover-green:hover {
+    color: var(--primary-hex) !important;
+  }
+
+.relief-premium {
+    box-shadow: 
+        0 20px 50px rgba(0, 0, 0, 0.5),
+        inset 0 1px 1px rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.shadow-bespoke {
+    box-shadow: 0 40px 100px -20px rgba(0, 0, 0, 0.8);
+}
+
+.hover-green-text:hover * {
+    color: var(--primary-hex) !important;
+    transition: color 0.3s ease;
+}
+
+/* Premium Slider styling */
+input[type=range].premium-slider {
+    -webkit-appearance: none;
+    width: 100%;
+    background: transparent;
+}
+
+input[type=range].premium-slider::-webkit-slider-runnable-track {
+    width: 100%;
+    height: 8px;
+    background: #1e1e20;
+    border-radius: 10px;
+}
+
+input[type=range].premium-slider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    height: 24px;
+    width: 24px;
+    border-radius: 50%;
+    background: var(--primary-hex);
+    cursor: pointer;
+    margin-top: -8px;
+    box-shadow: 0 0 20px rgba(32, 185, 95, 0.4);
+    border: 3px solid #0a0a0c;
+}
+
+  /* Stitch Design System Utilities */
+  .bg-surface { background-color: var(--surface); }
+  .text-on-surface { color: var(--on-surface); }
+  .text-on-surface-variant { color: var(--on-surface-variant); }
+  .bg-surface-container-low { background-color: var(--surface-container-low); }
+  .bg-surface-container-high { background-color: var(--surface-container-high); }
+  .bg-surface-container-highest { background-color: var(--surface-container-highest); }
+  .bg-surface-container-lowest { background-color: var(--surface-container-lowest); }
+  .bg-primary-container { background-color: var(--primary-container); }
+  .text-on-primary-container { color: var(--on-primary-container); }
+  .bg-tertiary-fixed { background-color: var(--tertiary-fixed); }
+  .text-on-tertiary-fixed { color: var(--on-tertiary-fixed); }
+  .bg-secondary-container { background-color: var(--secondary-container); }
+  .text-on-secondary-fixed { color: var(--on-secondary-fixed); }
+  .text-on-tertiary-container { color: var(--on-tertiary-container); }
+  .text-error { color: var(--error); }
+  .bg-error-container { background-color: var(--error-container); }
+  .text-on-error-container { color: var(--on-error-container); }
+  .outline-variant { border-color: var(--outline-variant); }
 }
 
 @layer base {
@@ -106,6 +200,28 @@
 .glow-blue {
   box-shadow: 0 0 40px rgba(5, 178, 164, 0.25);
 }
+
+/* Mobile Native-Like Experience */
+@media (max-width: 768px) {
+  * {
+    -webkit-tap-highlight-color: transparent;
+  }
+  
+  .glass-nav {
+    bottom: 24px;
+    top: auto;
+    width: calc(100% - 32px);
+    margin: 0 16px;
+  }
+
+  body {
+      padding-bottom: env(safe-area-inset-bottom);
+  }
+}
+
+.bg-primary { background-color: var(--primary-hex); }
+.text-primary { color: var(--primary-hex); }
+.border-primary { border-color: var(--primary-hex); }
 
 /* Animated gradient background */
 .bg-gradient-animated {

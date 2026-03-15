@@ -1,149 +1,172 @@
 import React from "react";
 import Link from "next/link";
-import { FileText, ArrowLeft, Mail, Gavel, ShieldCheck, Scale, ScrollText, UserCheck, AlertCircle } from "lucide-react";
+import { Gavel, Mic, ShieldCheck, CreditCard, AlertTriangle, SquarePen, Mail } from "lucide-react";
 
 export default function TermsOfServicePage() {
     return (
-        <div className="min-h-screen bg-[#0a0a0f] text-white font-sans selection:bg-violet-500/30">
-            {/* Background Decorations */}
-            <div className="fixed inset-0 overflow-hidden pointer-events-none">
-                <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-violet-600/10 rounded-full blur-[120px]" />
-                <div className="absolute bottom-[10%] right-[-5%] w-[30%] h-[30%] bg-blue-600/10 rounded-full blur-[100px]" />
-            </div>
-
-            <div className="relative max-w-4xl mx-auto px-6 py-12 md:py-20">
-                {/* Header Navigation */}
-                <nav className="mb-12 animate-fade-in">
-                    <Link
-                        href="/"
-                        className="inline-flex items-center gap-2 text-white/40 hover:text-white transition-colors group text-sm font-medium"
-                    >
-                        <ArrowLeft size={16} className="group-hover:-translate-x-1 transition-transform" />
-                        Volver al inicio
+        <main className="bg-surface text-on-surface antialiased overflow-x-hidden font-body selection:bg-tertiary-fixed selection:text-on-tertiary-fixed">
+            {/* Top Navigation */}
+            <nav className="fixed top-0 w-full z-50 glass-nav border-b border-outline-variant border-opacity-10">
+                <div className="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
+                    <Link href="/" className="flex items-center gap-2">
+                        <img src="/logo.png" alt="CitaLiks Logo" className="w-8 h-8 object-contain" />
+                        <span className="text-2xl font-bold tracking-tighter text-primary">CitaLiks</span>
                     </Link>
-                </nav>
-
-                {/* Hero Section */}
-                <header className="mb-16 animate-fade-in">
-                    <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-violet-500/10 border border-violet-500/20 text-violet-400 text-xs font-bold uppercase tracking-widest mb-6">
-                        <FileText size={12} /> Legal & Términos
+                    <div className="hidden md:flex items-center gap-8">
+                        <Link href="/#features" className="text-sm font-medium hover:text-primary transition-colors">Funcionalidades</Link>
+                        <Link href="/#pricing" className="text-sm font-medium hover:text-primary transition-colors">Precios</Link>
                     </div>
-                    <h1 className="text-4xl md:text-6xl font-black tracking-tight mb-6">Condiciones del <span className="text-transparent bg-clip-text bg-gradient-to-r from-violet-400 to-blue-400">Servicio</span></h1>
-                    <p className="text-white/50 text-lg leading-relaxed max-w-2xl">
-                        Bienvenido a CitaLiks. Al utilizar nuestra plataforma, aceptas estas condiciones. Por favor, léelas detenidamente para entender tus derechos y responsabilidades.
+                    <Link href="/sign-up" className="bg-primary text-on-primary px-6 py-2.5 rounded-full text-sm font-semibold hover:shadow-lg transition-all">
+                        Probar Gratis
+                    </Link>
+                </div>
+            </nav>
+
+            <main className="pt-32 pb-24 px-6">
+                {/* Hero Section / Header */}
+                <header className="max-w-4xl mx-auto mb-20 text-center md:text-left">
+                    <div className="inline-block px-4 py-1 rounded-full bg-secondary-container text-on-secondary-fixed text-[10px] font-bold uppercase tracking-[0.2em] mb-6">
+                        Legal & Cumplimiento
+                    </div>
+                    <h1 className="text-5xl md:text-7xl font-bold tracking-tight text-on-surface mb-8">
+                        Términos de Servicio
+                    </h1>
+                    <p className="text-lg text-on-surface-variant leading-relaxed max-w-2xl mx-auto md:mx-0">
+                        Última actualización: Marzo 2026. Estos términos rigen el uso de nuestra plataforma de inteligencia artificial por voz para la gestión de citas.
                     </p>
                 </header>
 
-                {/* Content Sections */}
-                <div className="space-y-12 animate-fade-in delay-200">
-
-                    {/* Section 1: Aceptación */}
-                    <section className="glass rounded-[2rem] p-8 md:p-10 border-white/5 relative overflow-hidden group hover:border-violet-500/20 transition-all">
-                        <div className="flex items-start gap-6">
-                            <div className="p-4 rounded-2xl bg-violet-600/10 text-violet-400">
-                                <Gavel size={24} />
-                            </div>
-                            <div className="space-y-4">
-                                <h2 className="text-xl font-bold">1. Aceptación de los Términos</h2>
-                                <div className="space-y-4 text-white/60 text-sm leading-relaxed">
-                                    <p>
-                                        Al acceder o utilizar los servicios de CitaLiks (en adelante, "el Servicio"), proporcionado por Neural 360 SL, aceptas quedar vinculado por estos términos y condiciones. Si no estás de acuerdo con alguna parte de los términos, no podrás acceder al Servicio.
-                                    </p>
-                                </div>
-                            </div>
+                {/* Content Layout */}
+                <div className="max-w-5xl mx-auto grid grid-cols-1 md:grid-cols-12 gap-8">
+                    {/* Sticky Navigation Side */}
+                    <aside className="md:col-span-3 hidden md:block">
+                        <div className="sticky top-32 space-y-4 text-sm font-medium">
+                            <nav className="flex flex-col gap-2 border-l border-outline-variant">
+                                <a className="pl-4 py-1 text-on-surface-variant hover:text-primary hover:border-l-2 hover:border-tertiary-fixed transition-all" href="#aceptacion">1. Aceptación</a>
+                                <a className="pl-4 py-1 text-on-surface-variant hover:text-primary hover:border-l-2 hover:border-tertiary-fixed transition-all" href="#uso">2. Uso del Servicio</a>
+                                <a className="pl-4 py-1 text-on-surface-variant hover:text-primary hover:border-l-2 hover:border-tertiary-fixed transition-all" href="#propiedad">3. Propiedad</a>
+                                <a className="pl-4 py-1 text-on-surface-variant hover:text-primary hover:border-l-2 hover:border-tertiary-fixed transition-all" href="#pagos">4. Pagos</a>
+                                <a className="pl-4 py-1 text-on-surface-variant hover:text-primary hover:border-l-2 hover:border-tertiary-fixed transition-all" href="#responsabilidad">5. Responsabilidad</a>
+                            </nav>
                         </div>
-                    </section>
-
-                    {/* Section 2: Uso del Servicio */}
-                    <section className="glass rounded-[2rem] p-8 md:p-10 border-white/5 relative overflow-hidden group hover:border-blue-500/20 transition-all">
-                        <div className="flex items-start gap-6">
-                            <div className="p-4 rounded-2xl bg-blue-600/10 text-blue-400">
-                                <UserCheck size={24} />
-                            </div>
-                            <div className="space-y-6">
-                                <h2 className="text-xl font-bold">2. Descripción y Uso del Servicio</h2>
-                                <p className="text-white/60 text-sm leading-relaxed">
-                                    CitaLiks ofrece un asistente de voz basado en IA para la gestión de agendas y atención al cliente. El usuario se compromete a:
-                                </p>
-
-                                <div className="grid md:grid-cols-2 gap-6">
-                                    <div className="space-y-3">
-                                        <h3 className="text-xs uppercase font-black tracking-widest text-white/30">Responsabilidades</h3>
-                                        <ul className="space-y-2 text-xs text-white/60 list-disc pl-4">
-                                            <li>Mantener la confidencialidad de sus credenciales</li>
-                                            <li>Asegurar que el contenido del asistente sea legal</li>
-                                            <li>No utilizar el servicio para spam o fines abusivos</li>
-                                            <li>Cumplir con las leyes de protección de datos locales</li>
-                                        </ul>
-                                    </div>
-                                    <div className="space-y-3">
-                                        <h3 className="text-xs uppercase font-black tracking-widest text-white/30">Nuestras garantías</h3>
-                                        <ul className="space-y-2 text-xs text-white/60 list-disc pl-4">
-                                            <li>Disponibilidad del 99% del servicio</li>
-                                            <li>Actualizaciones de seguridad constantes</li>
-                                            <li>Soporte técnico según plan contratado</li>
-                                        </ul>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </section>
-
-                    {/* Section 3-4: Property and Cancellation */}
-                    <div className="grid md:grid-cols-2 gap-8">
-                        <div className="glass rounded-[2rem] p-8 border-white/5 space-y-4">
-                            <div className="p-3 rounded-xl bg-orange-500/10 text-orange-400 w-fit">
-                                <Scale size={20} />
-                            </div>
-                            <h2 className="text-lg font-bold">Propiedad Intelectual</h2>
-                            <p className="text-white/50 text-xs leading-relaxed">
-                                Todo el software, algoritmos y diseños de CitaLiks son propiedad exclusiva de Neural 360 SL. El uso del servicio no otorga propiedad sobre el código o la tecnología subyacente.
-                            </p>
-                        </div>
-                        <div className="glass rounded-[2rem] p-8 border-white/5 space-y-4">
-                            <div className="p-3 rounded-xl bg-emerald-500/10 text-emerald-400 w-fit">
-                                <ShieldCheck size={20} />
-                            </div>
-                            <h2 className="text-lg font-bold">Cancelación y Pagos</h2>
-                            <p className="text-white/50 text-xs leading-relaxed">
-                                Los pagos son recurrentes según el plan elegido. Puedes cancelar tu suscripción en cualquier momento, finalizando el servicio al terminar el periodo ya abonado.
-                            </p>
-                        </div>
-                    </div>
+                    </aside>
 
                     {/* Main Text Content */}
-                    <article className="prose prose-invert prose-sm max-w-none glass rounded-[2.5rem] p-8 md:p-12 border-white/5 space-y-8">
-                        <div className="space-y-4">
-                            <h3 className="text-white font-bold flex items-center gap-2"><ScrollText size={16} className="text-violet-400" /> Limitación de Responsabilidad</h3>
-                            <p className="text-white/50 leading-relaxed">
-                                Neural 360 SL no se hace responsable de errores en la programación de citas causados por mala configuración del usuario, fallos en servicios de terceros (Google, telefonía) o malentendidos en la interpretación de la voz por parte de la IA, aunque trabajamos constantemente para minimizar estos casos.
-                            </p>
+                    <div className="md:col-span-9 space-y-16">
+                        {/* Section 1 */}
+                        <section className="scroll-mt-32" id="aceptacion">
+                            <div className="bg-surface-container-lowest p-8 md:p-12 rounded-xl shadow-sm border border-outline-variant border-opacity-5">
+                                <div className="flex items-center gap-4 mb-6">
+                                    <div className="w-10 h-10 rounded-lg bg-primary-container flex items-center justify-center text-tertiary-fixed">
+                                        <Gavel size={20} />
+                                    </div>
+                                    <h2 className="text-2xl font-bold tracking-tight">1. Aceptación de los Términos</h2>
+                                </div>
+                                <div className="space-y-4 text-on-surface-variant leading-relaxed">
+                                    <p>Al acceder o utilizar los servicios de CitaLiks, usted acepta estar legalmente vinculado por estos Términos de Servicio. Si no está de acuerdo con alguna parte, no podrá acceder al servicio.</p>
+                                    <p>Este acuerdo constituye un contrato vinculante entre usted y Neural 360 SL sobre el uso de nuestra tecnología de agentes de voz.</p>
+                                </div>
+                            </div>
+                        </section>
+
+                        {/* Section 2 */}
+                        <section className="scroll-mt-32" id="uso">
+                            <div className="bg-surface-container-low p-8 md:p-12 rounded-xl">
+                                <div className="flex items-center gap-4 mb-6">
+                                    <div className="w-10 h-10 rounded-lg bg-primary-container flex items-center justify-center text-tertiary-fixed">
+                                        <Mic size={20} />
+                                    </div>
+                                    <h2 className="text-2xl font-bold tracking-tight">2. Descripción y Uso del Servicio</h2>
+                                </div>
+                                <div className="space-y-4 text-on-surface-variant leading-relaxed text-sm">
+                                    <p>CitaLiks proporciona una plataforma que permite a los negocios gestionar sus agendas mediante IA. El uso del servicio implica:</p>
+                                    <ul className="list-disc pl-5 space-y-2">
+                                        <li>No utilizar la tecnología para fines fraudulentos o acoso.</li>
+                                        <li>Asegurar que el contenido del asistente cumple con las leyes locales.</li>
+                                        <li>Mantener la seguridad de su cuenta y credenciales.</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </section>
+
+                        {/* Section 3 */}
+                        <section className="scroll-mt-32" id="propiedad">
+                            <div className="bg-surface-container-lowest p-8 md:p-12 rounded-xl border border-outline-variant border-opacity-5">
+                                <div className="flex items-center gap-4 mb-6">
+                                    <div className="w-10 h-10 rounded-lg bg-primary-container flex items-center justify-center text-tertiary-fixed">
+                                        <ShieldCheck size={20} />
+                                    </div>
+                                    <h2 className="text-2xl font-bold tracking-tight">3. Propiedad Intelectual</h2>
+                                </div>
+                                <div className="space-y-4 text-on-surface-variant leading-relaxed">
+                                    <p>Neural 360 SL conserva todos los derechos sobre la plataforma, los algoritmos y el software. Usted conserva la propiedad de los datos de su agenda y configuraciones personalizadas.</p>
+                                </div>
+                            </div>
+                        </section>
+
+                        {/* Section 4 & 5 Bento Row */}
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                            <div className="bg-primary-container p-8 rounded-xl text-white" id="pagos">
+                                <CreditCard className="text-tertiary-fixed mb-4" />
+                                <h3 className="text-xl font-bold mb-4">4. Cancelación y Pagos</h3>
+                                <p className="text-sm opacity-80 leading-relaxed">
+                                    Las suscripciones se facturan según el plan elegido. Puede cancelar en cualquier momento, finalizando el servicio al terminar el periodo ya abonado.
+                                </p>
+                            </div>
+                            <div className="bg-surface-container-high p-8 rounded-xl" id="responsabilidad">
+                                <AlertTriangle className="text-primary mb-4" />
+                                <h3 className="text-xl font-bold mb-4 text-primary">5. Responsabilidad</h3>
+                                <p className="text-sm text-on-surface-variant leading-relaxed">
+                                    No somos responsables de fallos en servicios de terceros o interpretaciones erróneas de la IA, aunque trabajamos para minimizarlos.
+                                </p>
+                            </div>
                         </div>
 
-                        <div className="space-y-4">
-                            <h3 className="text-white font-bold flex items-center gap-2"><AlertCircle size={16} className="text-orange-400" /> Modificaciones de los Términos</h3>
-                            <p className="text-white/50 leading-relaxed">
-                                Nos reservamos el derecho de modificar estos términos en cualquier momento. Notificaremos cambios significativos a través de la plataforma o por correo electrónico. El uso continuado tras dichas modificaciones implica la aceptación de los nuevos términos.
-                            </p>
-                        </div>
-                    </article>
+                        {/* Section 6 */}
+                        <section className="scroll-mt-32" id="modificaciones">
+                            <div className="bg-surface-container-lowest p-8 md:p-12 rounded-xl border border-outline-variant border-opacity-5">
+                                <div className="flex items-center gap-4 mb-6">
+                                    <div className="w-10 h-10 rounded-lg bg-primary-container flex items-center justify-center text-tertiary-fixed">
+                                        <SquarePen size={24} />
+                                    </div>
+                                    <h2 className="text-2xl font-bold tracking-tight">6. Modificaciones</h2>
+                                </div>
+                                <p className="text-on-surface-variant leading-relaxed text-sm">
+                                    Nos reservamos el derecho de modificar estos términos. Notificaremos cambios significativos a través de la plataforma.
+                                </p>
+                            </div>
+                        </section>
 
-                    {/* Footer Contact */}
-                    <footer className="text-center py-12">
-                        <p className="text-white/30 text-xs uppercase font-black tracking-widest mb-6">Contacto Legal</p>
-                        <a
-                            href="mailto:info@neuralads360.com"
-                            className="inline-flex items-center gap-3 px-8 py-4 rounded-2xl bg-white/5 border border-white/10 hover:bg-white/10 transition-all group lg:text-xl font-bold"
-                        >
-                            <Mail size={20} className="text-violet-400 group-hover:scale-110 transition-transform" />
-                            info@neuralads360.com
-                        </a>
-                        <p className="text-white/20 text-[10px] mt-12 italic">
-                            Última actualización: Marzo 2026
-                        </p>
-                    </footer>
+                        {/* Contact CTA */}
+                        <div className="bg-tertiary-fixed p-1 rounded-xl">
+                            <div className="bg-white p-8 md:p-12 rounded-lg flex flex-col items-center text-center justify-between gap-8">
+                                <div className="max-w-xl mx-auto">
+                                    <h3 className="text-2xl font-bold mb-2">¿Tiene dudas legales?</h3>
+                                    <p className="text-on-surface-variant">Nuestro equipo está disponible para resolver cualquier consulta sobre nuestros términos y condiciones.</p>
+                                </div>
+                                <a className="bg-primary text-black px-12 py-5 rounded-full font-black uppercase tracking-widest flex items-center gap-3 hover:scale-105 transition-transform shadow-[0_20px_40px_rgba(32,185,95,0.3)] glow-hover" href="mailto:admin@citaliks.com">
+                                    <Mail size={24} />
+                                    CONTACTA
+                                </a>
+                            </div>
+                        </div>
+                    </div>
                 </div>
-            </div>
-        </div>
+            </main>
+
+            {/* Footer */}
+            <footer className="bg-surface-container-lowest border-t border-outline-variant border-opacity-20 py-20 px-6">
+                <div className="max-w-7xl mx-auto">
+                    <div className="flex flex-col md:flex-row justify-between items-center pb-12 border-b border-outline-variant border-opacity-10 gap-6">
+                        <span className="text-2xl font-bold tracking-tighter italic">CitaLiks</span>
+                        <div className="flex gap-8 text-sm font-medium">
+                            <Link className="text-on-surface-variant hover:text-primary" href="/privacidad">Privacidad</Link>
+                            <Link className="text-primary font-bold underline decoration-tertiary-fixed decoration-2 underline-offset-4" href="/condiciones">Términos</Link>
+                        </div>
+                    </div>
+                    <p className="mt-12 text-center text-xs text-on-surface-variant opacity-60">© {new Date().getFullYear()} Neural 360 SL. Todos los derechos reservados.</p>
+                </div>
+            </footer>
+        </main>
     );
 }

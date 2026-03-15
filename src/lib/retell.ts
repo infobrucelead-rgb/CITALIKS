@@ -78,19 +78,11 @@ function generateSystemPrompt(config: AgentConfig): string {
         })
         .join("\n") || "- Equipo disponible";
 
-    const now = new Date();
-    const dateStr = now.toLocaleDateString("es-ES", {
-        weekday: "long",
-        day: "numeric",
-        month: "long",
-        year: "numeric",
-        timeZone: "Europe/Madrid",
-    });
-    const timeStr = now.toLocaleTimeString("es-ES", {
-        hour: "2-digit",
-        minute: "2-digit",
-        timeZone: "Europe/Madrid",
-    });
+    // Use placeholders for real-time temporal context. 
+    // These will be replaced by Retell dynamic variables at call start 
+    // or referenced via the get_current_time tool.
+    const dateStr = "{{current_date_es}}";
+    const timeStr = "{{current_time_es}}";
 
     // =========================================================================
     // PLANTILLA BASE — CITALIKS VOICE AGENT v2 (hardened)
@@ -102,8 +94,8 @@ ${toneDesc}
 
 ## FECHA Y HORA ACTUAL (Referencia Obligatoria)
 - Hoy es: ${dateStr}
-- Hora actual en Madrid: ${timeStr}
-Calcula cualquier fecha relativa (como "mañana", "lunes", o "el próximo viernes") basándote EXCLUSIVAMENTE en el día de hoy arriba indicado.
+- Hora actual: ${timeStr}
+Calcula cualquier fecha relativa (como "mañana", "lunes", o "el próximo viernes") basándote EXCLUSIVAMENTE en el tiempo real. Si no tienes la fecha clara, usa la función 'get_current_time'.
 
 ## SALUDO — SIEMPRE IGUAL, SIN EXCEPCIÓN
 Al inicio de CADA llamada di exactamente:
@@ -380,6 +372,21 @@ async function createRetellLLM(
         },
         {
             type: "custom" as const,
+            name: "get_current_time",
+            description: "Obtiene la fecha y hora exacta actual del servidor. Úsala si el cliente pregunta la hora, o si necesitas confirmar el día de la semana actual para calcular fechas de reserva.",
+            url: `${baseUrl.replace(/\/$/, '')}/api/retell/function-call?name=get_current_time`,
+            method: "POST" as const,
+            timeout_ms: 5000,
+            parameters: {
+                type: "object" as const,
+                properties: {
+                    client_id: { type: "string" as const, description: "ID del cliente/negocio" },
+                },
+                required: [],
+            },
+        },
+        {
+            type: "custom" as const,
             name: "notificar_equipo",
             description: "Usa esta función cuando el cliente quiera hablar con una persona real, solicite información de precios o contratación, o cuando detectes una oportunidad de venta de alta prioridad. Envió una alerta urgente al equipo humano.",
             url: `${baseUrl.replace(/\/$/, '')}/api/retell/function-call?name=notificar_equipo`,
@@ -545,6 +552,38 @@ export async function updateRetellAgent(
                     service_name: { type: "string" as const, description: "Nombre del servicio (mismo que la cita original)" },
                 },
                 required: ["new_date", "new_time"],
+            },
+        },
+        {
+            type: "custom" as const,
+            name: "get_current_time",
+            description: "Obtiene la fecha y hora exacta actual del servidor. Úsala si el cliente pregunta la hora, o si necesitas confirmar el día de la semana actual para calcular fechas de reserva.",
+            url: `${baseUrl.replace(/\/$/, '')}/api/retell/function-call?name=get_current_time`,
+            method: "POST" as const,
+            timeout_ms: 5000,
+            parameters: {
+                type: "object" as const,
+                properties: {
+                    client_id: { type: "string" as const, description: "ID del cliente/negocio" },
+                },
+                required: [],
+            },
+        },
+        {
+            type: "custom" as const,
+            name: "notificar_equipo",
+            description: "Usa esta función cuando el cliente quiera hablar con una persona real, solicite información de precios o contratación, o cuando detectes una oportunidad de venta de alta prioridad. Envió una alerta urgente al equipo humano.",
+            url: `${baseUrl.replace(/\/$/, '')}/api/retell/function-call?name=notificar_equipo`,
+            method: "POST" as const,
+            timeout_ms: 8000,
+            parameters: {
+                type: "object" as const,
+                properties: {
+                    client_id: { type: "string" as const, description: "ID del cliente/negocio" },
+                    motivo: { type: "string" as const, description: "Describe brevemente por qué el cliente necesita atención humana" },
+                    nivel_urgencia: { type: "string" as const, enum: ["alta", "media", "baja"], description: "Urgencia: 'alta' si quiere contratar/comprar, 'media' si tiene dudas, 'baja' si es información general" },
+                },
+                required: ["motivo"],
             },
         },
     ];

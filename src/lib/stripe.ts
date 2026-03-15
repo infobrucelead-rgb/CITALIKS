@@ -29,41 +29,7 @@ export function getStripe(): Stripe {
     return _stripe;
 }
 
-// ── Plan definitions ──────────────────────────────────────────────────────────
-export const PLANS: Record<string, { label: string; priceEnvKey: string; months: number; price: number }> = {
-    monthly: {
-        label: "Plan Mensual",
-        priceEnvKey: "STRIPE_PRICE_MONTHLY",
-        months: 1,
-        price: 0,
-    },
-    quarterly: {
-        label: "Plan Trimestral",
-        priceEnvKey: "STRIPE_PRICE_QUARTERLY",
-        months: 3,
-        price: 0,
-    },
-    biannual: {
-        label: "Plan Semestral",
-        priceEnvKey: "STRIPE_PRICE_BIANNUAL",
-        months: 6,
-        price: 0,
-    },
-    annual: {
-        label: "Plan Anual",
-        priceEnvKey: "STRIPE_PRICE_ANNUAL",
-        months: 12,
-        price: 0,
-    },
-};
-
-export function getPriceId(plan: string): string {
-    const planDef = PLANS[plan];
-    if (!planDef) throw new Error(`Unknown plan: ${plan}`);
-    const priceId = process.env[planDef.priceEnvKey];
-    if (!priceId) throw new Error(`${planDef.priceEnvKey} is not set in environment`);
-    return priceId;
-}
+// Legacy plan definitions removed. Check @/config/pricing.ts for current scalable plans.
 
 // ── Customer ──────────────────────────────────────────────────────────────────
 
