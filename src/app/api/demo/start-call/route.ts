@@ -16,13 +16,6 @@ export async function POST(req: NextRequest) {
             ? process.env.RETELL_PABLO_AGENT_ID 
             : process.env.RETELL_CAROLINA_AGENT_ID;
 
-        // DIAGNOSTIC LOG (SAFE: No keys logged, only presence/length)
-        console.log(`[Demo/StartCall] Checking config for ${agentType}:`, {
-            hasId: !!demoAgentId,
-            idLength: demoAgentId?.length || 0,
-            envKeysFound: Object.keys(process.env).filter(k => k.startsWith('RETELL'))
-        });
-
         if (!demoAgentId) {
             return NextResponse.json(
                 { error: `El agente '${agentType}' no está configurado.` },
